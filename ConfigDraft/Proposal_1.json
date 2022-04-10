@@ -1,0 +1,30 @@
+{
+    "dependencies":[
+        {
+            "name":"",
+            "install":"",
+            "exists":""
+        }
+    ],    
+    "actions":[
+        {
+            "name":"",
+            "description":"",
+            "dependencies":[
+                {
+                    "name":"",
+                    "version":""
+                }
+            ],
+            "command":"sample.ps1 -p1 {parameter1}",
+            "params":[
+                {
+                    "name":"parameter1",
+                    "description":"",
+                    "type":"",
+                    "prompt":"text|password|dropdown|datepicker|checkbox|multilinetext"
+                }
+            ]
+        }
+    ]
+}
