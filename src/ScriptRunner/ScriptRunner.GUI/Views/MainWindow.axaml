@@ -12,6 +12,10 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <StackPanel>
+        <ItemsControl Items="{Binding ControlsCollection}"></ItemsControl>
+
+        <Button Command="{Binding AddNewTextBoxCommand}">Add new</Button>
+    </StackPanel>
 
 </Window>
