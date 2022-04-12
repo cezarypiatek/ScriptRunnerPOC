@@ -9,6 +9,7 @@
     "actions":[
         {
             "name":"",
+            "category":"",
             "description":"",
             "dependencies":[
                 {
@@ -22,7 +23,7 @@
                     "name":"parameter1",
                     "description":"",
                     "type":"",
-                    "prompt":"text|password|dropdown|datepicker|checkbox|multilinetext"
+                    "prompt":"text|password|dropdown|multiselect|datepicker|checkbox|multilinetext"
                 }
             ]
         }
