@@ -1,0 +1,17 @@
+{   
+    "actions":[
+        {
+            "name":"TestField test",
+            "description":"Example project with texfield input",
+            "command":"sample.ps1 -p1 {parameter1}",
+            "params":[
+                {
+                    "name":"parameter1",
+                    "description":"First parameter",
+                    "type":"string",
+                    "prompt":"text"
+                }
+            ]
+        }
+    ]
+}
