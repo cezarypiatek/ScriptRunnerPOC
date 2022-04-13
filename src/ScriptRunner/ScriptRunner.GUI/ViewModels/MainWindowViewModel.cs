@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using ReactiveUI;
 
 namespace ScriptRunner.GUI.ViewModels
@@ -24,13 +24,37 @@ namespace ScriptRunner.GUI.ViewModels
 
         public MainWindowViewModel()
         {
-            _controlsCollection = new ObservableCollection<IControl>
+            _controlsCollection = new ObservableCollection<IControl>();
+
+            var config = ScriptConfigReader.Load();
+            foreach (var action in config.Actions)
             {
-                new TextBox
+                ControlsCollection.Add(new Label{Content = action.Name});
+                ControlsCollection.Add(new TextBlock{Text = action.Description});
+                ControlsCollection.Add(new TextBlock{Text = action.Command});
+
+                ControlsCollection.Add(new Label{Content = "Parameters: "});
+
+                foreach (var param in action.Params)
                 {
-                    Text = "test text"
+                    var stackPanel = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new Label
+                            {
+                                Content = param.Name
+                            },
+                            new TextBox
+                            {
+                                Text = param.Description
+                            }
+                        }
+                    };
+                    ControlsCollection.Add(stackPanel);
                 }
-            };
+            }
         }
 
 
