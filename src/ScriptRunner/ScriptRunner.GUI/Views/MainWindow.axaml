@@ -9,11 +9,22 @@
         Title="ScriptRunner.GUI">
 
     <Design.DataContext>
-        <vm:MainWindowViewModel/>
+        <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <StackPanel>
-        <ItemsControl Items="{Binding ControlsCollection}"></ItemsControl>
-    </StackPanel>
+    <DockPanel LastChildFill="True">
+
+        <!-- List of available actions, selectable -->
+        <StackPanel DockPanel.Dock="Left" Width="200">
+            <Label>Actions:</Label>
+            <ListBox Items="{Binding Actions}"></ListBox>
+        </StackPanel>
+
+        <!-- Below instead of stack panel will be Reactive UI View Host displaying current action props-->
+        <StackPanel DockPanel.Dock="Right">
+            <ItemsControl Items="{Binding ControlsCollection}"></ItemsControl>
+            <Button Command="{Binding RunScript}">Run</Button>
+        </StackPanel>
+    </DockPanel>
 
 </Window>

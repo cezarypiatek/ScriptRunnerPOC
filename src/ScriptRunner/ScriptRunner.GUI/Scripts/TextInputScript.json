@@ -1,17 +1,36 @@
-{   
-    "actions":[
+{
+  "actions": [
+    {
+      "name": "TestAction 1",
+      "description": "Example project with texfield input",
+      "command": "sample1.ps1 -p1 {parameter1}",
+      "params": [
         {
-            "name":"TestField test",
-            "description":"Example project with texfield input",
-            "command":"sample.ps1 -p1 {parameter1}",
-            "params":[
-                {
-                    "name":"parameter1",
-                    "description":"First parameter",
-                    "type":"string",
-                    "prompt":"text"
-                }
-            ]
+          "name": "parameter1",
+          "description": "First parameter",
+          "type": "string",
+          "prompt": "text"
         }
-    ]
+      ]
+    },
+    {
+      "name": "TestAction 2",
+      "description": "Description no 2",
+      "command": "sample2.ps1 -p1 {parameter1} -p2 {parameter2}",
+      "params": [
+        {
+          "name": "parameter1",
+          "description": "First parameter",
+          "type": "string",
+          "prompt": "multilinetext"
+        },
+        {
+          "name": "parameter2",
+          "description": "Second parameter",
+          "type": "bool",
+          "prompt": "checkbox"
+        }
+      ]
+    }
+  ]
 }

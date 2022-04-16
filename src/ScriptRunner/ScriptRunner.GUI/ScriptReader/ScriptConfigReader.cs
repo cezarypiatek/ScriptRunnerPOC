@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json;
+using ScriptRunner.GUI.ScriptConfigs;
 
-namespace ScriptRunner.GUI;
+namespace ScriptRunner.GUI.ScriptReader;
 
 public static class ScriptConfigReader
 {
