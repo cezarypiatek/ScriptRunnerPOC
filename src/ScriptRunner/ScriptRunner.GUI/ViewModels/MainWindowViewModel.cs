@@ -1,7 +1,13 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reactive.Linq;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Layout;
+using DynamicData;
 using ReactiveUI;
+using ScriptRunner.GUI.ScriptReader;
+using Console = System.Console;
 
 namespace ScriptRunner.GUI.ViewModels
 {
@@ -14,49 +20,46 @@ namespace ScriptRunner.GUI.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _controlsCollection, value);
         }
 
-        public void AddNewTextBoxCommand()
+        private ObservableCollection<string> _actions;
+        public ObservableCollection<string> Actions
         {
-            ControlsCollection.Add(new TextBox
-            {
-                Text = "test text"
-            });
+            get => _actions;
+            private set => this.RaiseAndSetIfChanged(ref _actions, value);
         }
 
         public MainWindowViewModel()
         {
             _controlsCollection = new ObservableCollection<IControl>();
+            _actions = new ObservableCollection<string>();
 
+            BuildUi();
+        }
+        
+        private IObservable<string> _textObserver;
+
+        private void BuildUi()
+        {
             var config = ScriptConfigReader.Load();
             foreach (var action in config.Actions)
             {
-                ControlsCollection.Add(new Label{Content = action.Name});
-                ControlsCollection.Add(new TextBlock{Text = action.Description});
-                ControlsCollection.Add(new TextBlock{Text = action.Command});
+                Actions.Add(action.Name);
 
-                ControlsCollection.Add(new Label{Content = "Parameters: "});
+                // creating field
+                var testTextBox = new TextBox();
+                _textObserver = testTextBox.GetObservable(TextBox.TextProperty);
+                var disposableToDispose = _textObserver.Subscribe();
+                ControlsCollection.Add(testTextBox);
 
-                foreach (var param in action.Params)
-                {
-                    var stackPanel = new StackPanel
-                    {
-                        Orientation = Orientation.Horizontal,
-                        Children =
-                        {
-                            new Label
-                            {
-                                Content = param.Name
-                            },
-                            new TextBox
-                            {
-                                Text = param.Description
-                            }
-                        }
-                    };
-                    ControlsCollection.Add(stackPanel);
-                }
+
+
+                ControlsCollection.AddRange(UiFactory.BuildControls(action));
             }
         }
 
+        public void RunScript()
+        {
+            var wartosc = _textObserver.FirstAsync().GetAwaiter().GetResult();
 
+        }
     }
 }
