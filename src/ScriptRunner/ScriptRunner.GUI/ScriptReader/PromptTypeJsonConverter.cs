@@ -13,6 +13,8 @@ public class PromptTypeJsonConverter : JsonConverter<PromptType>
         {
             "text" => PromptType.Text,
             "password" => PromptType.Password,
+            "dropdown" => PromptType.Dropdown,
+            "datepicker" => PromptType.Datepicker,
             "checkbox" => PromptType.Checkbox,
             "multilinetext" => PromptType.Multilinetext,
             _ => PromptType.Text

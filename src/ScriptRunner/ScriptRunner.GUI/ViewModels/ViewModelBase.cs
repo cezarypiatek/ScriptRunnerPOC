@@ -1,8 +1,7 @@
 using ReactiveUI;
 
-namespace ScriptRunner.GUI.ViewModels
+namespace ScriptRunner.GUI.ViewModels;
+
+public class ViewModelBase : ReactiveObject
 {
-    public class ViewModelBase : ReactiveObject
-    {
-    }
 }

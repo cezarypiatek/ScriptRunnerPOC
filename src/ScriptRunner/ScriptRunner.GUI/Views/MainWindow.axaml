@@ -22,7 +22,7 @@
 
         <!-- Below instead of stack panel will be Reactive UI View Host displaying current action props-->
         <StackPanel DockPanel.Dock="Right">
-            <ItemsControl Items="{Binding ControlsCollection}"></ItemsControl>
+            <ItemsControl Items="{Binding ActionPanelsCollection}"></ItemsControl>
             <Button Command="{Binding RunScript}">Run</Button>
         </StackPanel>
     </DockPanel>

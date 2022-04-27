@@ -6,30 +6,42 @@
       "command": "sample1.ps1 -p1 {parameter1}",
       "params": [
         {
-          "name": "parameter1",
+          "name": "Text",
           "description": "First parameter",
           "type": "string",
           "prompt": "text"
-        }
-      ]
-    },
-    {
-      "name": "TestAction 2",
-      "description": "Description no 2",
-      "command": "sample2.ps1 -p1 {parameter1} -p2 {parameter2}",
-      "params": [
-        {
-          "name": "parameter1",
-          "description": "First parameter",
-          "type": "string",
-          "prompt": "multilinetext"
         },
         {
-          "name": "parameter2",
-          "description": "Second parameter",
-          "type": "bool",
+          "name": "Password",
+          "description": "Password parameter",
+          "type": "string",
+          "prompt": "password"
+        },
+        {
+          "name": "Dropdown",
+          "description": "Dropdown parameter",
+          "type": "string",
+          "prompt": "dropdown"
+        },
+        {
+          "name": "Datepicker",
+          "description": "Datepicker parameter",
+          "type": "string",
+          "prompt": "datepicker"
+        },
+        {
+          "name": "Checkbox",
+          "description": "Checkbox parameter",
+          "type": "string",
           "prompt": "checkbox"
+        },
+        {
+          "name": "Multiline text",
+          "description": "Multiline parameter",
+          "type": "string",
+          "prompt": "multilinetext"
         }
+
       ]
     }
   ]
