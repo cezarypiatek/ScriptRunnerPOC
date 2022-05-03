@@ -16,7 +16,8 @@ public class ParamsPanelFactory
 
         foreach (var param in parameters)
         {
-            var controlRecord = CreateControlRecord(param.Prompt);
+            var controlRecord = CreateControlRecord(param);
+            controlRecord.Name = param.Name;
             var actionPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -41,22 +42,25 @@ public class ParamsPanelFactory
         };
     }
 
-    private static IControlRecord CreateControlRecord(PromptType promptType)
+    private static IControlRecord CreateControlRecord(ScriptParam p)
     {
-        switch (promptType)
+        switch (p.Prompt)
         {
             case PromptType.Text:
-                var control = new TextBox();
                 return new TextControl
                 {
-                    Control = control
+                    Control = new TextBox()
+                    {
+                        Text = p.Default
+                    }
                 };
             case PromptType.Password:
                 return new TextControl
                 {
                     Control = new TextBox
                     {
-                        PasswordChar = '*'
+                        PasswordChar = '*',
+                        Text = p.Default
                     }
                 };
             case PromptType.Dropdown:
@@ -64,11 +68,8 @@ public class ParamsPanelFactory
                 {
                     Control = new ComboBox
                     { 
-                        Items = new List<string>
-                        {
-                            "SomeItem1",
-                            "SomeItem2"
-                        }
+                        Items = p.GetPromptSettings("options", out var options) ? options.Split(","):Array.Empty<string>(),
+                        SelectedItem = p.Default
                     }
                 };
             //case PromptType.Multiselect:
@@ -77,11 +78,16 @@ public class ParamsPanelFactory
                 return new DatePickerControl
                 {
                     Control = new DatePicker()
+                    {
+                        SelectedDate = string.IsNullOrWhiteSpace(p.Default)?null: DateTimeOffset.Parse(p.Default)
+                    }
                 };
             case PromptType.Checkbox:
                 return new CheckboxControl
                 {
-                    Control = new CheckBox()
+                    Control = new CheckBox(),
+                    CheckedValue = p.GetPromptSettings("checkedValue", out var checkedValue)? checkedValue: "true",
+                    UncheckedValue =  p.GetPromptSettings("uncheckedValue", out var uncheckedValue)? uncheckedValue: "false",
                 };
             case PromptType.Multilinetext:
                 return new TextControl
@@ -90,11 +96,12 @@ public class ParamsPanelFactory
                     {
                         TextWrapping = TextWrapping.Wrap,
                         AcceptsReturn = true,
-                        Height = 60
+                        Height = 60,
+                        Text = p.Default
                     }
         };
             default:
-                throw new ArgumentOutOfRangeException(nameof(promptType), promptType, null);
+                throw new ArgumentOutOfRangeException(nameof(p.Prompt), p.Prompt, null);
         }
     }
 }
@@ -110,11 +117,15 @@ public class ParamsPanel
 public class CheckboxControl : IControlRecord
 {
     public IControl Control { get; set; }
-    public Type ValueType => typeof(bool);
+    public Type ValueType => typeof(string);
+    public string CheckedValue { get; set; } = "true";
+    public string UncheckedValue { get; set; } = "false";
     public dynamic GetValue()
     {
-        return ((CheckBox)Control).IsChecked ?? false;
+        return ((CheckBox)Control).IsChecked == true ? CheckedValue: UncheckedValue;
     }
+
+    public string Name { get; set; }
 }
 
 public class DatePickerControl : IControlRecord
@@ -125,6 +136,8 @@ public class DatePickerControl : IControlRecord
     {
         return ((DatePicker)Control).SelectedDate?.DateTime;
     }
+
+    public string Name { get; set; }
 }
 
 public class DropdownControl : IControlRecord
@@ -135,6 +148,8 @@ public class DropdownControl : IControlRecord
     {
         return ((ComboBox)Control).SelectedItem?.ToString();
     }
+
+    public string Name { get; set; }
 }
 
 public class TextControl : IControlRecord
@@ -145,6 +160,19 @@ public class TextControl : IControlRecord
     {
         return ((TextBox)Control).Text;
     }
+
+    public string Name { get; set; }
+}
+public class FilePickerControl : IControlRecord
+{
+    public IControl Control { get; set; }
+    public Type ValueType => typeof(string);
+    public dynamic GetValue()
+    {
+        return ((TextBox)Control).Text;
+    }
+
+    public string Name { get; set; }
 }
 
 public interface IControlRecord
@@ -154,4 +182,7 @@ public interface IControlRecord
     Type ValueType { get; }
 
     dynamic GetValue();
+
+    public string Name { get; set; }
+
 }

@@ -3,7 +3,7 @@
         xmlns:vm="using:ScriptRunner.GUI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="650"
         x:Class="ScriptRunner.GUI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="ScriptRunner.GUI">
@@ -17,13 +17,14 @@
         <!-- List of available actions, selectable -->
         <StackPanel DockPanel.Dock="Left" Width="200">
             <Label>Actions:</Label>
-            <ListBox Items="{Binding Actions}"></ListBox>
+            <ListBox Items="{Binding Actions}" SelectedItem="{Binding SelectedActionName}"></ListBox>
         </StackPanel>
 
         <!-- Below instead of stack panel will be Reactive UI View Host displaying current action props-->
         <StackPanel DockPanel.Dock="Right">
             <ItemsControl Items="{Binding ActionPanelsCollection}"></ItemsControl>
             <Button Command="{Binding RunScript}">Run</Button>
+            <TextBox  AcceptsReturn="True" TextWrapping="Wrap" Height="200" Margin="0, 10" Text="{Binding CurrentRunOutput, Mode=OneWay}"  CaretIndex="{Binding OutputIndex, Mode=OneWay}"></TextBox>
         </StackPanel>
     </DockPanel>
 
