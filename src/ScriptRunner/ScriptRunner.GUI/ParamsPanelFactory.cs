@@ -25,7 +25,7 @@ public class ParamsPanelFactory
                 {
                     new Label
                     {
-                        Content = param.Name
+                        Content = string.IsNullOrWhiteSpace(param.Description)? param.Name: param.Description
                     },
                     controlRecord.Control
                 }
