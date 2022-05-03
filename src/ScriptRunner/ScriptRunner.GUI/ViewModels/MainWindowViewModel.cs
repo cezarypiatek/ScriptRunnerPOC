@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -141,6 +142,7 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     AppendToOutput("Execute the command:");
                     AppendToOutput($"{commandPath} {args}");
+                    ExecutionCancellation = new CancellationTokenSource();
                     
                     await Cli.Wrap(commandPath)
                         .WithArguments(args)
@@ -149,7 +151,7 @@ public class MainWindowViewModel : ViewModelBase
                         .WithStandardOutputPipe(PipeTarget.ToDelegate(AppendToOutput))
                         .WithStandardErrorPipe(PipeTarget.ToDelegate(AppendToOutput))
                         .WithValidation(CommandResultValidation.None)
-                        .ExecuteAsync();
+                        .ExecuteAsync(ExecutionCancellation.Token);
                     
                 }
                 catch (Exception e)
@@ -170,6 +172,8 @@ public class MainWindowViewModel : ViewModelBase
         }
         
     }
+
+    public void CancelExecution() => ExecutionCancellation.Cancel();
 
     private ScriptConfig? TryGetSelectedAction()
     {
@@ -205,4 +209,6 @@ public class MainWindowViewModel : ViewModelBase
         get => _executionPending;
         set => this.RaiseAndSetIfChanged(ref _executionPending, value);
     }
+
+    public CancellationTokenSource ExecutionCancellation { get; set; }
 }
