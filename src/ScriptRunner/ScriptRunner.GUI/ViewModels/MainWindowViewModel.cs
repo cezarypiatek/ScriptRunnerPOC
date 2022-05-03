@@ -37,7 +37,18 @@ public class MainWindowViewModel : ViewModelBase
         private set => this.RaiseAndSetIfChanged(ref _actions, value);
     }
 
-    public string SelectedActionName { get; set; }
+    public string SelectedActionName
+    {
+        get => _selectedActionName;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _selectedActionName, value);
+            if (TryGetSelectedAction() is { } selectedAction)
+            {
+                RenderParameterForm(selectedAction);
+            }
+        }
+    }
 
     public MainWindowViewModel()
     {
@@ -52,6 +63,7 @@ public class MainWindowViewModel : ViewModelBase
     private ActionsConfig config;
     private string _currentRunOutput;
     private int _outputIndex;
+    private string _selectedActionName;
 
     private void BuildUi()
     {
@@ -59,30 +71,41 @@ public class MainWindowViewModel : ViewModelBase
         foreach (var action in config.Actions)
         {
             Actions.Add(action.Name);
-                
-            // Action panel could be used by creating custom user control with Name, description etc.
-            // Just ParamsPanel should be generated dynamically
-            var actionPanel = new StackPanel();
-            actionPanel.Children.AddRange(new List<IControl>
-            {
-                new Label { Content = action.Name },
-                new TextBlock { Text = action.Description },
-                new TextBlock { Text = action.Command },
-                new Label { Content = "Parameters: " }
-            });
-
-            // Create IPanel with controls for all parameters
-            var paramsPanel = new ParamsPanelFactory().Create(action.Params);
-
-            // Add panel with param controls to action panel
-            actionPanel.Children.Add(paramsPanel.Panel);
-
-            // Add action panel to root container with all action panels
-            ActionPanelsCollection.Add(actionPanel);
-
-            // Write down param controls to read easier later - TODO: figure out better way, support multiple actions
-            _controlRecords = paramsPanel.ControlRecords;
         }
+
+        if (Actions.FirstOrDefault() is { } actionToSelect)
+        {
+            SelectedActionName = actionToSelect;
+        }
+    }
+
+    private void RenderParameterForm(ScriptConfig action)
+    {
+        ActionPanelsCollection.Clear();
+        CurrentRunOutput = string.Empty;
+
+        // Action panel could be used by creating custom user control with Name, description etc.
+        // Just ParamsPanel should be generated dynamically
+        var actionPanel = new StackPanel();
+        actionPanel.Children.AddRange(new List<IControl>
+        {
+            new Label {Content = action.Name},
+            new TextBlock {Text = action.Description},
+            new TextBlock {Text = action.Command},
+            new Label {Content = "Parameters: "}
+        });
+
+        // Create IPanel with controls for all parameters
+        var paramsPanel = new ParamsPanelFactory().Create(action.Params);
+
+        // Add panel with param controls to action panel
+        actionPanel.Children.Add(paramsPanel.Panel);
+
+        // Add action panel to root container with all action panels
+        ActionPanelsCollection.Add(actionPanel);
+
+        // Write down param controls to read easier later - TODO: figure out better way, support multiple actions
+        _controlRecords = paramsPanel.ControlRecords;
     }
 
     public void RunScript()
@@ -96,7 +119,7 @@ public class MainWindowViewModel : ViewModelBase
             parameters[controlRecord.Name] = convertedValue;
         }
 
-        if (config.Actions.FirstOrDefault(x => x.Name == SelectedActionName) is { } selectedAction)
+        if (TryGetSelectedAction() is { } selectedAction)
         {
             //TODO: handle whitespaces in the path
             var parts = selectedAction.Command.Split(' ', 2);
@@ -135,6 +158,11 @@ public class MainWindowViewModel : ViewModelBase
             });
         }
         
+    }
+
+    private ScriptConfig? TryGetSelectedAction()
+    {
+        return config.Actions.FirstOrDefault(x => x.Name == SelectedActionName);
     }
 
     private void AppendToOutput(string? s)

@@ -10,7 +10,7 @@ public class ScriptConfig
     public string? Description { get; set; }
     public string Command { get; set; }
     public string? WorkingDirectory { get; set; }
-    public IEnumerable<ScriptParam> Params { get; set; }
+    public List<ScriptParam> Params { get; set; } = new();
 }
 
 public class ScriptParam
