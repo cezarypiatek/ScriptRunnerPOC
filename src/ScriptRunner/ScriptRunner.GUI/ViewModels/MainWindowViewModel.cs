@@ -64,6 +64,7 @@ public class MainWindowViewModel : ViewModelBase
     private string _currentRunOutput;
     private int _outputIndex;
     private string _selectedActionName;
+    private bool _executionPending;
 
     private void BuildUi()
     {
@@ -131,14 +132,16 @@ public class MainWindowViewModel : ViewModelBase
             }
 
             CurrentRunOutput = "";
+            ExecutionPending = true;
             Task.Run(async () =>
             {
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
                 try
                 {
                     AppendToOutput("Execute the command:");
                     AppendToOutput($"{commandPath} {args}");
-                    var stopWatch = new Stopwatch();
-                    stopWatch.Start();
+                    
                     await Cli.Wrap(commandPath)
                         .WithArguments(args)
                         //TODO: Working dir should be read from the config with the fallback set to the config file dir
@@ -147,13 +150,21 @@ public class MainWindowViewModel : ViewModelBase
                         .WithStandardErrorPipe(PipeTarget.ToDelegate(AppendToOutput))
                         .WithValidation(CommandResultValidation.None)
                         .ExecuteAsync();
-                    stopWatch.Stop();
-                    AppendToOutput($"Execution finished after {stopWatch.Elapsed}");
+                    
                 }
                 catch (Exception e)
                 {
                     AppendToOutput(e.Message);
                     AppendToOutput(e.StackTrace);
+                }
+                finally
+                {
+                    stopWatch.Stop();
+                    AppendToOutput($"Execution finished after {stopWatch.Elapsed}");
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        ExecutionPending = false;
+                    });
                 }
             });
         }
@@ -187,5 +198,11 @@ public class MainWindowViewModel : ViewModelBase
     {
         get => _outputIndex;
         set => this.RaiseAndSetIfChanged(ref _outputIndex, value);
+    }
+
+    public bool ExecutionPending
+    {
+        get => _executionPending;
+        set => this.RaiseAndSetIfChanged(ref _executionPending, value);
     }
 }
