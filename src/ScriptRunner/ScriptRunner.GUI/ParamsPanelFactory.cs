@@ -80,8 +80,11 @@ public class ParamsPanelFactory
                 {
                     Control = new DatePicker()
                     {
-                        SelectedDate = string.IsNullOrWhiteSpace(p.Default)?null: DateTimeOffset.Parse(p.Default)
-                    }
+                        SelectedDate = string.IsNullOrWhiteSpace(p.Default)?null: DateTimeOffset.Parse(p.Default),
+                        YearVisible = p.GetPromptSettings("yearVisible", bool.Parse, true),
+                        MonthVisible = p.GetPromptSettings("monthVisible", bool.Parse, true),
+                        DayVisible = p.GetPromptSettings("dayVisible", bool.Parse, true),
+                    },
                     Format = p.GetPromptSettings("format", out var format) ? format : null,
                 };
             case PromptType.Checkbox:
