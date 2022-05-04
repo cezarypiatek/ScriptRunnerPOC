@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -73,8 +74,18 @@ public class ParamsPanelFactory
                         SelectedItem = p.Default
                     }
                 };
-            //case PromptType.Multiselect:
-            //    break;
+            case PromptType.Multiselect:
+                var delimiter = p.GetPromptSettings("delimiter", s => s, ",");
+                return new MultiSelectControl
+                {
+                    Control = new ListBox
+                    {
+                        SelectionMode = SelectionMode.Multiple,
+                        Items = p.GetPromptSettings("options", out var multiSelectOptions) ? multiSelectOptions.Split(delimiter) : Array.Empty<string>(),
+                        SelectedItems = new AvaloniaList<string>((p.Default ?? string.Empty).Split(delimiter))
+                    },
+                    Delimiter = delimiter
+                };
             case PromptType.Datepicker:
                 return new DatePickerControl
                 {
@@ -190,6 +201,20 @@ public class TextControl : IControlRecord
     }
 
     public string Name { get; set; }
+}
+
+public class MultiSelectControl : IControlRecord
+{
+    public IControl Control { get; set; }
+    public Type ValueType => typeof(string);
+    public dynamic GetValue()
+    {
+        return string.Join(Delimiter, ((ListBox)Control).SelectedItems);
+    }
+
+    public string Name { get; set; }
+    public string Delimiter { get; set; }
+
 }
 public class FilePickerControl : IControlRecord
 {
