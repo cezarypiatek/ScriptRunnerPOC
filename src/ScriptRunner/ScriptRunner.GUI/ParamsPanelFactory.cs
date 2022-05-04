@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using ScriptRunner.GUI.ScriptConfigs;
+using ScriptRunner.GUI.Views;
 
 namespace ScriptRunner.GUI;
 
@@ -99,7 +100,15 @@ public class ParamsPanelFactory
                         Height = 60,
                         Text = p.Default
                     }
-        };
+                };
+            case PromptType.FilePicker:
+                return new FilePickerControl
+                {
+                    Control = new FilePicker
+                    {
+                        FilePath = p.Default
+                    }
+                };
             default:
                 throw new ArgumentOutOfRangeException(nameof(p.Prompt), p.Prompt, null);
         }
@@ -169,7 +178,7 @@ public class FilePickerControl : IControlRecord
     public Type ValueType => typeof(string);
     public dynamic GetValue()
     {
-        return ((TextBox)Control).Text;
+        return ((FilePicker)Control).FilePath;
     }
 
     public string Name { get; set; }

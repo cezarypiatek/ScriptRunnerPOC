@@ -17,6 +17,7 @@ public class PromptTypeJsonConverter : JsonConverter<PromptType>
             "datepicker" => PromptType.Datepicker,
             "checkbox" => PromptType.Checkbox,
             "multilinetext" => PromptType.Multilinetext,
+            "filepicker" => PromptType.FilePicker,
             _ => PromptType.Text
         };
     }

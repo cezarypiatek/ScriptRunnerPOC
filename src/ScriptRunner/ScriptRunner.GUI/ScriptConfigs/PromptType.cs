@@ -8,5 +8,6 @@ public enum PromptType
     Multiselect,
     Datepicker,
     Checkbox,
-    Multilinetext
+    Multilinetext,
+    FilePicker
 }
