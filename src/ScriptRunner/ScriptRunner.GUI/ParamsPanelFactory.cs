@@ -82,6 +82,7 @@ public class ParamsPanelFactory
                     {
                         SelectedDate = string.IsNullOrWhiteSpace(p.Default)?null: DateTimeOffset.Parse(p.Default)
                     }
+                    Format = p.GetPromptSettings("format", out var format) ? format : null,
                 };
             case PromptType.Checkbox:
                 return new CheckboxControl
@@ -151,10 +152,17 @@ public class DatePickerControl : IControlRecord
     public Type ValueType => typeof(DateTime);
     public dynamic GetValue()
     {
-        return ((DatePicker)Control).SelectedDate?.DateTime;
+        var selectedDateTime = ((DatePicker)Control).SelectedDate?.DateTime;
+        if (string.IsNullOrWhiteSpace(Format) == false && selectedDateTime is {} value)
+        {
+            return value.ToString(Format);
+        }
+        return selectedDateTime;
     }
 
     public string Name { get; set; }
+
+    public string? Format { get; set; }
 }
 
 public class DropdownControl : IControlRecord

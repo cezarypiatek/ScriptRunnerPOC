@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 
@@ -25,6 +26,16 @@ public class ScriptParam
     public bool GetPromptSettings(string name, [NotNullWhen(true)] out string? value)
     {
         return PromptSettings.TryGetValue(name, out value);
+    }
+    
+    public T GetPromptSettings<T>(string name, Func<string,T> convert, T @default)
+    {
+        if (PromptSettings.TryGetValue(name, out var value))
+        {
+            return convert(value);
+        }
+
+        return @default;
     }
 
 }
