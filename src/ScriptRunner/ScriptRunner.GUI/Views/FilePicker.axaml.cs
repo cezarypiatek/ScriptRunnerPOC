@@ -20,7 +20,7 @@ namespace ScriptRunner.GUI.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        public static readonly DirectProperty<FilePicker, string> FilePathProperty = AvaloniaProperty.RegisterDirect<FilePicker, string>(nameof(Label), picker => picker.FindControl<TextBox>("FilePathTextBox").Text, (picker, s) => picker.FindControl<TextBox>("FilePathTextBox").Text = s);
+        public static readonly DirectProperty<FilePicker, string> FilePathProperty = AvaloniaProperty.RegisterDirect<FilePicker, string>(nameof(FilePath), picker => picker.FindControl<TextBox>("FilePathTextBox").Text, (picker, s) => picker.FindControl<TextBox>("FilePathTextBox").Text = s);
             
 
         public string FilePath

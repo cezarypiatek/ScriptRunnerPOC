@@ -109,6 +109,14 @@ public class ParamsPanelFactory
                         FilePath = p.Default
                     }
                 };
+            case PromptType.DirectoryPicker:
+                return new DirectoryPickerControl
+                {
+                    Control = new DirectoryPicker()
+                    {
+                        DirPath = p.Default
+                    }
+                };
             default:
                 throw new ArgumentOutOfRangeException(nameof(p.Prompt), p.Prompt, null);
         }
@@ -179,6 +187,18 @@ public class FilePickerControl : IControlRecord
     public dynamic GetValue()
     {
         return ((FilePicker)Control).FilePath;
+    }
+
+    public string Name { get; set; }
+}
+
+public class DirectoryPickerControl : IControlRecord
+{
+    public IControl Control { get; set; }
+    public Type ValueType => typeof(string);
+    public dynamic GetValue()
+    {
+        return ((DirectoryPicker)Control).DirPath;
     }
 
     public string Name { get; set; }

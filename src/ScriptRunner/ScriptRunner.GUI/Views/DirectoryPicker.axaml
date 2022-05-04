@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ScriptRunner.GUI.Views.DirectoryPicker">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBox Grid.Column="0" x:Name="DirPathTextBox"></TextBox>
+        <Button Margin="5,0"  Grid.Column="1" Width="100" Click="ChangeDirClick" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">...</Button>
+    </Grid>
+</UserControl>

@@ -9,5 +9,6 @@ public enum PromptType
     Datepicker,
     Checkbox,
     Multilinetext,
-    FilePicker
+    FilePicker,
+    DirectoryPicker
 }
