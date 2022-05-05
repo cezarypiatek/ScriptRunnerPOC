@@ -1,0 +1,161 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "$id": "ScriptRunnerSchema",
+    "title": "Product",
+    "description": "ScriptRunnerSchema",
+    "type": "object",    
+    "properties": {        
+        "actions": {
+            "description": "A list of available actions",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "command"],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "command": {
+                        "type": "string"
+                    },
+                    "workingDirectory": {
+                        "type": "string"
+                    },
+                    "params": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": true,
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "default": {
+                                    "type": "string"
+                                },
+                                "prompt": {
+                                    "type":"string",
+                                    "enum": [
+                                        "text",
+                                        "multilineText",
+                                        "password",
+                                        "checkbox",
+                                        "dropdown",
+                                        "multiSelect",
+                                        "filePicker",
+                                        "directoryPicker",
+                                        "datePicker"
+                                    ]
+                                }
+                            },
+                            "required": ["name", "prompt"],
+                            "anyOf": [
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "const": "datePicker"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "format": {
+                                                    "type": "string"
+                                                },
+                                                "yearVisible": {
+                                                    "type": "string"
+                                                },
+                                                "monthVisible": {
+                                                    "type": "string"
+                                                },
+                                                "dayVisible": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "const": "dropdown"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "properties": {
+                                                "options": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "const": "multiSelect"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "properties": {
+                                                "options": {
+                                                    "type": "string"
+                                                },
+                                                "delimiter": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "const": "checkbox"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "properties": {
+                                                "checkedValue": {
+                                                    "type": "string"
+                                                },
+                                                "uncheckedValue": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "enum": [
+                                                "text",
+                                                "multilineText",
+                                                "password",
+                                                "filePicker",
+                                                "directoryPicker"
+                                            ]
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                }
+                            ]
+                        }
+                    }
+                }                
+            }
+        }
+    }
+}

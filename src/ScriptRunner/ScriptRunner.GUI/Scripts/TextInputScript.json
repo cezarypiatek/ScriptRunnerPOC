@@ -1,47 +1,100 @@
 {
+  "$schema": "./ScriptRunnerSchema.json",
   "actions": [
     {
-      "name": "TestAction 1",
-      "description": "Example project with texfield input",
-      "command": "sample1.ps1 -p1 {parameter1}",
+      "name": "Ping",
+      "description": "Execute ping command",
+      "command": "ping {address} -t",
       "params": [
         {
-          "name": "Text",
-          "description": "First parameter",
-          "type": "string",
+          "name": "address",
+          "prompt": "text",
+          "default": "www.wp.pl"
+        }
+      ]
+    },{
+      "name": "AllControlsTest",
+      "description": "Demo of all available controls",
+      "command": "pwsh.exe -NoProfile -Command Write-Host '{p1} {p2} {p3} {p4} {p5} {p6} {p7} {p8} {p9} {p10}'",
+      "params": [
+        {
+          "name": "p1",
+          "description": "Text parameter",
+          "default": "v1",
           "prompt": "text"
         },
         {
-          "name": "Password",
+          "name": "p2",
+          "description": "Multiline Text parameter",
+          "default": "Line 1\r\n Line 2",
+          "prompt": "multilineText"
+        },
+        {
+          "name": "p3",
+          "description": "Checkbox parameter",
+          "default": "checked",
+          "prompt": "checkbox",
+          "promptSettings":{
+            "checkedValue": "checked",
+            "uncheckedValue": "unchecked"
+          }          
+        },
+        {
+          "name": "p4",
+          "description": "Date parameter",
+          "default": "2022-05-03",
+          "prompt": "datePicker",
+          "promptSettings":{
+            "format":"yyyy-MM-dd"
+          }
+        },
+        {
+          "name": "p5",
+          "description": "Year-Month parameter",
+          "default": "2022-05",
+          "prompt": "datePicker",
+          "promptSettings":{
+            "format":"yyyy-MM",
+            "dayVisible":"false"
+          }
+        },
+        {
+          "name": "p6",
+          "description": "Dropdown parameter",
+          "default": "val3",
+          "prompt": "dropdown",
+          "promptSettings":{
+            "options":"va11,val2,val3,val4"
+          }
+        },
+        {
+          "name": "p7",
+          "description": "MultiSelect parameter",
+          "default": "val3,val4",
+          "prompt": "multiSelect",
+          "promptSettings":{
+            "options":"va11,val2,val3,val4",
+            "delimiter":","
+          }
+        },
+        {
+          "name": "p8",
           "description": "Password parameter",
-          "type": "string",
+          "default": "secret",
           "prompt": "password"
         },
         {
-          "name": "Dropdown",
-          "description": "Dropdown parameter",
-          "type": "string",
-          "prompt": "dropdown"
+          "name": "p9",
+          "description": "File parameter",
+          "default": "c:\\Windows\\explorer.exe",
+          "prompt": "filePicker"
         },
         {
-          "name": "Datepicker",
-          "description": "Datepicker parameter",
-          "type": "string",
-          "prompt": "datepicker"
-        },
-        {
-          "name": "Checkbox",
-          "description": "Checkbox parameter",
-          "type": "string",
-          "prompt": "checkbox"
-        },
-        {
-          "name": "Multiline text",
-          "description": "Multiline parameter",
-          "type": "string",
-          "prompt": "multilinetext"
+          "name": "p10",
+          "description": "Directory parameter",
+          "default": "c:\\Windows\\",
+          "prompt": "directoryPicker"
         }
-
       ]
     }
   ]
