@@ -117,8 +117,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             // This is definitely not pretty, should be using some ReactiveUI observables to read values?
             var controlValue = controlRecord.GetValue();
-            var convertedValue = Convert.ChangeType(controlValue, controlRecord.ValueType);
-            parameters[controlRecord.Name] = convertedValue;
+            parameters[controlRecord.Name] = controlValue;
         }
 
         if (TryGetSelectedAction() is { } selectedAction)

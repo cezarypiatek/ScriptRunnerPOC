@@ -209,7 +209,17 @@ public class MultiSelectControl : IControlRecord
     public Type ValueType => typeof(string);
     public dynamic GetValue()
     {
-        return string.Join(Delimiter, ((ListBox)Control).SelectedItems);
+        var selectedItems = ((ListBox)Control).SelectedItems;
+        var copy = new List<string>();
+        foreach (var item in selectedItems)
+        {
+            if (item.ToString() is { } nonNullItem)
+            {
+                copy.Add(nonNullItem);
+            }
+        }
+
+        return string.Join(Delimiter, copy);
     }
 
     public string Name { get; set; }
