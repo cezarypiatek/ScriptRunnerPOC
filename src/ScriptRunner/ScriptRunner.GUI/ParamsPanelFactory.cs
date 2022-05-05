@@ -63,7 +63,8 @@ public class ParamsPanelFactory
                     {
                         PasswordChar = '*',
                         Text = p.Default
-                    }
+                    },
+                    MaskingRequired = true
                 };
             case PromptType.Dropdown:
                 return new DropdownControl
@@ -161,6 +162,7 @@ public class CheckboxControl : IControlRecord
     }
 
     public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
 }
 
 public class DatePickerControl : IControlRecord
@@ -178,6 +180,7 @@ public class DatePickerControl : IControlRecord
     }
 
     public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
 
     public string? Format { get; set; }
 }
@@ -192,6 +195,7 @@ public class DropdownControl : IControlRecord
     }
 
     public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
 }
 
 public class TextControl : IControlRecord
@@ -204,6 +208,7 @@ public class TextControl : IControlRecord
     }
 
     public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
 }
 
 public class MultiSelectControl : IControlRecord
@@ -226,6 +231,7 @@ public class MultiSelectControl : IControlRecord
     }
 
     public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
     public string Delimiter { get; set; }
 
 }
@@ -239,6 +245,7 @@ public class FilePickerControl : IControlRecord
     }
 
     public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
 }
 
 public class DirectoryPickerControl : IControlRecord
@@ -251,6 +258,7 @@ public class DirectoryPickerControl : IControlRecord
     }
 
     public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
 }
 
 public interface IControlRecord
@@ -261,4 +269,5 @@ public interface IControlRecord
 
     public string Name { get; set; }
 
+    public bool MaskingRequired { get; set; }
 }

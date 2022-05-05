@@ -112,24 +112,21 @@ public class MainWindowViewModel : ViewModelBase
 
     public void RunScript()
     {
-        var parameters = new Dictionary<string, string>();
-        foreach (var controlRecord in _controlRecords)
-        {
-            // This is definitely not pretty, should be using some ReactiveUI observables to read values?
-            var controlValue = controlRecord.GetFormattedValue();
-            parameters[controlRecord.Name] = controlValue;
-        }
-
         if (TryGetSelectedAction() is { } selectedAction)
         {
             //TODO: handle whitespaces in the path
             var parts = selectedAction.Command.Split(' ', 2);
             var (commandPath, args) = (parts.Length > 0 ? parts[0] : "", parts.Length > 1 ? parts[1] : "");
+            var maskedArgs = args;
 
-            foreach (var parameter in parameters)
+            foreach (var controlRecord in _controlRecords)
             {
-                args = args.Replace($"{{{parameter.Key}}}", parameter.Value);
+                // This is definitely not pretty, should be using some ReactiveUI observables to read values?
+                var controlValue = controlRecord.GetFormattedValue();
+                args = args.Replace($"{{{controlRecord.Name}}}", controlValue);
+                maskedArgs = maskedArgs.Replace($"{{{controlRecord.Name}}}", controlRecord.MaskingRequired? "*****": controlValue);
             }
+
 
             CurrentRunOutput = "";
             ExecutionPending = true;
@@ -141,7 +138,7 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     AppendToOutput("---------------------------------------------");
                     AppendToOutput("Execute the command:");
-                    AppendToOutput($"{commandPath} {args}");
+                    AppendToOutput($"{commandPath} {maskedArgs}");
                     AppendToOutput("---------------------------------------------");
                     ExecutionCancellation = new CancellationTokenSource();
                     
