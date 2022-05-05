@@ -99,10 +99,14 @@ public class ParamsPanelFactory
                     Format = p.GetPromptSettings("format", out var format) ? format : null,
                 };
             case PromptType.Checkbox:
+                var checkedValueText  = p .GetPromptSettings("checkedValue", out var checkedValue)? checkedValue: "true";
                 return new CheckboxControl
                 {
-                    Control = new CheckBox(),
-                    CheckedValue = p.GetPromptSettings("checkedValue", out var checkedValue)? checkedValue: "true",
+                    Control = new CheckBox
+                    {
+                        IsChecked = string.IsNullOrWhiteSpace(p.Default) == false && p.Default == checkedValueText
+                    },
+                    CheckedValue = checkedValueText,
                     UncheckedValue =  p.GetPromptSettings("uncheckedValue", out var uncheckedValue)? uncheckedValue: "false",
                 };
             case PromptType.Multilinetext:
