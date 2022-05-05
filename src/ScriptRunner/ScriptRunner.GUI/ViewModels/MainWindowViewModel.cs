@@ -112,11 +112,11 @@ public class MainWindowViewModel : ViewModelBase
 
     public void RunScript()
     {
-        var parameters = new Dictionary<string, object>();
+        var parameters = new Dictionary<string, string>();
         foreach (var controlRecord in _controlRecords)
         {
             // This is definitely not pretty, should be using some ReactiveUI observables to read values?
-            var controlValue = controlRecord.GetValue();
+            var controlValue = controlRecord.GetFormattedValue();
             parameters[controlRecord.Name] = controlValue;
         }
 
@@ -128,7 +128,7 @@ public class MainWindowViewModel : ViewModelBase
 
             foreach (var parameter in parameters)
             {
-                args = args.Replace($"{{{parameter.Key}}}", parameter.Value.ToString());
+                args = args.Replace($"{{{parameter.Key}}}", parameter.Value);
             }
 
             CurrentRunOutput = "";

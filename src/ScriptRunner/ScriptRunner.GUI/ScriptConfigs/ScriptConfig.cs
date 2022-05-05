@@ -18,7 +18,6 @@ public class ScriptParam
 {
     public string Name { get; set; }
     public string Description { get; set; }
-    public ParamType Type { get; set; }
     public PromptType Prompt { get; set; }
     public string Default { get; set; }
     public Dictionary<string, string> PromptSettings { get; set; } = new();

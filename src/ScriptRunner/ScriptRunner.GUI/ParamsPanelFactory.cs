@@ -153,10 +153,9 @@ public class ParamsPanel
 public class CheckboxControl : IControlRecord
 {
     public IControl Control { get; set; }
-    public Type ValueType => typeof(string);
     public string CheckedValue { get; set; } = "true";
     public string UncheckedValue { get; set; } = "false";
-    public dynamic GetValue()
+    public string GetFormattedValue()
     {
         return ((CheckBox)Control).IsChecked == true ? CheckedValue: UncheckedValue;
     }
@@ -167,15 +166,15 @@ public class CheckboxControl : IControlRecord
 public class DatePickerControl : IControlRecord
 {
     public IControl Control { get; set; }
-    public Type ValueType => typeof(DateTime);
-    public dynamic GetValue()
+
+    public string GetFormattedValue()
     {
         var selectedDateTime = ((DatePicker)Control).SelectedDate?.DateTime;
         if (string.IsNullOrWhiteSpace(Format) == false && selectedDateTime is {} value)
         {
             return value.ToString(Format);
         }
-        return selectedDateTime;
+        return selectedDateTime?.ToString() ?? string.Empty;
     }
 
     public string Name { get; set; }
@@ -186,8 +185,8 @@ public class DatePickerControl : IControlRecord
 public class DropdownControl : IControlRecord
 {
     public IControl Control { get; set; }
-    public Type ValueType => typeof(string);
-    public dynamic GetValue()
+
+    public string GetFormattedValue()
     {
         return ((ComboBox)Control).SelectedItem?.ToString();
     }
@@ -198,8 +197,8 @@ public class DropdownControl : IControlRecord
 public class TextControl : IControlRecord
 {
     public IControl Control { get; set; }
-    public Type ValueType => typeof(string);
-    public dynamic GetValue()
+
+    public string GetFormattedValue()
     {
         return ((TextBox)Control).Text;
     }
@@ -210,8 +209,8 @@ public class TextControl : IControlRecord
 public class MultiSelectControl : IControlRecord
 {
     public IControl Control { get; set; }
-    public Type ValueType => typeof(string);
-    public dynamic GetValue()
+
+    public string GetFormattedValue()
     {
         var selectedItems = ((ListBox)Control).SelectedItems;
         var copy = new List<string>();
@@ -233,8 +232,8 @@ public class MultiSelectControl : IControlRecord
 public class FilePickerControl : IControlRecord
 {
     public IControl Control { get; set; }
-    public Type ValueType => typeof(string);
-    public dynamic GetValue()
+
+    public string GetFormattedValue()
     {
         return ((FilePicker)Control).FilePath;
     }
@@ -245,8 +244,8 @@ public class FilePickerControl : IControlRecord
 public class DirectoryPickerControl : IControlRecord
 {
     public IControl Control { get; set; }
-    public Type ValueType => typeof(string);
-    public dynamic GetValue()
+
+    public string GetFormattedValue()
     {
         return ((DirectoryPicker)Control).DirPath;
     }
@@ -258,9 +257,7 @@ public interface IControlRecord
 {
     IControl Control { get; set; }
 
-    Type ValueType { get; }
-
-    dynamic GetValue();
+    string GetFormattedValue();
 
     public string Name { get; set; }
 
