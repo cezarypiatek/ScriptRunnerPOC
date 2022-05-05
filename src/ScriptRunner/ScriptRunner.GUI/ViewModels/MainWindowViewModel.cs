@@ -139,8 +139,10 @@ public class MainWindowViewModel : ViewModelBase
                 stopWatch.Start();
                 try
                 {
+                    AppendToOutput("---------------------------------------------");
                     AppendToOutput("Execute the command:");
                     AppendToOutput($"{commandPath} {args}");
+                    AppendToOutput("---------------------------------------------");
                     ExecutionCancellation = new CancellationTokenSource();
                     
                     await Cli.Wrap(commandPath)
@@ -161,6 +163,7 @@ public class MainWindowViewModel : ViewModelBase
                 finally
                 {
                     stopWatch.Stop();
+                    AppendToOutput("---------------------------------------------");
                     AppendToOutput($"Execution finished after {stopWatch.Elapsed}");
                     Dispatcher.UIThread.Post(() =>
                     {
