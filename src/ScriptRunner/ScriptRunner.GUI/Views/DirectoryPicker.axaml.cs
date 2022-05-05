@@ -35,7 +35,7 @@ namespace ScriptRunner.GUI.Views
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var dialog = new OpenFolderDialog();
-                if (string.IsNullOrWhiteSpace(DirPath))
+                if (string.IsNullOrWhiteSpace(DirPath) == false)
                 {
                     dialog.Directory = DirPath;
                 }
