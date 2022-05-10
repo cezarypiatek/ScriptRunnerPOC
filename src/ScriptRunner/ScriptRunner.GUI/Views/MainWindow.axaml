@@ -3,33 +3,59 @@
         xmlns:vm="using:ScriptRunner.GUI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="650"
         x:Class="ScriptRunner.GUI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="ScriptRunner.GUI">
+        Title="ScriptRunner.GUI"
+        FontFamily="Segoe UI Variable">
 
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <DockPanel LastChildFill="True">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
 
-        <!-- List of available actions, selectable -->
-        <StackPanel DockPanel.Dock="Left" Width="200">
-            <Label>Actions:</Label>
-            <ListBox Items="{Binding Actions}" SelectedItem="{Binding SelectedActionName, Mode=TwoWay}" ></ListBox>
-        </StackPanel>
+        <DockPanel Grid.Column="0" Classes="actionsMenu">
+            <!-- List of available actions, selectable -->
+            <StackPanel DockPanel.Dock="Top" Width="200">
+                <ListBox Items="{Binding Actions}"
+                         SelectedItem="{Binding SelectedActionName, Mode=TwoWay}" />
+            </StackPanel>
+
+			<!-- Settings button, for future use :D -->
+            <!--<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
+                <Button i:Attached.Icon="fas fa-cog">
+                </Button>
+            </StackPanel>-->
+        </DockPanel>
+
 
         <!-- Below instead of stack panel will be Reactive UI View Host displaying current action props-->
-        <StackPanel DockPanel.Dock="Right">
-            <ItemsControl Items="{Binding ActionPanelsCollection}"></ItemsControl>
-            <StackPanel Orientation="Horizontal">
-                <Button Command="{Binding RunScript}" IsEnabled="{Binding ExecutionPending, Converter={x:Static BoolConverters.Not}}">Run</Button>
-                <Button Command="{Binding CancelExecution}" IsEnabled="{Binding ExecutionPending}">Cancel</Button>
-                <ProgressBar Height="30" Margin="10,0" IsIndeterminate="{Binding ExecutionPending}"></ProgressBar>
+        <ScrollViewer Grid.Column="1">
+            <StackPanel Margin="20, 10">
+                <ItemsControl Items="{Binding ActionPanelsCollection}"></ItemsControl>
+                
+                <StackPanel Orientation="Horizontal" Margin="0, 20, 0 , 5">
+                    <Button Width="60" HorizontalContentAlignment="Center" 
+                            Command="{Binding RunScript}"
+                            IsEnabled="{Binding ExecutionPending, Converter={x:Static BoolConverters.Not}}">
+                        Run
+                    </Button>
+                    <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0"
+                             Command="{Binding CancelExecution}" IsEnabled="{Binding ExecutionPending}">Cancel</Button>
+                    <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
+                </StackPanel>
+                <TextBox Classes="consoleOutput" Text="{Binding CurrentRunOutput, Mode=OneWay}" CaretIndex="{Binding OutputIndex, Mode=OneWay}" />
             </StackPanel>
-            <TextBox IsReadOnly="True"  AcceptsReturn="True" TextWrapping="Wrap" Height="200" Margin="0, 10, 10, 0" Text="{Binding CurrentRunOutput, Mode=OneWay}"  CaretIndex="{Binding OutputIndex, Mode=OneWay}" ></TextBox>
-        </StackPanel>
-    </DockPanel>
+        </ScrollViewer>
+    </Grid>
 
 </Window>

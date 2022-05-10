@@ -13,6 +13,7 @@ using CliWrap;
 using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.ScriptReader;
+using ScriptRunner.GUI.Views;
 
 namespace ScriptRunner.GUI.ViewModels;
 
@@ -89,12 +90,11 @@ public class MainWindowViewModel : ViewModelBase
         // Action panel could be used by creating custom user control with Name, description etc.
         // Just ParamsPanel should be generated dynamically
         var actionPanel = new StackPanel();
-        actionPanel.Children.AddRange(new List<IControl>
+        actionPanel.Children.Add(new ActionPanelControl
         {
-            new Label {Content = action.Name},
-            new TextBlock {Text = action.Description},
-            new TextBlock {Text = action.Command},
-            new Label {Content = "Parameters: "}
+            ActionName = action.Name, 
+            ActionDescription = action.Description,
+            ActionCommand = action.Command
         });
 
         // Create IPanel with controls for all parameters

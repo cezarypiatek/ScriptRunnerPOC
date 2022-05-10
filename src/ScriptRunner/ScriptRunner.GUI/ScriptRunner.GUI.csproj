@@ -12,6 +12,12 @@
     <AvaloniaResource Include="Assets\**" />
     <Folder Include="ScriptReader\" />
     <None Remove=".gitignore" />
+    <None Remove="Themes\DarkTheme.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaXaml Include="Themes\DarkTheme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
   </ItemGroup>
   <ItemGroup>
     <!--This helps with theme dll-s trimming.
@@ -27,6 +33,8 @@
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.13" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.13" />
     <PackageReference Include="CliWrap" Version="3.4.4" />
+    <PackageReference Include="Projektanker.Icons.Avalonia" Version="4.4.0" />
+    <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="4.4.0" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
   </ItemGroup>
   <ItemGroup>

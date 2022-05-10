@@ -1,0 +1,130 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:ScriptRunner.GUI.Views">
+    <Design.PreviewWith>
+        <StackPanel>
+            <TextBlock Classes="h1" Text="Heading 1"></TextBlock>
+            <TextBlock Classes="h2" Text="Heading 2"></TextBlock>
+
+            <StackPanel Classes="paramsPanel">
+                <StackPanel Classes="paramRow">
+                    <Label>TextBox: </Label>
+                    <TextBox>TextBox field</TextBox>
+                </StackPanel>
+
+                <StackPanel Classes="paramRow">
+                    <Label>Password: </Label>
+                    <TextBox PasswordChar="*">TextBox field</TextBox>
+                </StackPanel>
+
+                <StackPanel Classes="paramRow">
+                    <Label>ComboBox: </Label>
+                    <ComboBox>
+                        <ComboBoxItem>Item 1</ComboBoxItem>
+                        <ComboBoxItem IsSelected="True">Item 2</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Classes="paramRow">
+                    <Label>Multiselect listbox: </Label>
+                    <ListBox>
+                        <ListBoxItem>Item 1</ListBoxItem>
+                        <ListBoxItem>Item 2</ListBoxItem>
+                    </ListBox>
+                </StackPanel>
+
+                <StackPanel Classes="paramRow">
+                    <Label>Date picker: </Label>
+                    <DatePicker></DatePicker>
+                </StackPanel>
+
+                <StackPanel Classes="paramRow">
+                    <Label>Checkbox: </Label>
+                    <CheckBox></CheckBox>
+                </StackPanel>
+
+                <StackPanel Classes="paramRow">
+                    <Label>Multiline textbox: </Label>
+                    <TextBox Height="60" AcceptsReturn="True">TextBox field</TextBox>
+                </StackPanel>
+
+                <StackPanel Classes="paramRow">
+                    <Label>File picker: </Label>
+                    <views:FilePicker></views:FilePicker>
+                </StackPanel>
+
+                <StackPanel Classes="paramRow">
+                    <Label>Directory picker: </Label>
+                    <views:DirectoryPicker></views:DirectoryPicker>
+                </StackPanel>
+            </StackPanel>
+
+        </StackPanel>
+    </Design.PreviewWith>
+
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+    <Style Selector="TextBlock.h2">
+        <Setter Property="FontSize" Value="18" />
+    </Style>
+
+
+    <Style Selector="Border.codeblock">
+        <Setter Property="Background" Value="#474747" />
+        <Setter Property="BorderBrush" Value="#6e6e6e" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="5" />
+    </Style>
+
+    <Style Selector="Border.codeblock TextBlock">
+        <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="Foreground" Value="#dadada" />
+    </Style>
+
+    <Style Selector="StackPanel.paramsPanel">
+        <Setter Property="Margin" Value="0, 10"></Setter>
+    </Style>
+
+    <Style Selector="StackPanel.paramRow">
+        <Setter Property="Margin" Value="2,4"></Setter>
+        <Setter Property="Orientation" Value="Horizontal"></Setter>
+    </Style>
+
+    <Style Selector="StackPanel.paramRow Label">
+        <Setter Property="MinWidth" Value="300"></Setter>
+    </Style>
+
+    <Style Selector="StackPanel.paramRow TextBox">
+        <Setter Property="MinWidth" Value="300" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ComboBox">
+        <Setter Property="MinWidth" Value="300" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ListBox">
+        <Setter Property="MinWidth" Value="300" />
+    </Style>
+
+    <Style Selector="DockPanel.actionsMenu">
+        <Setter Property="Background" Value="#2b2b2b" />
+    </Style>
+
+    <Style Selector="ProgressBar.executionProgressBar">
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Margin" Value="20 ,0" />
+	</Style>
+
+    <Style Selector="TextBox.consoleOutput">
+        <Setter Property="IsReadOnly" Value="True"></Setter>
+        <Setter Property="AcceptsReturn" Value="True" />
+		<Setter Property="TextWrapping" Value="Wrap" />
+		<Setter Property="Height" Value="200" />
+		<Setter Property="Margin" Value="0, 10, 10, 0" />
+        <Setter Property="FontFamily" Value="Consolas" />
+	</Style>
+
+</Styles>

@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
+using Projektanker.Icons.Avalonia;
+using Projektanker.Icons.Avalonia.FontAwesome;
 
 namespace ScriptRunner.GUI;
 
@@ -18,5 +20,7 @@ internal class Program
         => AppBuilder.Configure<App>()
             .UseReactiveUI()
             .UsePlatformDetect()
+            .WithIcons(container => container
+                .Register<FontAwesomeIconProvider>())
             .LogToTrace();
 }
