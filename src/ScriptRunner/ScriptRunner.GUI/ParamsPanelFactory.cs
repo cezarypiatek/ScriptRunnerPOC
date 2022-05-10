@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -13,7 +14,12 @@ public class ParamsPanelFactory
 {
     public ParamsPanel Create(IEnumerable<ScriptParam> parameters)
     {
-        var paramsPanel = new StackPanel();
+        var paramsPanel = new StackPanel
+        {
+            Classes = new Classes("paramsPanel"),
+            Children = { new TextBlock { Text = "Parameters: ", Classes = new Classes("h2") } }
+        };
+
         var controlRecords = new List<IControlRecord>();
 
         foreach (var param in parameters)
@@ -22,7 +28,6 @@ public class ParamsPanelFactory
             controlRecord.Name = param.Name;
             var actionPanel = new StackPanel
             {
-                Orientation = Orientation.Horizontal,
                 Children =
                 {
                     new Label
@@ -30,7 +35,8 @@ public class ParamsPanelFactory
                         Content = string.IsNullOrWhiteSpace(param.Description)? param.Name: param.Description
                     },
                     controlRecord.Control
-                }
+                },
+                Classes = new Classes("paramRow")
             };
             
             paramsPanel.Children.Add(actionPanel);
@@ -51,7 +57,7 @@ public class ParamsPanelFactory
             case PromptType.Text:
                 return new TextControl
                 {
-                    Control = new TextBox()
+                    Control = new TextBox
                     {
                         Text = p.Default
                     }
@@ -90,7 +96,7 @@ public class ParamsPanelFactory
             case PromptType.Datepicker:
                 return new DatePickerControl
                 {
-                    Control = new DatePicker()
+                    Control = new DatePicker
                     {
                         SelectedDate = string.IsNullOrWhiteSpace(p.Default)?null: DateTimeOffset.Parse(p.Default),
                         YearVisible = p.GetPromptSettings("yearVisible", bool.Parse, true),
@@ -117,7 +123,7 @@ public class ParamsPanelFactory
                     {
                         TextWrapping = TextWrapping.Wrap,
                         AcceptsReturn = true,
-                        Height = 60,
+                        Height = 100,
                         Text = p.Default
                     }
                 };
@@ -132,7 +138,7 @@ public class ParamsPanelFactory
             case PromptType.DirectoryPicker:
                 return new DirectoryPickerControl
                 {
-                    Control = new DirectoryPicker()
+                    Control = new DirectoryPicker
                     {
                         DirPath = p.Default
                     }

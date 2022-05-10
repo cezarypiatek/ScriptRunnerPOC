@@ -1,0 +1,41 @@
+﻿<Style
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+
+    <Style.Resources>
+
+        <!-- Colors -->
+        <Color x:Key="DarkBackground">#202020</Color>
+
+        <!-- Test colors -->
+        <Color x:Key="Green">#00ff00</Color>
+        <Color x:Key="Red">#ff0000</Color>
+        <Color x:Key="Blue">#0000ff</Color>
+
+
+        <!-- Window background -->
+        <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="{DynamicResource DarkBackground}" />
+
+        <!-- Active list item --><!--
+        <SolidColorBrush x:Key="SystemControlHighlightListAccentLowBrush" Color="{DynamicResource DarkHighlight}" />
+
+        --><!-- hover active list item --><!--
+        <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumBrush" Color="{DynamicResource DarkHighlight}" />
+
+        --><!-- Pressed list item --><!--
+        <SolidColorBrush x:Key="SystemControlHighlightListAccentHighBrush" Color="{DynamicResource DarkHighlight}" />
+
+        --><!-- hover inactive list item --><!--
+        <SolidColorBrush x:Key="SystemControlHighlightListLowBrush" Color="{DynamicResource DarkHighlight}" />
+
+        --><!-- Listbox background --><!--
+        <SolidColorBrush x:Key="SystemControlBackgroundChromeMediumLowBrush" Color="{DynamicResource DarkBackground}" />
+        
+        --><!-- Checkbox checked background --><!--
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="{DynamicResource DarkHighlight}" />-->
+
+
+    </Style.Resources>
+
+</Style>
