@@ -25,6 +25,20 @@
                     "workingDirectory": {
                         "type": "string"
                     },
+                    "predefinedArgumentSets":{
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "description":{
+                                    "type":"string"
+                                },
+                                "arguments":{
+                                    "type":"object"
+                                }
+                            }
+                        }
+                    },
                     "params": {
                         "type": "array",
                         "items": {
