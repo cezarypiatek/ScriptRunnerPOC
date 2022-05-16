@@ -154,8 +154,12 @@ public class MainWindowViewModel : ViewModelBase
                 }
                 catch (Exception e)
                 {
+                    AppendToOutput("---------------------------------------------");
                     AppendToOutput(e.Message);
-                    AppendToOutput(e.StackTrace);
+                    if (e is not OperationCanceledException)
+                    {
+                        AppendToOutput(e.StackTrace);
+                    }
                 }
                 finally
                 {
