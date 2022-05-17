@@ -1,24 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Threading;
-using CliWrap;
 using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.ScriptReader;
-using ScriptRunner.GUI.Views;
 
 namespace ScriptRunner.GUI.ViewModels;
-
-
 
 public class MainWindowViewModel : ViewModelBase
 {
@@ -40,6 +28,14 @@ public class MainWindowViewModel : ViewModelBase
     {
         get => _actions;
         private set => this.RaiseAndSetIfChanged(ref _actions, value);
+    }
+
+    public ObservableCollection<RunningJobViewModel> RunningJobs { get; set; } = new();
+
+    public RunningJobViewModel SelectedRunningJob
+    {
+        get => _selectedRunningJob;
+        set => this.RaiseAndSetIfChanged(ref _selectedRunningJob, value);
     }
 
     public ScriptConfig SelectedAction
@@ -64,10 +60,8 @@ public class MainWindowViewModel : ViewModelBase
     private IEnumerable<IControlRecord> _controlRecords;
 
     private ActionsConfig config;
-    private string _currentRunOutput;
-    private int _outputIndex;
+    
     private ScriptConfig _selectedAction;
-    private bool _executionPending;
     private ArgumentSet _selectedArgumentSet;
 
     private void BuildUi()
@@ -102,7 +96,7 @@ public class MainWindowViewModel : ViewModelBase
     private void RenderParameterForm(ScriptConfig action, Dictionary<string, string> parameterValues)
     {
         ActionParametersPanel.Clear();
-        CurrentRunOutput = string.Empty;
+
 
         // Action panel could be used by creating custom user control with Description, description etc.
         // Just ParamsPanel should be generated dynamically
@@ -121,6 +115,9 @@ public class MainWindowViewModel : ViewModelBase
         _controlRecords = paramsPanel.ControlRecords;
     }
 
+    private int jobCounter;
+    private RunningJobViewModel _selectedRunningJob;
+
     public void RunScript()
     {
         if (SelectedAction is { } selectedAction)
@@ -138,54 +135,20 @@ public class MainWindowViewModel : ViewModelBase
                 maskedArgs = maskedArgs.Replace($"{{{controlRecord.Name}}}", controlRecord.MaskingRequired? "*****": controlValue);
             }
 
-
-            CurrentRunOutput = "";
-            ExecutionPending = true;
-            Task.Run(async () =>
+            var job = new RunningJobViewModel()
             {
-                var stopWatch = new Stopwatch();
-                stopWatch.Start();
-                try
-                {
-                    AppendToOutput("---------------------------------------------");
-                    AppendToOutput("Execute the command:");
-                    AppendToOutput($"{commandPath} {maskedArgs}");
-                    AppendToOutput("---------------------------------------------");
-                    ExecutionCancellation = new CancellationTokenSource();
-                    
-                    await Cli.Wrap(commandPath)
-                        .WithArguments(args)
-                        //TODO: Working dir should be read from the config with the fallback set to the config file dir
-                        .WithWorkingDirectory(selectedAction.WorkingDirectory ?? "Scripts/")
-                        .WithStandardOutputPipe(PipeTarget.ToDelegate(AppendToOutput))
-                        .WithStandardErrorPipe(PipeTarget.ToDelegate(AppendToOutput))
-                        .WithValidation(CommandResultValidation.None)
-                        .ExecuteAsync(ExecutionCancellation.Token);
-                    
-                }
-                catch (Exception e)
-                {
-                    AppendToOutput("---------------------------------------------");
-                    AppendToOutput(e.Message);
-                    if (e is not OperationCanceledException)
-                    {
-                        AppendToOutput(e.StackTrace);
-                    }
-                }
-                finally
-                {
-                    stopWatch.Stop();
-                    AppendToOutput("---------------------------------------------");
-                    AppendToOutput($"Execution finished after {stopWatch.Elapsed}");
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        ExecutionPending = false;
-                    });
-                }
-            });
+                Tile = "#"+jobCounter++,
+                ExecutedCommand = $"{commandPath} {maskedArgs}"
+            };
+            this.RunningJobs.Add(job);
+            SelectedRunningJob = job;
+            SelectedRunningJob = job;
+            job.RunJob(commandPath, maskedArgs, args, selectedAction);
         }
         
     }
+
+    
 
     private static string[] SplitCommand(string command)
     {
@@ -209,39 +172,5 @@ public class MainWindowViewModel : ViewModelBase
         return command.Split(' ', 2);
     }
 
-    public void CancelExecution() => ExecutionCancellation.Cancel();
-
-
-
-    private void AppendToOutput(string? s)
-    {
-        if (s!=null)
-        {
-            Dispatcher.UIThread.Post(() =>
-            {
-                CurrentRunOutput += s + Environment.NewLine;
-                OutputIndex = CurrentRunOutput.Length;
-            });
-        }
-    }
-
-    public string CurrentRunOutput
-    {
-        get => _currentRunOutput;
-        set => this.RaiseAndSetIfChanged(ref _currentRunOutput, value);
-    }
-
-    public int OutputIndex
-    {
-        get => _outputIndex;
-        set => this.RaiseAndSetIfChanged(ref _outputIndex, value);
-    }
-
-    public bool ExecutionPending
-    {
-        get => _executionPending;
-        set => this.RaiseAndSetIfChanged(ref _executionPending, value);
-    }
-
-    public CancellationTokenSource ExecutionCancellation { get; set; }
+    
 }

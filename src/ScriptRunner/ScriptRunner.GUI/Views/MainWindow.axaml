@@ -14,13 +14,17 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid>
+    <Grid >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"></ColumnDefinition>
+            <ColumnDefinition Width="4"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
+            
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="4"></RowDefinition>
+            <RowDefinition Height="300" ></RowDefinition>
         </Grid.RowDefinitions>
 
         <DockPanel Grid.Column="0" Classes="actionsMenu">
@@ -42,9 +46,9 @@
             </StackPanel>-->
         </DockPanel>
 
-
+        <GridSplitter Grid.Column="1" Grid.Row="0" ResizeDirection="Columns"></GridSplitter>
         <!-- Below instead of stack panel will be Reactive UI View Host displaying current action props-->
-        <ScrollViewer Grid.Column="1">
+        <ScrollViewer Grid.Column="2">
             <StackPanel Margin="20, 10">
                 <StackPanel Orientation="Vertical">
 
@@ -74,16 +78,42 @@
                 <StackPanel Orientation="Horizontal" Margin="0, 20, 0 , 5">
                     <Button Width="60" HorizontalContentAlignment="Center" 
                             Command="{Binding RunScript}"
-                            IsEnabled="{Binding ExecutionPending, Converter={x:Static BoolConverters.Not}}">
+                            >
                         Run
                     </Button>
-                    <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0"
-                             Command="{Binding CancelExecution}" IsEnabled="{Binding ExecutionPending}">Cancel</Button>
-                    <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
+                    
                 </StackPanel>
-                <TextBox Classes="consoleOutput" Text="{Binding CurrentRunOutput, Mode=OneWay}" CaretIndex="{Binding OutputIndex, Mode=OneWay}" />
+                
             </StackPanel>
         </ScrollViewer>
+        <GridSplitter Grid.Row="1" ResizeDirection="Rows" Grid.ColumnSpan="3"></GridSplitter>
+        <TabControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Items="{Binding RunningJobs}" BorderBrush="#828282" BorderThickness="0,1,0,0" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
+          <TabControl.ItemTemplate>
+              <DataTemplate>
+                  <TextBlock Text="{Binding Tile}" />
+              </DataTemplate>
+          </TabControl.ItemTemplate>
+          <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBox  Text="{Binding ExecutedCommand}"  Background="#474747" CornerRadius="0" BorderBrush="#6e6e6e" Padding="5" Margin="10" BorderThickness="1" IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Stretch"></TextBox>
+                        <TextBox Grid.Row="1" Classes="consoleOutput" Text="{Binding CurrentRunOutput, Mode=OneWay}" CaretIndex="{Binding OutputIndex, Mode=OneWay}" />
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,10">
+                            <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0"
+                                     Command="{Binding CancelExecution}" IsEnabled="{Binding ExecutionPending}">Cancel</Button>
+                            <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
+                        </StackPanel>
+                    </Grid>
+                    
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+
+        </TabControl>
     </Grid>
 
 </Window>

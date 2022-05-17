@@ -122,7 +122,6 @@
         <Setter Property="IsReadOnly" Value="True"></Setter>
         <Setter Property="AcceptsReturn" Value="True" />
 		<Setter Property="TextWrapping" Value="Wrap" />
-		<Setter Property="Height" Value="200" />
 		<Setter Property="Margin" Value="0, 10, 10, 0" />
         <Setter Property="FontFamily" Value="Consolas" />
 	</Style>
