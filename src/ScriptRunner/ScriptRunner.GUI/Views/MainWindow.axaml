@@ -26,8 +26,13 @@
         <DockPanel Grid.Column="0" Classes="actionsMenu">
             <!-- List of available actions, selectable -->
             <StackPanel DockPanel.Dock="Top" Width="200">
-                <ListBox Items="{Binding Actions}"
-                         SelectedItem="{Binding SelectedActionName, Mode=TwoWay}" />
+                <ListBox Items="{Binding Actions}" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
+                    <ListBox.DataTemplates>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}"></TextBlock>
+                        </DataTemplate>
+                    </ListBox.DataTemplates>
+                </ListBox>
             </StackPanel>
 
 			<!-- Settings button, for future use :D -->
@@ -41,7 +46,30 @@
         <!-- Below instead of stack panel will be Reactive UI View Host displaying current action props-->
         <ScrollViewer Grid.Column="1">
             <StackPanel Margin="20, 10">
-                <ItemsControl Items="{Binding ActionPanelsCollection}"></ItemsControl>
+                <StackPanel Orientation="Vertical">
+
+                    <TextBlock Classes="h1" Margin="10"
+                               Text="{Binding SelectedAction.Name}" />
+
+                    <TextBlock Margin="10, 0"
+                               Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
+
+                    <TextBox Text="{Binding SelectedAction.Command}" Background="#474747" CornerRadius="0" BorderBrush="#6e6e6e" Padding="5" Margin="10" BorderThickness="1" IsReadOnly="True" TextWrapping="Wrap"></TextBox>
+
+                </StackPanel>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Classes="h2">Parameters: </TextBlock>
+                        <ComboBox Margin="20,0,0,5" Items="{Binding SelectedAction.PredefinedArgumentSets}" SelectedItem="{Binding SelectedArgumentSet, Mode=TwoWay}" MinWidth="200">
+                            <ComboBox.DataTemplates>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Description}"></TextBlock>
+                                </DataTemplate>
+                            </ComboBox.DataTemplates>
+                        </ComboBox>
+                    </StackPanel>
+                    <ItemsControl Items="{Binding ActionParametersPanel}"></ItemsControl>
+                </StackPanel>
                 
                 <StackPanel Orientation="Horizontal" Margin="0, 20, 0 , 5">
                     <Button Width="60" HorizontalContentAlignment="Center" 

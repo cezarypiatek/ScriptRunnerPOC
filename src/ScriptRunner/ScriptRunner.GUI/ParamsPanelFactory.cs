@@ -12,19 +12,19 @@ namespace ScriptRunner.GUI;
 
 public class ParamsPanelFactory
 {
-    public ParamsPanel Create(IEnumerable<ScriptParam> parameters)
+    public ParamsPanel Create(IEnumerable<ScriptParam> parameters, Dictionary<string, string> values)
     {
         var paramsPanel = new StackPanel
         {
             Classes = new Classes("paramsPanel"),
-            Children = { new TextBlock { Text = "Parameters: ", Classes = new Classes("h2") } }
         };
 
         var controlRecords = new List<IControlRecord>();
 
         foreach (var param in parameters)
         {
-            var controlRecord = CreateControlRecord(param);
+            values.TryGetValue(param.Name, out var value);
+            var controlRecord = CreateControlRecord(param, value);
             controlRecord.Name = param.Name;
             var actionPanel = new StackPanel
             {
@@ -50,7 +50,7 @@ public class ParamsPanelFactory
         };
     }
 
-    private static IControlRecord CreateControlRecord(ScriptParam p)
+    private static IControlRecord CreateControlRecord(ScriptParam p, string? value)
     {
         switch (p.Prompt)
         {
@@ -59,7 +59,7 @@ public class ParamsPanelFactory
                 {
                     Control = new TextBox
                     {
-                        Text = p.Default
+                        Text = value
                     }
                 };
             case PromptType.Password:
@@ -68,7 +68,7 @@ public class ParamsPanelFactory
                     Control = new TextBox
                     {
                         PasswordChar = '*',
-                        Text = p.Default
+                        Text = value
                     },
                     MaskingRequired = true
                 };
@@ -78,7 +78,7 @@ public class ParamsPanelFactory
                     Control = new ComboBox
                     { 
                         Items = p.GetPromptSettings("options", out var options) ? options.Split(","):Array.Empty<string>(),
-                        SelectedItem = p.Default
+                        SelectedItem = value
                     }
                 };
             case PromptType.Multiselect:
@@ -89,7 +89,7 @@ public class ParamsPanelFactory
                     {
                         SelectionMode = SelectionMode.Multiple,
                         Items = p.GetPromptSettings("options", out var multiSelectOptions) ? multiSelectOptions.Split(delimiter) : Array.Empty<string>(),
-                        SelectedItems = new AvaloniaList<string>((p.Default ?? string.Empty).Split(delimiter))
+                        SelectedItems = new AvaloniaList<string>((value ?? string.Empty).Split(delimiter))
                     },
                     Delimiter = delimiter
                 };
@@ -98,7 +98,7 @@ public class ParamsPanelFactory
                 {
                     Control = new DatePicker
                     {
-                        SelectedDate = string.IsNullOrWhiteSpace(p.Default)?null: DateTimeOffset.Parse(p.Default),
+                        SelectedDate = string.IsNullOrWhiteSpace(value)?null: DateTimeOffset.Parse(value),
                         YearVisible = p.GetPromptSettings("yearVisible", bool.Parse, true),
                         MonthVisible = p.GetPromptSettings("monthVisible", bool.Parse, true),
                         DayVisible = p.GetPromptSettings("dayVisible", bool.Parse, true),
@@ -111,7 +111,7 @@ public class ParamsPanelFactory
                 {
                     Control = new CheckBox
                     {
-                        IsChecked = string.IsNullOrWhiteSpace(p.Default) == false && p.Default == checkedValueText
+                        IsChecked = string.IsNullOrWhiteSpace(value) == false && value == checkedValueText
                     },
                     CheckedValue = checkedValueText,
                     UncheckedValue =  p.GetPromptSettings("uncheckedValue", out var uncheckedValue)? uncheckedValue: "false",
@@ -124,7 +124,7 @@ public class ParamsPanelFactory
                         TextWrapping = TextWrapping.Wrap,
                         AcceptsReturn = true,
                         Height = 100,
-                        Text = p.Default
+                        Text = value
                     }
                 };
             case PromptType.FilePicker:
@@ -132,7 +132,7 @@ public class ParamsPanelFactory
                 {
                     Control = new FilePicker
                     {
-                        FilePath = p.Default
+                        FilePath = value
                     }
                 };
             case PromptType.DirectoryPicker:
@@ -140,7 +140,7 @@ public class ParamsPanelFactory
                 {
                     Control = new DirectoryPicker
                     {
-                        DirPath = p.Default
+                        DirPath = value
                     }
                 };
             default:

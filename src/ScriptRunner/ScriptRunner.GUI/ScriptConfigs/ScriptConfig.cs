@@ -12,8 +12,14 @@ public class ScriptConfig
     public string Command { get; set; }
     public string? WorkingDirectory { get; set; }
     public List<ScriptParam> Params { get; set; } = new();
-}
+    public List<ArgumentSet> PredefinedArgumentSets { get; set; } = new();
 
+}
+public class ArgumentSet
+{
+    public string Description { get; set; }
+    public Dictionary<string, string> Arguments { get; set; } = new();
+}
 public class ScriptParam
 {
     public string Name { get; set; }
