@@ -143,6 +143,16 @@ public class ParamsPanelFactory
                         DirPath = value
                     }
                 };
+            case PromptType.Numeric:
+                return new NumericControl
+                {
+                    Control = new NumericUpDown{
+                        Value = double.TryParse(value, out var valueDouble)? valueDouble: 0,
+                        Minimum = p.GetPromptSettings("min", out var minValue) && double.TryParse(minValue, out var mindDouble)? mindDouble : double.MinValue,
+                        Maximum = p.GetPromptSettings("max", out var maxValue) && double.TryParse(maxValue, out var maxDouble)? maxDouble: double.MaxValue,
+                        Increment = p.GetPromptSettings("step", out var stepValue) && double.TryParse(stepValue, out var stepDouble)? stepDouble: 1.0,
+                    }
+                };
             default:
                 throw new ArgumentOutOfRangeException(nameof(p.Prompt), p.Prompt, null);
         }
@@ -261,6 +271,19 @@ public class DirectoryPickerControl : IControlRecord
     public string GetFormattedValue()
     {
         return ((DirectoryPicker)Control).DirPath;
+    }
+
+    public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
+}
+
+public class NumericControl : IControlRecord
+{
+    public IControl Control { get; set; }
+
+    public string GetFormattedValue()
+    {
+        return ((NumericUpDown)Control).Text;
     }
 
     public string Name { get; set; }

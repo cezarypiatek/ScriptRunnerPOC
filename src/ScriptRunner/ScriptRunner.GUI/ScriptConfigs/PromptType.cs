@@ -10,5 +10,6 @@ public enum PromptType
     Checkbox,
     Multilinetext,
     FilePicker,
-    DirectoryPicker
+    DirectoryPicker,
+    Numeric
 }

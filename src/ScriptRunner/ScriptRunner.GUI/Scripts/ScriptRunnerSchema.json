@@ -65,7 +65,8 @@
                                         "multiSelect",
                                         "filePicker",
                                         "directoryPicker",
-                                        "datePicker"
+                                        "datePicker",
+                                        "numeric"
                                     ]
                                 }
                             },
@@ -144,6 +145,28 @@
                                                     "type": "string"
                                                 },
                                                 "uncheckedValue": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "const": "numeric"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "properties": {
+                                                "min": {
+                                                    "type": "string"
+                                                },
+                                                "max": {
+                                                    "type": "string"
+                                                },
+                                                "step": {
                                                     "type": "string"
                                                 }
                                             }

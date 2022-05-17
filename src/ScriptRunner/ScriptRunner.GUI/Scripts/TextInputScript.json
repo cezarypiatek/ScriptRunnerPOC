@@ -11,6 +11,20 @@
           "prompt": "text",
           "default": "www.wp.pl"
         }
+      ],
+      "predefinedArgumentSets": [
+        {
+          "description": "Ping Github",
+          "arguments": {
+            "address": "wwww.github.com"
+          }
+        },
+        {
+          "description": "Ping Twitter",
+          "arguments": {
+            "address": "wwww.twitter.com"
+          }
+        }
       ]
     },{
       "name": "AllControlsTest",
@@ -94,6 +108,17 @@
           "description": "Directory parameter",
           "default": "c:\\Windows\\",
           "prompt": "directoryPicker"
+        },
+        {
+          "name": "p11",
+          "description": "Numeric parameter",
+          "default": "7",
+          "prompt": "numeric",
+          "promptSettings": {
+            "min": "5",
+            "max": "15",
+            "step": "2"
+          }
         }
       ]
     }

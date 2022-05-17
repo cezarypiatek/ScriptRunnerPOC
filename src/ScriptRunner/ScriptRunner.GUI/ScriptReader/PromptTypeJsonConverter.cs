@@ -20,6 +20,7 @@ public class PromptTypeJsonConverter : JsonConverter<PromptType>
             "multilinetext" => PromptType.Multilinetext,
             "filepicker" => PromptType.FilePicker,
             "directorypicker" => PromptType.DirectoryPicker,
+            "numeric" => PromptType.Numeric,
             _ => PromptType.Text
         };
     }
