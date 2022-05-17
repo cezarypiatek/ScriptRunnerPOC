@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -124,8 +125,8 @@ public class MainWindowViewModel : ViewModelBase
     {
         if (SelectedAction is { } selectedAction)
         {
-            //TODO: handle whitespaces in the path
-            var parts = selectedAction.Command.Split(' ', 2);
+            var command = selectedAction.Command;
+            var parts = SplitCommand(command);
             var (commandPath, args) = (parts.Length > 0 ? parts[0] : "", parts.Length > 1 ? parts[1] : "");
             var maskedArgs = args;
 
@@ -184,6 +185,28 @@ public class MainWindowViewModel : ViewModelBase
             });
         }
         
+    }
+
+    private static string[] SplitCommand(string command)
+    {
+        command = command.Trim();
+
+        if (string.IsNullOrWhiteSpace(command))
+        {
+            return new[] {string.Empty, string.Empty};
+        }
+
+        if (command.StartsWith('\''))
+        {
+            return command.TrimStart('\'').Split('\'', 2);
+        }
+        
+        if (command.StartsWith('\"'))
+        {
+            return command.TrimStart('\"').Split('\"', 2);
+        }
+
+        return command.Split(' ', 2);
     }
 
     public void CancelExecution() => ExecutionCancellation.Cancel();
