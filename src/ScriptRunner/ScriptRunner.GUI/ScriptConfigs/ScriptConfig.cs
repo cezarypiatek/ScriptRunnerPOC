@@ -18,6 +18,7 @@ public class ScriptConfig
 public class ArgumentSet
 {
     public string Description { get; set; }
+    public bool FallbackToDefault { get; set; }
     public Dictionary<string, string> Arguments { get; set; } = new();
 }
 public class ScriptParam

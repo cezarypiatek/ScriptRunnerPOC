@@ -33,6 +33,9 @@
                                 "description":{
                                     "type":"string"
                                 },
+                                "fallbackToDefault":{
+                                    "type":"boolean"
+                                },
                                 "arguments":{
                                     "type":"object"
                                 }

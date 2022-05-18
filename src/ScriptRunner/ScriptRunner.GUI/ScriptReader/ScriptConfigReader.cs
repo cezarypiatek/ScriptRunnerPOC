@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using ScriptRunner.GUI.ScriptConfigs;
 
@@ -28,6 +29,18 @@ public static class ScriptConfigReader
             {
                 defaultSet.Arguments[param.Name] = param.Default;
             }
+
+            foreach (var set in action.PredefinedArgumentSets.Where(x=>x.FallbackToDefault))
+            {
+                foreach (var (key,val) in defaultSet.Arguments)
+                {
+                    if (set.Arguments.ContainsKey(key) == false)
+                    {
+                        set.Arguments[key] = val;
+                    }
+                }
+            }
+
             action.PredefinedArgumentSets.Insert(0, defaultSet);
         }
 
