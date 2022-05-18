@@ -143,7 +143,7 @@ public class MainWindowViewModel : ViewModelBase
             this.RunningJobs.Add(job);
             SelectedRunningJob = job;
             SelectedRunningJob = job;
-            job.RunJob(commandPath, maskedArgs, args, selectedAction);
+            job.RunJob(commandPath, args, selectedAction);
         }
         
     }

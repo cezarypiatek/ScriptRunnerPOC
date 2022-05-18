@@ -16,7 +16,7 @@ public class RunningJobViewModel : ViewModelBase
     public string ExecutedCommand { get; set; }
     public void CancelExecution() => ExecutionCancellation.Cancel();
 
-    public void RunJob(string commandPath, string maskedArgs, string args, ScriptConfig selectedAction)
+    public void RunJob(string commandPath, string args, ScriptConfig selectedAction)
     {
         CurrentRunOutput = "";
         ExecutionPending = true;
@@ -26,10 +26,6 @@ public class RunningJobViewModel : ViewModelBase
             stopWatch.Start();
             try
             {
-                AppendToOutput("---------------------------------------------");
-                AppendToOutput("Execute the command:");
-                AppendToOutput($"{commandPath} {maskedArgs}");
-                AppendToOutput("---------------------------------------------");
                 ExecutionCancellation = new CancellationTokenSource();
 
                 await Cli.Wrap(commandPath)
