@@ -29,7 +29,7 @@
 
         <DockPanel Grid.Column="0" Classes="actionsMenu">
             <!-- List of available actions, selectable -->
-            <StackPanel DockPanel.Dock="Top" Width="200">
+            <StackPanel DockPanel.Dock="Top" >
                 <ListBox Items="{Binding Actions}" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
                     <ListBox.DataTemplates>
                         <DataTemplate>
@@ -86,8 +86,8 @@
                 
             </StackPanel>
         </ScrollViewer>
-        <GridSplitter Grid.Row="1" ResizeDirection="Rows" Grid.ColumnSpan="3"></GridSplitter>
-        <TabControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Items="{Binding RunningJobs}" BorderBrush="#828282" BorderThickness="0,1,0,0" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
+        <GridSplitter Grid.Row="1" ResizeDirection="Rows" Grid.ColumnSpan="3" BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
+        <TabControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Items="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
           <TabControl.ItemTemplate>
               <DataTemplate>
                   <TextBlock Text="{Binding Tile}" />
