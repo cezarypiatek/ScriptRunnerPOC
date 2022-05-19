@@ -35,6 +35,7 @@ public class RunningJobViewModel : ViewModelBase
                     .WithStandardOutputPipe(PipeTarget.ToDelegate(AppendToOutput))
                     .WithStandardErrorPipe(PipeTarget.ToDelegate(AppendToOutput))
                     .WithValidation(CommandResultValidation.None)
+                   
                     .ExecuteAsync(ExecutionCancellation.Token);
             }
             catch (Exception e)

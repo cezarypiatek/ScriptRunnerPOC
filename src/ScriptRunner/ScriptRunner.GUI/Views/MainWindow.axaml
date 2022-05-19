@@ -14,20 +14,20 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid >
+    <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"></ColumnDefinition>
+            <ColumnDefinition Width="200" ></ColumnDefinition>
             <ColumnDefinition Width="4"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
             
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="4"></RowDefinition>
+            <RowDefinition Height="3"></RowDefinition>
             <RowDefinition Height="300" ></RowDefinition>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Column="0" Classes="actionsMenu">
+        <DockPanel Grid.Column="0" Classes="actionsMenu" >
             <!-- List of available actions, selectable -->
             <StackPanel DockPanel.Dock="Top" >
                 <ListBox Items="{Binding Actions}" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
@@ -86,8 +86,8 @@
                 
             </StackPanel>
         </ScrollViewer>
-        <GridSplitter Grid.Row="1" ResizeDirection="Rows" Grid.ColumnSpan="3" BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
-        <TabControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Items="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
+        <GridSplitter Grid.Row="1"  ResizeDirection="Rows" Grid.ColumnSpan="3" BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
+        <TabControl x:Name="RunningJobsPanel" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Items="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
           <TabControl.ItemTemplate>
               <DataTemplate>
                   <TextBlock Text="{Binding Tile}" />
