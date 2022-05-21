@@ -138,6 +138,7 @@ public class MainWindowViewModel : ViewModelBase
             var job = new RunningJobViewModel()
             {
                 Tile = "#"+jobCounter++,
+                CommandName = selectedAction.Name,
                 ExecutedCommand = $"{commandPath} {maskedArgs}"
             };
             this.RunningJobs.Add(job);

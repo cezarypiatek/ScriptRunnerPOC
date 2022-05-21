@@ -9,10 +9,30 @@ using ScriptRunner.GUI.ScriptConfigs;
 
 namespace ScriptRunner.GUI.ViewModels;
 
+public enum RunningJobStatus
+{
+    NotStarted,
+    Running,
+    Cancelled,
+    Failed,
+    Finished
+}
+
+
 public class RunningJobViewModel : ViewModelBase
 {
     public string Tile { get; set; }
 
+
+    private RunningJobStatus _status;
+
+    public RunningJobStatus Status
+    {
+        get => _status;
+        set => this.RaiseAndSetIfChanged(ref _status, value);
+    }
+
+    public string CommandName { get; set; }
     public string ExecutedCommand { get; set; }
     public void CancelExecution() => ExecutionCancellation.Cancel();
 
@@ -27,7 +47,7 @@ public class RunningJobViewModel : ViewModelBase
             try
             {
                 ExecutionCancellation = new CancellationTokenSource();
-
+                ChangeStatus(RunningJobStatus.Running);
                 await Cli.Wrap(commandPath)
                     .WithArguments(args)
                     //TODO: Working dir should be read from the config with the fallback set to the config file dir
@@ -37,6 +57,7 @@ public class RunningJobViewModel : ViewModelBase
                     .WithValidation(CommandResultValidation.None)
                    
                     .ExecuteAsync(ExecutionCancellation.Token);
+                ChangeStatus(RunningJobStatus.Finished);
             }
             catch (Exception e)
             {
@@ -45,6 +66,11 @@ public class RunningJobViewModel : ViewModelBase
                 if (e is not OperationCanceledException)
                 {
                     AppendToOutput(e.StackTrace);
+                    ChangeStatus(RunningJobStatus.Failed);
+                }
+                else
+                {
+                    ChangeStatus(RunningJobStatus.Cancelled);
                 }
             }
             finally
@@ -54,6 +80,14 @@ public class RunningJobViewModel : ViewModelBase
                 AppendToOutput($"Execution finished after {stopWatch.Elapsed}");
                 Dispatcher.UIThread.Post(() => { ExecutionPending = false; });
             }
+        });
+    }
+
+    private void ChangeStatus(RunningJobStatus status)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            Status = status;
         });
     }
 
