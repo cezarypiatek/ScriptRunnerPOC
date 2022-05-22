@@ -14,9 +14,6 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Window.Resources>
-      <vm:JobStatusToColorConverter x:Key="JobStatusToColorConverter" />
-    </Window.Resources>
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200" ></ColumnDefinition>
@@ -93,15 +90,13 @@
         <TabControl x:Name="RunningJobsPanel" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Items="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
           <TabControl.ItemTemplate>
               <DataTemplate>
-                <Border BorderThickness="1" BorderBrush="{Binding Status, Converter={StaticResource JobStatusToColorConverter}}">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock FontSize="16" Text="{Binding Tile}" Margin="0,0,5,0" />
-                            <TextBlock FontSize="16" Text="{Binding CommandName}" />
-                        </StackPanel>
-                        <TextBlock FontSize="12" Text="{Binding Status, StringFormat='({0})'}"></TextBlock>
-                    </StackPanel>
-                </Border>
+                  <StackPanel>
+                      <StackPanel Orientation="Horizontal">
+                          <TextBlock FontSize="16" Text="{Binding Tile}" Margin="0,0,5,0" />
+                          <TextBlock FontSize="16" Text="{Binding CommandName}" />
+                      </StackPanel>
+                      <TextBlock FontSize="12" Text="{Binding Status, StringFormat='({0})'}"></TextBlock>
+                  </StackPanel>
               </DataTemplate>
           </TabControl.ItemTemplate>
           <TabControl.ContentTemplate>

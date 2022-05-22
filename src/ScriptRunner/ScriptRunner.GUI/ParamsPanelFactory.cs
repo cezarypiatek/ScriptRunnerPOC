@@ -105,6 +105,16 @@ public class ParamsPanelFactory
                     },
                     Format = p.GetPromptSettings("format", out var format) ? format : null,
                 };
+            case PromptType.TimePicker:
+                return new TimePickerControl
+                {
+                    Control = new TimePicker
+                    {
+                        SelectedTime = string.IsNullOrWhiteSpace(value)?null: TimeSpan.Parse(value),
+                        ClockIdentifier = "24HourClock"
+                    },
+                    Format = p.GetPromptSettings("format", out var timeFormat) ? timeFormat : null,
+                };
             case PromptType.Checkbox:
                 var checkedValueText  = p .GetPromptSettings("checkedValue", out var checkedValue)? checkedValue: "true";
                 return new CheckboxControl
@@ -193,6 +203,26 @@ public class DatePickerControl : IControlRecord
             return value.ToString(Format);
         }
         return selectedDateTime?.ToString() ?? string.Empty;
+    }
+
+    public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
+
+    public string? Format { get; set; }
+}
+
+public class TimePickerControl : IControlRecord
+{
+    public IControl Control { get; set; }
+
+    public string GetFormattedValue()
+    {
+        var selectedTime = ((TimePicker)Control).SelectedTime;
+        if (string.IsNullOrWhiteSpace(Format) == false && selectedTime is {} value)
+        {
+            return value.ToString(Format);
+        }
+        return selectedTime?.ToString() ?? string.Empty;
     }
 
     public string Name { get; set; }

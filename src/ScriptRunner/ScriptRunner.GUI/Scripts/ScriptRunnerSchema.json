@@ -69,7 +69,8 @@
                                         "filePicker",
                                         "directoryPicker",
                                         "datePicker",
-                                        "numeric"
+                                        "numeric",
+                                        "timePicker"
                                     ]
                                 }
                             },
@@ -94,6 +95,23 @@
                                                     "type": "string"
                                                 },
                                                 "dayVisible": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "const": "timePicker"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "format": {
                                                     "type": "string"
                                                 }
                                             }

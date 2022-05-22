@@ -11,5 +11,6 @@ public enum PromptType
     Multilinetext,
     FilePicker,
     DirectoryPicker,
-    Numeric
+    Numeric,
+    TimePicker
 }

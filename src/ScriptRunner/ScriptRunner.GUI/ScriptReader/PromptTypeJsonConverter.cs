@@ -21,6 +21,7 @@ public class PromptTypeJsonConverter : JsonConverter<PromptType>
             "filepicker" => PromptType.FilePicker,
             "directorypicker" => PromptType.DirectoryPicker,
             "numeric" => PromptType.Numeric,
+            "timepicker" => PromptType.TimePicker,
             _ => PromptType.Text
         };
     }
