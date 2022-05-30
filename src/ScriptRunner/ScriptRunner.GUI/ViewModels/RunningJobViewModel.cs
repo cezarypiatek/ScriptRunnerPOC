@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ public class RunningJobViewModel : ViewModelBase
                     .WithStandardOutputPipe(PipeTarget.ToDelegate(AppendToOutput))
                     .WithStandardErrorPipe(PipeTarget.ToDelegate(AppendToOutput))
                     .WithValidation(CommandResultValidation.None)
-                   
+                    .WithEnvironmentVariables(EnvironmentVariables)
                     .ExecuteAsync(ExecutionCancellation.Token);
                 ChangeStatus(RunningJobStatus.Finished);
             }
@@ -125,4 +126,5 @@ public class RunningJobViewModel : ViewModelBase
     private bool _executionPending;
 
     public CancellationTokenSource ExecutionCancellation { get; set; }
+    public Dictionary<string, string?> EnvironmentVariables { get; set; }
 }

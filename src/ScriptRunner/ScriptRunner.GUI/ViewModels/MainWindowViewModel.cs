@@ -127,19 +127,28 @@ public class MainWindowViewModel : ViewModelBase
             var (commandPath, args) = (parts.Length > 0 ? parts[0] : "", parts.Length > 1 ? parts[1] : "");
             var maskedArgs = args;
 
+            var envVariables = new Dictionary<string, string?>(selectedAction.EnvironmentVariables);
+
             foreach (var controlRecord in _controlRecords)
             {
                 // This is definitely not pretty, should be using some ReactiveUI observables to read values?
                 var controlValue = controlRecord.GetFormattedValue();
                 args = args.Replace($"{{{controlRecord.Name}}}", controlValue);
                 maskedArgs = maskedArgs.Replace($"{{{controlRecord.Name}}}", controlRecord.MaskingRequired? "*****": controlValue);
+
+                foreach (var (key, val) in envVariables)
+                {
+                    if(string.IsNullOrWhiteSpace(val) == false)
+                        envVariables[key] = val.Replace($"{{{controlRecord.Name}}}", controlValue);
+                }
             }
 
-            var job = new RunningJobViewModel()
+            var job = new RunningJobViewModel
             {
                 Tile = "#"+jobCounter++,
                 CommandName = selectedAction.Name,
-                ExecutedCommand = $"{commandPath} {maskedArgs}"
+                ExecutedCommand = $"{commandPath} {maskedArgs}",
+                EnvironmentVariables = envVariables
             };
             this.RunningJobs.Add(job);
             SelectedRunningJob = job;
