@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -92,13 +93,22 @@ public class RunningJobViewModel : ViewModelBase
         });
     }
 
+    private static readonly Regex ConsoleSpecialCharsPattern = new Regex(@"\u001b\[[\d;]+\w?");
+
     private void AppendToOutput(string? s)
     {
         if (s != null)
         {
+            var newContent = ConsoleSpecialCharsPattern.Replace(s, "");
+            if (string.IsNullOrEmpty(newContent))
+            {
+                return;
+            }
+
             Dispatcher.UIThread.Post(() =>
             {
-                CurrentRunOutput += s + Environment.NewLine;
+                
+                CurrentRunOutput += newContent + Environment.NewLine;
                 OutputIndex = CurrentRunOutput.Length;
             });
         }

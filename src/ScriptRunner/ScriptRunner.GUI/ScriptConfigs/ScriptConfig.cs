@@ -13,7 +13,7 @@ public class ScriptConfig
     public string? WorkingDirectory { get; set; }
     public List<ScriptParam> Params { get; set; } = new();
     public List<ArgumentSet> PredefinedArgumentSets { get; set; } = new();
-    public Dictionary<string, string> EnvironmentVariables { get; set; } = new();
+    public Dictionary<string, string?> EnvironmentVariables { get; set; } = new();
 
 }
 public class ArgumentSet
