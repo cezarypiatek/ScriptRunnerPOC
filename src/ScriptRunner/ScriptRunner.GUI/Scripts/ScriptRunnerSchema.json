@@ -42,6 +42,10 @@
                             }
                         }
                     },
+                    "environmentVariables":{
+                        "type":"object",
+                        "additionalProperties": true
+                    },
                     "params": {
                         "type": "array",
                         "items": {
@@ -85,19 +89,22 @@
                                             "type": "object",
                                             "additionalProperties": false,
                                             "properties": {
-                                                "format": {
-                                                    "type": "string"
-                                                },
-                                                "yearVisible": {
-                                                    "type": "string"
-                                                },
-                                                "monthVisible": {
-                                                    "type": "string"
-                                                },
-                                                "dayVisible": {
-                                                    "type": "string"
-                                                }
-                                            }
+                                              "format": {
+                                                "type": "string"
+                                              },
+                                              "yearVisible": {
+                                                "type": "string"
+                                              },
+                                              "monthVisible": {
+                                                "type": "string"
+                                              },
+                                              "dayVisible": {
+                                                "type": "string"
+                                              },
+                                              "todayAsDefault": {
+                                                "type": "string"
+                                              }
+                                          }
                                         }
                                     },
                                     "required": ["prompt"]

@@ -98,7 +98,7 @@ public class ParamsPanelFactory
                 {
                     Control = new DatePicker
                     {
-                        SelectedDate = string.IsNullOrWhiteSpace(value)?null: DateTimeOffset.Parse(value),
+                        SelectedDate = string.IsNullOrWhiteSpace(value)?(p.GetPromptSettings("todayAsDefault", bool.Parse, false)? DateTimeOffset.Now.Date:null) : DateTimeOffset.Parse(value),
                         YearVisible = p.GetPromptSettings("yearVisible", bool.Parse, true),
                         MonthVisible = p.GetPromptSettings("monthVisible", bool.Parse, true),
                         DayVisible = p.GetPromptSettings("dayVisible", bool.Parse, true),
