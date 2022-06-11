@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -40,6 +41,17 @@ public class AppSettingsService
         catch
         {
         }
+    }
+
+    public static void MarkActionAsInstalled(string actionName)
+    {
+        var allSettings = AppSettingsService.Load();
+        allSettings.InstalledActions ??= new Dictionary<string, CommandInstallationStatus>();
+        allSettings.InstalledActions[actionName] = new CommandInstallationStatus()
+        {
+            IsInstalled = true
+        };
+        Save(allSettings);
     }
 
     public static void UpdateLayoutSettings(Action<LayoutSettings> updateSettings)

@@ -25,6 +25,12 @@
                     "workingDirectory": {
                         "type": "string"
                     },
+                    "installCommand":{
+                        "type": "string"
+                    },
+                    "installCommandWorkingDirectory":{
+                        "type": "string"
+                    },
                     "predefinedArgumentSets":{
                         "type": "array",
                         "items": {

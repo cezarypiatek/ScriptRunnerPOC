@@ -59,29 +59,26 @@
                                Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
 
                     <TextBox Text="{Binding SelectedAction.Command}" Background="#474747" CornerRadius="0" BorderBrush="#6e6e6e" Padding="5" Margin="10" BorderThickness="1" IsReadOnly="True" TextWrapping="Wrap"></TextBox>
-
+                   <Button Margin="5,5,5,15" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
                 </StackPanel>
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Classes="h2">Parameters: </TextBlock>
-                        <ComboBox Margin="20,0,0,5" Items="{Binding SelectedAction.PredefinedArgumentSets}" SelectedItem="{Binding SelectedArgumentSet, Mode=TwoWay}" MinWidth="200">
-                            <ComboBox.DataTemplates>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Description}"></TextBlock>
-                                </DataTemplate>
-                            </ComboBox.DataTemplates>
-                        </ComboBox>
+                <StackPanel IsEnabled="{Binding SelectedActionInstalled}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Classes="h2">Parameters: </TextBlock>
+                            <ComboBox Margin="20,0,0,5" Items="{Binding SelectedAction.PredefinedArgumentSets}" SelectedItem="{Binding SelectedArgumentSet, Mode=TwoWay}" MinWidth="200">
+                                <ComboBox.DataTemplates>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Description}"></TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.DataTemplates>
+                            </ComboBox>
+                        </StackPanel>
+                        <ItemsControl Items="{Binding ActionParametersPanel}"></ItemsControl>
                     </StackPanel>
-                    <ItemsControl Items="{Binding ActionParametersPanel}"></ItemsControl>
-                </StackPanel>
-                
-                <StackPanel Orientation="Horizontal" Margin="0, 20, 0 , 5">
-                    <Button Width="60" HorizontalContentAlignment="Center" 
-                            Command="{Binding RunScript}"
-                            >
-                        Run
-                    </Button>
-                    
+
+                    <StackPanel Orientation="Horizontal" Margin="0, 20, 0 , 5">
+                        <Button Width="60" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
+                    </StackPanel>
                 </StackPanel>
                 
             </StackPanel>
@@ -100,7 +97,7 @@
               </DataTemplate>
           </TabControl.ItemTemplate>
           <TabControl.ContentTemplate>
-                <DataTemplate>
+                <DataTemplate DataType="vm:RunningJobViewModel">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"></RowDefinition>

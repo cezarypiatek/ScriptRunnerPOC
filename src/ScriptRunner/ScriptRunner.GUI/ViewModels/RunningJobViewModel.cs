@@ -38,7 +38,11 @@ public class RunningJobViewModel : ViewModelBase
     public string ExecutedCommand { get; set; }
     public void CancelExecution() => ExecutionCancellation.Cancel();
 
-    public void RunJob(string commandPath, string args, ScriptConfig selectedAction)
+    public event EventHandler ExecutionCompleted;
+
+    public void RaiseExecutionCompleted() => ExecutionCompleted?.Invoke(this, EventArgs.Empty);
+
+    public void RunJob(string commandPath, string args, string? workingDirectory)
     {
         CurrentRunOutput = "";
         ExecutionPending = true;
@@ -53,13 +57,14 @@ public class RunningJobViewModel : ViewModelBase
                 await Cli.Wrap(commandPath)
                     .WithArguments(args)
                     //TODO: Working dir should be read from the config with the fallback set to the config file dir
-                    .WithWorkingDirectory(selectedAction.WorkingDirectory ?? "Scripts/")
+                    .WithWorkingDirectory(workingDirectory ?? "Scripts/")
                     .WithStandardOutputPipe(PipeTarget.ToDelegate(AppendToOutput))
                     .WithStandardErrorPipe(PipeTarget.ToDelegate(AppendToOutput))
                     .WithValidation(CommandResultValidation.None)
                     .WithEnvironmentVariables(EnvironmentVariables)
                     .ExecuteAsync(ExecutionCancellation.Token);
                 ChangeStatus(RunningJobStatus.Finished);
+                Dispatcher.UIThread.Post(RaiseExecutionCompleted);
             }
             catch (Exception e)
             {

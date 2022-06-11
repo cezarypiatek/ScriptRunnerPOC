@@ -45,8 +45,17 @@ public class MainWindowViewModel : ViewModelBase
         {
             this.RaiseAndSetIfChanged(ref _selectedAction, value);
             SelectedArgumentSet = value.PredefinedArgumentSets.First();
-            
+            SelectedActionInstalled = string.IsNullOrWhiteSpace(value.InstallCommand) ? true: IsActionInstalled(value.Name);
         }
+    }
+
+    private bool IsActionInstalled(string valueName)
+    {
+        if (AppSettingsService.Load().InstalledActions is { } installedActions && installedActions.TryGetValue(valueName, out var installInfo))
+        {
+            return installInfo.IsInstalled;
+        }
+        return false;
     }
 
     public MainWindowViewModel()
@@ -117,14 +126,49 @@ public class MainWindowViewModel : ViewModelBase
 
     private int jobCounter;
     private RunningJobViewModel _selectedRunningJob;
+    private bool _selectedActionInstalled;
+
+    public void InstallScript()
+    {
+        if (SelectedAction is { InstallCommand: {} installCommand } selectedAction )
+        {
+            var (commandPath, args) = SplitCommandAndArgs(installCommand);
+            var job = new RunningJobViewModel
+            {
+                Tile = "#" + jobCounter++,
+                CommandName = $"Install {selectedAction.Name}",
+                ExecutedCommand = installCommand,
+                EnvironmentVariables = new Dictionary<string, string?>()
+            };
+            job.ExecutionCompleted += (sender, eventArgs) =>
+            {
+                SelectedActionInstalled = true;
+                AppSettingsService.MarkActionAsInstalled(selectedAction.Name);
+            };
+            this.RunningJobs.Add(job);
+            SelectedRunningJob = job;
+            job.RunJob(commandPath, args, selectedAction.InstallCommandWorkingDirectory);
+        }
+    }
+
+    public bool SelectedActionInstalled
+    {
+        get => _selectedActionInstalled;
+        set => this.RaiseAndSetIfChanged(ref _selectedActionInstalled, value);
+    }
+
+    private static (string commandPath, string args) SplitCommandAndArgs(string command)
+    {
+        var parts = SplitCommand(command);
+        return (parts.Length > 0 ? parts[0] : "", parts.Length > 1 ? parts[1] : "");
+    }
 
     public void RunScript()
     {
         if (SelectedAction is { } selectedAction)
         {
-            var command = selectedAction.Command;
-            var parts = SplitCommand(command);
-            var (commandPath, args) = (parts.Length > 0 ? parts[0] : "", parts.Length > 1 ? parts[1] : "");
+            
+            var (commandPath, args) = SplitCommandAndArgs(selectedAction.Command);
             var maskedArgs = args;
 
             var envVariables = new Dictionary<string, string?>(selectedAction.EnvironmentVariables);
@@ -152,8 +196,7 @@ public class MainWindowViewModel : ViewModelBase
             };
             this.RunningJobs.Add(job);
             SelectedRunningJob = job;
-            SelectedRunningJob = job;
-            job.RunJob(commandPath, args, selectedAction);
+            job.RunJob(commandPath, args, selectedAction.WorkingDirectory);
         }
         
     }
