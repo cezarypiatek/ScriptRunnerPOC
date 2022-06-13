@@ -3,9 +3,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'src/**'
-      - '!src/.editorconfig'
+    #paths:
+    #  - 'src/**'
+    #  - '!src/.editorconfig'
 jobs:
   build-extension:
     runs-on: windows-latest
@@ -44,6 +44,8 @@ jobs:
         $commitLog = git log "$(git describe --tags --abbrev=0)..HEAD" --pretty=format:"- %s"
         $commitLog = if([string]::IsNullOrWhitespace($commitLog)){git log --pretty=format:"- %s"}else{$commitLog}
         "What's new: `r`n`r`n$([string]::Join("`r`n",$commitLog))" | Out-File release_note.md -Encoding utf8
+    - name: Compress artifacts
+      run: Compress-Archive -Path .\src\ScriptRunner\ScriptRunner.GUI\bin\Release\net6.0\win-x64\publish\* -DestinationPath ScriptRunner.${{ env.Version }}.zip
     - name: Create Github Release
       id: create_release
       uses: actions/create-release@v1
@@ -61,6 +63,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./src/ScriptRunner/ScriptRunner.GUI/bin/Release/net6.0/win-x64/publish/
+        asset_path: ScriptRunner.${{ env.Version }}.zip
         asset_name: ScriptRunner.${{ env.Version }}.zip
         asset_content_type: binary/octet-stream    
