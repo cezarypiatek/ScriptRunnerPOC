@@ -1,0 +1,37 @@
+name: pr-verification
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  build-extension:
+    runs-on: windows-latest
+    env: 
+        DOTNET_NOLOGO: true
+        DOTNET_CLI_TELEMETRY_OPTOUT: true
+        RepositoryUrl: 'https://github.com/${{ github.repository }}'
+        RepositoryBranch: '${{ github.ref }}'
+        SourceRevisionId: '${{ github.sha }}'
+        VersionSuffix: 'pr-${{github.event.number}}.${{ github.run_number }}'
+        Configuration: Release
+        SolutionPath: ./src/ScriptRunner/ScriptRunner.sln
+        Deterministic: true
+        PackageReleaseNotes: 'https://github.com/${{ github.repository }}/releases'
+        ContinuousIntegrationBuild: true
+    steps:
+    - uses: actions/checkout@v2   
+    - name: Setup .NET Core 6
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0'   
+    - name: Calculate next version
+      uses: cezarypiatek/NextVersionGeneratorAction@0.4
+      with:
+        minor-pattern: '.*'
+        major-pattern: 'BREAKING CHANGES'
+        output-to-env-variable: 'VersionPrefix'    
+    - name: Restore dependencies
+      run: |
+        dotnet nuget locals all --clear
+        dotnet restore $env:SolutionPath         
+    - name: Build extension
+      run: dotnet publish $env:SolutionPath -r win-x64 -p:PublishSingleFile=true --self-contained false -p:PublishReadyToRun=true
