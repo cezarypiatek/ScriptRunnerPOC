@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Layout;
+using ScriptRunner.GUI.Settings;
 using static System.Double;
 
 namespace ScriptRunner.GUI.Views;

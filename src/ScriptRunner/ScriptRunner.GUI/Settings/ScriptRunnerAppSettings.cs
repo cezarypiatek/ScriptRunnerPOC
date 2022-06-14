@@ -6,7 +6,8 @@ public class ScriptRunnerAppSettings
 {
     public LayoutSettings? Layout { get; set; }
     public Dictionary<string, CommandInstallationStatus> InstalledActions { get; set; }
-    
+    public List<string> ConfigScripts { get; set; }
+
 }
 
 public class CommandInstallationStatus

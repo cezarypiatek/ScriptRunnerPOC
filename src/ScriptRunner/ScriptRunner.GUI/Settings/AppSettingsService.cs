@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 
-namespace ScriptRunner.GUI;
+namespace ScriptRunner.GUI.Settings;
 
 public class AppSettingsService
 {
@@ -61,6 +62,20 @@ public class AppSettingsService
         updateSettings(allSettings.Layout);
         Save(allSettings);
         Debug.WriteLine($"Width: {allSettings.Layout.Width}, Height: {allSettings.Layout.Height}, L: {allSettings.Layout.ActionsPanelWidth}, M: {allSettings.Layout.RunningJobsPanelHeight}");
+    }
+
+    public static void RemoveScriptConfig(string scriptPath)
+    {
+        var allSettings = Load();
+        allSettings.ConfigScripts.Remove(scriptPath);
+        Save(allSettings);
+    }
+
+    public static void UpdateScriptConfigs(IEnumerable<string> configScripts)
+    {
+        var allSettings = Load();
+        allSettings.ConfigScripts = configScripts.ToList();
+        Save(allSettings);
     }
 
     private static string GetSettingsPath()

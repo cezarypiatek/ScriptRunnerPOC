@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Avalonia;
@@ -5,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 
 namespace ScriptRunner.GUI.Views
 {
@@ -21,7 +23,8 @@ namespace ScriptRunner.GUI.Views
         }
 
         public static readonly DirectProperty<FilePicker, string> FilePathProperty = AvaloniaProperty.RegisterDirect<FilePicker, string>(nameof(FilePath), picker => picker.FindControl<TextBox>("FilePathTextBox").Text, (picker, s) => picker.FindControl<TextBox>("FilePathTextBox").Text = s);
-            
+
+        public event EventHandler? OnFilePicked;
 
         public string FilePath
         {
@@ -33,6 +36,8 @@ namespace ScriptRunner.GUI.Views
         {
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                var sourceWindow = (sender as IControl)?.GetVisualRoot() as Window ?? desktop.MainWindow;
+
                 var dialog = new OpenFileDialog();
                 if (string.IsNullOrWhiteSpace(FilePath) == false && Path.GetDirectoryName(FilePath) is { } dir)
                 {
@@ -43,12 +48,23 @@ namespace ScriptRunner.GUI.Views
                 
                 dialog.AllowMultiple = false;
                 
-                var result = dialog.ShowAsync(desktop.MainWindow).GetAwaiter().GetResult();
+                var result = dialog.ShowAsync(sourceWindow).GetAwaiter().GetResult();
                 if (result?.FirstOrDefault() is { } file)
                 {
                     FilePath = file;
+                    OnFilePicked?.Invoke(this, new FilePickedArgs(file));
                 }
             }
+        }
+    }
+
+    public class FilePickedArgs : EventArgs
+    {
+        public string Path { get; }
+
+        public FilePickedArgs(string path)
+        {
+            Path = path;
         }
     }
 }
