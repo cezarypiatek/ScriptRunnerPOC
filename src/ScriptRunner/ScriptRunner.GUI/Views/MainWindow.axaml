@@ -27,7 +27,7 @@
             <RowDefinition Height="300" ></RowDefinition>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Column="0" Classes="actionsMenu" >
+		<DockPanel Grid.Column="0" Classes="actionsMenu" LastChildFill="True">
             <!-- List of available actions, selectable -->
             <StackPanel DockPanel.Dock="Top" >
                 <ListBox Items="{Binding Actions}" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
@@ -39,11 +39,10 @@
                 </ListBox>
             </StackPanel>
 
-			<!-- Settings button, for future use :D -->
-            <!--<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
-                <Button i:Attached.Icon="fas fa-cog">
-                </Button>
-            </StackPanel>-->
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" VerticalAlignment="Bottom">
+                <Button i:Attached.Icon="fas fa-cog" Height="35" Width="50" FontSize="18"
+                        Command="{Binding OpenSettingsWindow}" />
+            </StackPanel>
         </DockPanel>
 
         <GridSplitter Grid.Column="1" Grid.Row="0" ResizeDirection="Columns"></GridSplitter>

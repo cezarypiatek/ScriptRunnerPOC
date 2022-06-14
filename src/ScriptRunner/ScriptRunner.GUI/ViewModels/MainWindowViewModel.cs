@@ -5,6 +5,8 @@ using Avalonia.Controls;
 using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.ScriptReader;
+using ScriptRunner.GUI.Settings;
+using ScriptRunner.GUI.Views;
 
 namespace ScriptRunner.GUI.ViewModels;
 
@@ -149,6 +151,12 @@ public class MainWindowViewModel : ViewModelBase
             SelectedRunningJob = job;
             job.RunJob(commandPath, args, selectedAction.InstallCommandWorkingDirectory);
         }
+    }
+
+    public void OpenSettingsWindow()
+    {
+        var window = new SettingsWindow();
+        window.Show();
     }
 
     public bool SelectedActionInstalled

@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:ScriptRunner.GUI.ViewModels"
+        xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
+        xmlns:avalonia="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="450"
+        Width="600" Height="450"
+        x:Class="ScriptRunner.GUI.Views.SettingsWindow"
+        Title="Settings"
+        Icon="/Assets/avalonia-logo.ico"
+        FontFamily="Segoe UI Variable">
+    <Design.DataContext>
+        <vm:SettingsWindowViewModel />
+    </Design.DataContext>
+
+    <StackPanel Orientation="Vertical" Margin="5">
+        <TextBlock Classes="h2" Text="Config sources:" Margin="0, 5"/>
+        <ItemsControl Items="{Binding ConfigScriptFiles}">
+			<ItemsControl.ItemTemplate>
+                <DataTemplate>
+						<Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="100" />
+                            </Grid.ColumnDefinitions>
+                            <views:FilePicker Grid.Column="0" Name="FilePicker" FilePath="{Binding Path}">
+                                <Interaction.Behaviors>
+                                    <EventTriggerBehavior EventName="OnFilePicked" SourceObject="{Binding #FilePicker}">
+                                        <InvokeCommandAction Command="{Binding OnFilePicked}" PassEventArgsToCommand="True"/>
+                                    </EventTriggerBehavior>
+                                </Interaction.Behaviors>
+                            </views:FilePicker>
+                            <Button Grid.Column="1" avalonia:Attached.Icon="fa fa-trash" FontSize="18" Margin="10,0"
+                                    Command="{Binding DataContext.RemoveConfigScript, RelativeSource={RelativeSource AncestorType={x:Type views:SettingsWindow}}}"
+                                    CommandParameter="{Binding}"/>
+						</Grid>
+                </DataTemplate>
+			</ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Command="{Binding AddNewConfigScriptRow}">
+            <StackPanel Orientation="Horizontal">
+                <avalonia:Icon Value="fa fa-plus" Margin="4,0"/>
+				<TextBlock>Add new config script</TextBlock>
+            </StackPanel>
+        </Button>
+	</StackPanel>
+
+</Window>
