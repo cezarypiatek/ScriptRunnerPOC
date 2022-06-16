@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using ReactiveUI;
@@ -22,7 +23,7 @@ public class SettingsWindowViewModel : ViewModelBase
 
     public SettingsWindowViewModel()
     {
-        var configScripts = AppSettingsService.Load().ConfigScripts;
+        var configScripts = AppSettingsService.Load().ConfigScripts ?? new List<string>();
         ConfigScriptFiles =
             new ObservableCollection<ConfigScriptFileRow>(configScripts.Select(path => new ConfigScriptFileRow(path, SaveConfigScripts)));
     }
