@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -8,9 +9,9 @@ namespace ScriptRunner.GUI.ScriptReader;
 
 public static class ScriptConfigReader
 {
-    public static ActionsConfig Load()
+    public static IEnumerable<ScriptConfig> Load(string fileName)
     {
-        var fileName = Path.Combine(AppContext.BaseDirectory,"Scripts/TextInputScript.json");
+        
         var jsonString = File.ReadAllText(fileName);
         var scriptConfig = JsonSerializer.Deserialize<ActionsConfig>(jsonString, new JsonSerializerOptions
         {
@@ -44,6 +45,6 @@ public static class ScriptConfigReader
             action.PredefinedArgumentSets.Insert(0, defaultSet);
         }
 
-        return scriptConfig;
+        return scriptConfig.Actions;
     }
 }

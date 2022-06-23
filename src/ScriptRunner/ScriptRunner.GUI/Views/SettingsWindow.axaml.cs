@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using ScriptRunner.GUI.ViewModels;
 
@@ -19,6 +20,11 @@ namespace ScriptRunner.GUI.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void CloseConfigSourceDialog(object? sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }

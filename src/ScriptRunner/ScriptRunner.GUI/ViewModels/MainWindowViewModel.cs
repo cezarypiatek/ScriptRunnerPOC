@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using Avalonia.Controls;
 using ReactiveUI;
@@ -40,14 +42,22 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedRunningJob, value);
     }
 
-    public ScriptConfig SelectedAction
+    public ScriptConfig? SelectedAction
     {
         get => _selectedAction;
         set
         {
             this.RaiseAndSetIfChanged(ref _selectedAction, value);
-            SelectedArgumentSet = value.PredefinedArgumentSets.First();
-            SelectedActionInstalled = string.IsNullOrWhiteSpace(value.InstallCommand) ? true: IsActionInstalled(value.Name);
+            if (value != null)
+            {
+                SelectedArgumentSet = value.PredefinedArgumentSets.FirstOrDefault();
+                SelectedActionInstalled = string.IsNullOrWhiteSpace(value.InstallCommand) ? true : IsActionInstalled(value.Name);
+            }
+            else
+            {
+                SelectedArgumentSet = null;
+                SelectedActionInstalled = false;
+            }
         }
     }
 
@@ -70,15 +80,19 @@ public class MainWindowViewModel : ViewModelBase
 
     private IEnumerable<IControlRecord> _controlRecords;
 
-    private ActionsConfig config;
+    //private ActionsConfig config;
     
     private ScriptConfig _selectedAction;
     private ArgumentSet _selectedArgumentSet;
 
     private void BuildUi()
     {
-        config = ScriptConfigReader.Load();
-        foreach (var action in config.Actions)
+        var sources = AppSettingsService.Load().ConfigScripts ?? new List<string>()
+        {
+            Path.Combine(AppContext.BaseDirectory,"Scripts/TextInputScript.json")
+        };
+        Actions.Clear();
+        foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x)))
         {
             Actions.Add(action);
         }
@@ -89,7 +103,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    public ArgumentSet SelectedArgumentSet
+    public ArgumentSet? SelectedArgumentSet
     {
         get => _selectedArgumentSet;
         set
@@ -156,6 +170,10 @@ public class MainWindowViewModel : ViewModelBase
     public void OpenSettingsWindow()
     {
         var window = new SettingsWindow();
+        window.Closed += (sender, args) =>
+        {
+            BuildUi();
+        };
         window.Show();
     }
 
