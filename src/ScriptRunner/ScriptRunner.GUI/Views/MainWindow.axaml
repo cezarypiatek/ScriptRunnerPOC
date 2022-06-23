@@ -22,29 +22,29 @@
             
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*" MinHeight="40"></RowDefinition>
             <RowDefinition Height="3"></RowDefinition>
             <RowDefinition Height="300" ></RowDefinition>
         </Grid.RowDefinitions>
 
-		<DockPanel Grid.Column="0" Classes="actionsMenu" LastChildFill="True">
-            <!-- List of available actions, selectable -->
-            <StackPanel DockPanel.Dock="Top" >
-                <ListBox Items="{Binding Actions}" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
-                    <ListBox.DataTemplates>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}"></TextBlock>
-                        </DataTemplate>
-                    </ListBox.DataTemplates>
-                </ListBox>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+          <!-- List of available actions, selectable -->
+          <ListBox Items="{Binding Actions}" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
+              <ListBox.DataTemplates>
+                  <DataTemplate>
+                      <TextBlock Text="{Binding Name}"></TextBlock>
+                  </DataTemplate>
+              </ListBox.DataTemplates>
+          </ListBox>
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" VerticalAlignment="Bottom" Grid.Row="1">
+                <Button i:Attached.Icon="fas fa-cog" Margin="5" Height="35" Width="50" FontSize="18" Command="{Binding OpenSettingsWindow}"   ToolTip.Tip="Configure actions sources"/>
+                <Button i:Attached.Icon="fas fa-sync" Height="35" Width="50" FontSize="18" Command="{Binding RefreshSettings}"   ToolTip.Tip="Refresh actions" />
             </StackPanel>
-
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" VerticalAlignment="Bottom">
-                <Button i:Attached.Icon="fas fa-cog" Height="35" Width="50" FontSize="18"
-                        Command="{Binding OpenSettingsWindow}" />
-            </StackPanel>
-        </DockPanel>
-
+        </Grid>
         <GridSplitter Grid.Column="1" Grid.Row="0" ResizeDirection="Columns"></GridSplitter>
         <!-- Below instead of stack panel will be Reactive UI View Host displaying current action props-->
         <ScrollViewer Grid.Column="2">

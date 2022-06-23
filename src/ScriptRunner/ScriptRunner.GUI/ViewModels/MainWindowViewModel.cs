@@ -177,6 +177,9 @@ public class MainWindowViewModel : ViewModelBase
         window.Show();
     }
 
+    public void RefreshSettings() => BuildUi();
+
+
     public bool SelectedActionInstalled
     {
         get => _selectedActionInstalled;
