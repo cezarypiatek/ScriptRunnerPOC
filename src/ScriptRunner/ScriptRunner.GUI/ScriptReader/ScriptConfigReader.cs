@@ -43,6 +43,14 @@ public static class ScriptConfigReader
             }
 
             action.PredefinedArgumentSets.Insert(0, defaultSet);
+            if (string.IsNullOrWhiteSpace(action.WorkingDirectory))
+            {
+                action.WorkingDirectory = Path.GetDirectoryName(fileName);
+            }
+            if (string.IsNullOrWhiteSpace(action.InstallCommandWorkingDirectory))
+            {
+                action.InstallCommandWorkingDirectory = Path.GetDirectoryName(fileName);
+            }
         }
 
         return scriptConfig.Actions;
