@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Avalonia;
@@ -5,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 
 namespace ScriptRunner.GUI.Views
 {
@@ -23,6 +25,7 @@ namespace ScriptRunner.GUI.Views
 
         public static readonly DirectProperty<DirectoryPicker, string> DirPathProperty = AvaloniaProperty.RegisterDirect<DirectoryPicker, string>(nameof(DirPath), picker => picker.FindControl<TextBox>("DirPathTextBox").Text, (picker, s) => picker.FindControl<TextBox>("DirPathTextBox").Text = s);
 
+        public event EventHandler? OnDirectoryPicked;
 
         public string DirPath
         {
@@ -34,15 +37,18 @@ namespace ScriptRunner.GUI.Views
         {
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                var sourceWindow = (sender as IControl)?.GetVisualRoot() as Window ?? desktop.MainWindow;
+
                 var dialog = new OpenFolderDialog();
                 if (string.IsNullOrWhiteSpace(DirPath) == false)
                 {
                     dialog.Directory = DirPath;
                 }
 
-                if (dialog.ShowAsync(desktop.MainWindow).GetAwaiter().GetResult() is { } selectedDirPath)
+                if (dialog.ShowAsync(sourceWindow).GetAwaiter().GetResult() is { } selectedDirPath)
                 {
                     DirPath = selectedDirPath;
+                    OnDirectoryPicked?.Invoke(this, new FilePickedArgs(selectedDirPath));
                 }
             }
         }
