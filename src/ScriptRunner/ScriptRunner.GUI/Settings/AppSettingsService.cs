@@ -71,10 +71,34 @@ public class AppSettingsService
         Save(allSettings);
     }
 
+    public static void RemoveScriptConfigDirectory(string directoryPath)
+    {
+        var allSettings = Load();
+        var entryToRemove = allSettings.ConfigScriptsDirectories?.FirstOrDefault(q =>
+            q.Path.Equals(directoryPath, StringComparison.InvariantCultureIgnoreCase));
+
+        if (entryToRemove != null)
+        {
+            allSettings.ConfigScriptsDirectories!.Remove(entryToRemove);
+            Save(allSettings);
+        }
+    }
+
     public static void UpdateScriptConfigs(IEnumerable<string> configScripts)
     {
         var allSettings = Load();
         allSettings.ConfigScripts = configScripts.ToList();
+        Save(allSettings);
+    }
+
+    public static void UpdateScriptConfigsDirectories(IEnumerable<(string path, bool recursive)> configScripts)
+    {
+        var allSettings = Load();
+        allSettings.ConfigScriptsDirectories = configScripts.Select(q => new ConfigScriptDirectorySetting
+        {
+            Path = q.path,
+            Recursive = q.recursive
+        }).ToList();
         Save(allSettings);
     }
 

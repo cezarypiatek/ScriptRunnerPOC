@@ -23,8 +23,12 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
+      <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Vertical" Margin="5">
-            <TextBlock Classes="h2" Text="Config sources:" Margin="0, 5"/>
+            <StackPanel Orientation="Horizontal">
+                <avalonia:Icon Value="fa fa-file" Margin="4, 0, 10, 0"/>
+                <TextBlock Classes="h2" Text="Config source files:" Margin="0, 5"/>
+            </StackPanel>
             <ItemsControl Items="{Binding ConfigScriptFiles}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -50,10 +54,60 @@
             <Button Command="{Binding AddNewConfigScriptRow}" Margin="0,10">
                 <StackPanel Orientation="Horizontal">
                     <avalonia:Icon Value="fa fa-plus" Margin="4,0"/>
-                    <TextBlock>Add new config script</TextBlock>
+                    <TextBlock>Add new config script file</TextBlock>
                 </StackPanel>
             </Button>
         </StackPanel>
+        <StackPanel Orientation="Vertical" Margin="5">
+            <StackPanel Orientation="Horizontal">
+                <avalonia:Icon Value="fa fa-folder-open" Margin="4, 0, 10, 0"/>
+                <TextBlock Classes="h2" Text="Config source directories:" Margin="0, 5"/>
+            </StackPanel>
+            <ItemsControl Items="{Binding ConfigScriptDirectories}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition Width="100" />
+                            </Grid.ColumnDefinitions>
+                            <views:DirectoryPicker Grid.Column="0" Name="DirectoryPicker" DirPath="{Binding Path}">
+                                <i:Interaction.Behaviors>
+                                    <ia:EventTriggerBehavior EventName="OnDirectoryPicked" SourceObject="{Binding #DirectoryPicker}">
+                                        <ia:InvokeCommandAction Command="{Binding OnDirectoryPicked}" PassEventArgsToCommand="True"/>
+                                    </ia:EventTriggerBehavior>
+                                </i:Interaction.Behaviors>
+                            </views:DirectoryPicker>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <CheckBox IsChecked="{Binding Recursive}">
+                                    <i:Interaction.Behaviors>
+                                        <ia:EventTriggerBehavior EventName="Checked">
+                                            <ia:InvokeCommandAction Command="{Binding OnCheckboxChanged}" CommandParameter="True"/>
+                                        </ia:EventTriggerBehavior>
+                                        <ia:EventTriggerBehavior EventName="Unchecked">
+                                            <ia:InvokeCommandAction Command="{Binding OnCheckboxChanged}" CommandParameter="False"/>
+                                        </ia:EventTriggerBehavior>
+                                    </i:Interaction.Behaviors>
+                                </CheckBox>
+                                <Label>Recursive scan</Label>
+                            </StackPanel>
+                            
+                            <Button Grid.Column="2" avalonia:Attached.Icon="fa fa-trash" FontSize="18" Margin="10,0"
+                                    Command="{Binding DataContext.RemoveConfigScriptDirectory, RelativeSource={RelativeSource AncestorType={x:Type views:SettingsWindow}}}"
+                                    CommandParameter="{Binding}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Command="{Binding AddNewConfigScriptDirectoryRow}" Margin="0,10">
+                <StackPanel Orientation="Horizontal">
+                    <avalonia:Icon Value="fa fa-plus" Margin="4,0"/>
+                    <TextBlock>Add new config script directory</TextBlock>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+      </StackPanel>
         <StackPanel Grid.Row="1" HorizontalAlignment="Right">
             <Button Margin="10" Click="CloseConfigSourceDialog"> Close</Button>
         </StackPanel>
