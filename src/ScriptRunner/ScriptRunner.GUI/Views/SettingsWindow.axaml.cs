@@ -8,10 +8,12 @@ namespace ScriptRunner.GUI.Views
 {
     public partial class SettingsWindow : Window
     {
+        public SettingsWindowViewModel ViewModel { get; }
+
         public SettingsWindow()
         {
             InitializeComponent();
-            DataContext = new SettingsWindowViewModel();
+            DataContext = this.ViewModel = new SettingsWindowViewModel();
 #if DEBUG
             this.AttachDevTools();
 #endif
@@ -24,6 +26,7 @@ namespace ScriptRunner.GUI.Views
 
         private void CloseConfigSourceDialog(object? sender, RoutedEventArgs e)
         {
+            ViewModel.SaveConfigScripts();
             Close();
         }
     }

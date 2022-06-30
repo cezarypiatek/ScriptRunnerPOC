@@ -88,6 +88,17 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedRunningJob, value);
     }
 
+    public bool IsActionSelected
+    {
+        get => _isActionSelected;
+        set => this.RaiseAndSetIfChanged(ref _isActionSelected, value);
+    }
+
+    private bool _isActionSelected;
+
+
+
+
     public ScriptConfig? SelectedAction
     {
         get => _selectedAction;
@@ -98,11 +109,13 @@ public class MainWindowViewModel : ViewModelBase
             {
                 SelectedArgumentSet = value.PredefinedArgumentSets.FirstOrDefault();
                 SelectedActionInstalled = string.IsNullOrWhiteSpace(value.InstallCommand) ? true : IsActionInstalled(value.Name);
+                IsActionSelected = true;
             }
             else
             {
                 SelectedArgumentSet = null;
                 SelectedActionInstalled = false;
+                IsActionSelected = false;
             }
         }
     }
@@ -171,12 +184,17 @@ public class MainWindowViewModel : ViewModelBase
     private void BuildUi()
     {
         var selectedActionName = SelectedAction?.Name;
-        var sources = AppSettingsService.Load().ConfigScripts ?? new List<string>()
+        var sources = AppSettingsService.Load().ConfigScripts ?? new List<ConfigScriptEntry>
         {
-            Path.Combine(AppContext.BaseDirectory,"Scripts/TextInputScript.json")
+            new ConfigScriptEntry
+            {
+                Name = "Solution test script",
+                Path = Path.Combine(AppContext.BaseDirectory,"Scripts/TextInputScript.json"),
+                Type = ConfigScriptType.File
+            }
         };
         Actions.Clear();
-        foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x)))
+        foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x.Path)))
         {
             Actions.Add(action);
         }
