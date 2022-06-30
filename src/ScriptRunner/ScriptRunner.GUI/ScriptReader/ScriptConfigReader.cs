@@ -11,7 +11,8 @@ public static class ScriptConfigReader
 {
     public static IEnumerable<ScriptConfig> Load(string fileName)
     {
-        
+        if (!File.Exists(fileName)) return Array.Empty<ScriptConfig>();
+
         var jsonString = File.ReadAllText(fileName);
         var scriptConfig = JsonSerializer.Deserialize<ActionsConfig>(jsonString, new JsonSerializerOptions
         {

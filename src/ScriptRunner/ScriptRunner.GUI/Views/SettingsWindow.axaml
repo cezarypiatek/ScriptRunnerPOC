@@ -33,77 +33,81 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="100" />
                             </Grid.ColumnDefinitions>
-                            <views:FilePicker Grid.Column="0" Name="FilePicker" FilePath="{Binding Path}">
+                            <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2">
+                                <TextBox Text="{Binding Name, Mode=TwoWay}"></TextBox>
+                                <ComboBox Name="SourceType" SelectedIndex="{Binding Type, Mode=TwoWay}">
+                                    <ComboBoxItem IsSelected="True" Name="FileSelected" >File</ComboBoxItem>
+                                    <ComboBoxItem Name="DirectorySelected">Directory</ComboBoxItem>
+                                </ComboBox>
+
+								<!-- RECURSIVE SCAN CONTROL -->
+                                <StackPanel Orientation="Horizontal">
+                                    <i:Interaction.Behaviors>
+                                        <ia:DataTriggerBehavior Binding="{Binding #SourceType.SelectedIndex}" Value="1">
+                                            <ia:ChangePropertyAction PropertyName="IsVisible" Value="True"></ia:ChangePropertyAction>
+                                        </ia:DataTriggerBehavior>
+                                        <ia:DataTriggerBehavior Binding="{Binding #SourceType.SelectedIndex}" Value="0">
+                                            <ia:ChangePropertyAction PropertyName="IsVisible" Value="False"></ia:ChangePropertyAction>
+                                        </ia:DataTriggerBehavior>
+                                    </i:Interaction.Behaviors>
+
+                                    <CheckBox IsChecked="{Binding Recursive, Mode=TwoWay}"></CheckBox>
+                                    <Label>Recursive scan</Label>
+                                </StackPanel>
+
+                            </StackPanel>
+
+                            <!-- FILE PICKER -->
+							            <views:FilePicker Grid.Column="0" Grid.Row="1" Name="FilePicker" FilePath="{Binding Path}">
                                 <i:Interaction.Behaviors>
                                     <ia:EventTriggerBehavior EventName="OnFilePicked" SourceObject="{Binding #FilePicker}">
                                         <ia:InvokeCommandAction Command="{Binding OnFilePicked}" PassEventArgsToCommand="True"/>
                                     </ia:EventTriggerBehavior>
+                                  <ia:DataTriggerBehavior Binding="{Binding #SourceType.SelectedIndex}" Value="1">
+                                      <ia:ChangePropertyAction PropertyName="IsVisible" Value="False"></ia:ChangePropertyAction>
+                                  </ia:DataTriggerBehavior>
+                                    <ia:DataTriggerBehavior Binding="{Binding #SourceType.SelectedIndex}" Value="0">
+                                        <ia:ChangePropertyAction PropertyName="IsVisible" Value="True"></ia:ChangePropertyAction>
+                                    </ia:DataTriggerBehavior>
                                 </i:Interaction.Behaviors>
                             </views:FilePicker>
+
+							<!-- DIRECTORY PICKER -->
+                            <views:DirectoryPicker Grid.Column="0" Grid.Row="1" Name="DirectoryPicker" DirPath="{Binding Path}">
+                                <i:Interaction.Behaviors>
+                                    <ia:EventTriggerBehavior EventName="OnDirectoryPicked" SourceObject="{Binding #DirectoryPicker}">
+                                        <ia:InvokeCommandAction Command="{Binding OnDirectoryPicked}" PassEventArgsToCommand="True"/>
+                                    </ia:EventTriggerBehavior>
+                                  <ia:DataTriggerBehavior Binding="{Binding #SourceType.SelectedIndex}" Value="1">
+                                      <ia:ChangePropertyAction PropertyName="IsVisible" Value="True"></ia:ChangePropertyAction>
+                                  </ia:DataTriggerBehavior>
+                                    <ia:DataTriggerBehavior Binding="{Binding #SourceType.SelectedIndex}" Value="0">
+                                        <ia:ChangePropertyAction PropertyName="IsVisible" Value="False"></ia:ChangePropertyAction>
+                                    </ia:DataTriggerBehavior>
+                                </i:Interaction.Behaviors>
+                            </views:DirectoryPicker>
+                            
+
                             <Button Grid.Column="1" avalonia:Attached.Icon="fa fa-trash" FontSize="18" Margin="10,0"
                                     Command="{Binding DataContext.RemoveConfigScript, RelativeSource={RelativeSource AncestorType={x:Type views:SettingsWindow}}}"
                                     CommandParameter="{Binding}"/>
                         </Grid>
+                            
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <Button Command="{Binding AddNewConfigScriptRow}" Margin="0,10">
                 <StackPanel Orientation="Horizontal">
                     <avalonia:Icon Value="fa fa-plus" Margin="4,0"/>
-                    <TextBlock>Add new config script file</TextBlock>
-                </StackPanel>
-            </Button>
-        </StackPanel>
-        <StackPanel Orientation="Vertical" Margin="5">
-            <StackPanel Orientation="Horizontal">
-                <avalonia:Icon Value="fa fa-folder-open" Margin="4, 0, 10, 0"/>
-                <TextBlock Classes="h2" Text="Config source directories:" Margin="0, 5"/>
-            </StackPanel>
-            <ItemsControl Items="{Binding ConfigScriptDirectories}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="120" />
-                                <ColumnDefinition Width="100" />
-                            </Grid.ColumnDefinitions>
-                            <views:DirectoryPicker Grid.Column="0" Name="DirectoryPicker" DirPath="{Binding Path}">
-                                <i:Interaction.Behaviors>
-                                    <ia:EventTriggerBehavior EventName="OnDirectoryPicked" SourceObject="{Binding #DirectoryPicker}">
-                                        <ia:InvokeCommandAction Command="{Binding OnDirectoryPicked}" PassEventArgsToCommand="True"/>
-                                    </ia:EventTriggerBehavior>
-                                </i:Interaction.Behaviors>
-                            </views:DirectoryPicker>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <CheckBox IsChecked="{Binding Recursive}">
-                                    <i:Interaction.Behaviors>
-                                        <ia:EventTriggerBehavior EventName="Checked">
-                                            <ia:InvokeCommandAction Command="{Binding OnCheckboxChanged}" CommandParameter="True"/>
-                                        </ia:EventTriggerBehavior>
-                                        <ia:EventTriggerBehavior EventName="Unchecked">
-                                            <ia:InvokeCommandAction Command="{Binding OnCheckboxChanged}" CommandParameter="False"/>
-                                        </ia:EventTriggerBehavior>
-                                    </i:Interaction.Behaviors>
-                                </CheckBox>
-                                <Label>Recursive scan</Label>
-                            </StackPanel>
-                            
-                            <Button Grid.Column="2" avalonia:Attached.Icon="fa fa-trash" FontSize="18" Margin="10,0"
-                                    Command="{Binding DataContext.RemoveConfigScriptDirectory, RelativeSource={RelativeSource AncestorType={x:Type views:SettingsWindow}}}"
-                                    CommandParameter="{Binding}"/>
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <Button Command="{Binding AddNewConfigScriptDirectoryRow}" Margin="0,10">
-                <StackPanel Orientation="Horizontal">
-                    <avalonia:Icon Value="fa fa-plus" Margin="4,0"/>
-                    <TextBlock>Add new config script directory</TextBlock>
+                    <TextBlock>Add new config script</TextBlock>
                 </StackPanel>
             </Button>
         </StackPanel>
