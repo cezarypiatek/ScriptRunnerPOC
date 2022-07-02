@@ -87,6 +87,7 @@ public class MainWindowViewModel : ViewModelBase
 
     private void BuildUi()
     {
+        var selectedActionName = SelectedAction?.Name;
         var sources = AppSettingsService.Load().ConfigScripts ?? new List<string>()
         {
             Path.Combine(AppContext.BaseDirectory,"Scripts/TextInputScript.json")
@@ -97,9 +98,13 @@ public class MainWindowViewModel : ViewModelBase
             Actions.Add(action);
         }
 
-        if (Actions.FirstOrDefault() is { } actionToSelect)
+        if (string.IsNullOrWhiteSpace(selectedActionName) == false && Actions.FirstOrDefault(x => x.Name == selectedActionName) is { } previouslySelected)
         {
-            SelectedAction = actionToSelect;
+            SelectedAction = previouslySelected;
+        }
+        else if(Actions.FirstOrDefault() is { } firstAction)
+        {
+            SelectedAction = firstAction;
         }
     }
 
@@ -172,12 +177,15 @@ public class MainWindowViewModel : ViewModelBase
         var window = new SettingsWindow();
         window.Closed += (sender, args) =>
         {
-            BuildUi();
+            RefreshSettings();
         };
         window.Show();
     }
 
-    public void RefreshSettings() => BuildUi();
+    public void RefreshSettings()
+    {
+        BuildUi();
+    }
 
 
     public bool SelectedActionInstalled
