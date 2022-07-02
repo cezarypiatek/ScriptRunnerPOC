@@ -102,10 +102,12 @@
                             <RowDefinition Height="Auto"></RowDefinition>
                             <RowDefinition Height="*"></RowDefinition>
                             <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
                         </Grid.RowDefinitions>
                         <TextBox  Text="{Binding ExecutedCommand}"  Background="#474747" CornerRadius="0" BorderBrush="#6e6e6e" Padding="5"  Margin="10" BorderThickness="1" IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Stretch"></TextBox>
                         <TextBox Grid.Row="1" Classes="consoleOutput" Text="{Binding CurrentRunOutput, Mode=OneWay}" CaretIndex="{Binding OutputIndex, Mode=OneWay}" />
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,10">
+                        <TextBox IsVisible="{Binding ExecutionPending, Mode=OneWay}" Text="{Binding InputCommand, Mode=TwoWay}" KeyUp="AcceptCommand"  Grid.Row="2" Margin="0,10,10,0" FontFamily="Consolas"></TextBox>
+                        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,10,0,10">
                             <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0"
                                      Command="{Binding CancelExecution}" IsEnabled="{Binding ExecutionPending}">Cancel</Button>
                             <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />

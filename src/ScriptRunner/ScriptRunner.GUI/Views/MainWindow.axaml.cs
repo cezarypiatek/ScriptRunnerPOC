@@ -1,6 +1,8 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using ScriptRunner.GUI.Settings;
+using ScriptRunner.GUI.ViewModels;
 using static System.Double;
 
 namespace ScriptRunner.GUI.Views;
@@ -40,5 +42,17 @@ public partial class MainWindow : Window
             });
         };
 
+    }
+
+
+    public void AcceptCommand(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            if (sender is TextBox {DataContext: RunningJobViewModel viewModel})
+            {
+                viewModel.AcceptCommand();
+            }
+        }
     }
 }
