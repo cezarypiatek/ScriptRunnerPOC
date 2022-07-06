@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Layout;
 using Avalonia.Media;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.Views;
@@ -94,15 +92,26 @@ public class ParamsPanelFactory
                     Delimiter = delimiter
                 };
             case PromptType.Datepicker:
+                var yearVisible = p.GetPromptSettings("yearVisible", bool.Parse, true);
+                var monthVisible = p.GetPromptSettings("monthVisible", bool.Parse, true);
+                var dayVisible = p.GetPromptSettings("dayVisible", bool.Parse, true);
+                DateTimeOffset? selectedDate = string.IsNullOrWhiteSpace(value)?(p.GetPromptSettings("todayAsDefault", bool.Parse, false)? DateTimeOffset.Now.Date:null) : DateTimeOffset.Parse(value);
                 return new DatePickerControl
                 {
-                    Control = new DatePicker
-                    {
-                        SelectedDate = string.IsNullOrWhiteSpace(value)?(p.GetPromptSettings("todayAsDefault", bool.Parse, false)? DateTimeOffset.Now.Date:null) : DateTimeOffset.Parse(value),
-                        YearVisible = p.GetPromptSettings("yearVisible", bool.Parse, true),
-                        MonthVisible = p.GetPromptSettings("monthVisible", bool.Parse, true),
-                        DayVisible = p.GetPromptSettings("dayVisible", bool.Parse, true),
-                    },
+                    Control = yearVisible && monthVisible && dayVisible? 
+                            new CalendarDatePicker
+                            {
+                                SelectedDate = selectedDate?.Date,
+                                IsTodayHighlighted = true
+                            }
+                            : new DatePicker
+                            {
+                                SelectedDate = selectedDate,
+                                YearVisible = yearVisible,
+                                MonthVisible = monthVisible,
+                                DayVisible = dayVisible,
+                                
+                            },
                     Format = p.GetPromptSettings("format", out var format) ? format : null,
                 };
             case PromptType.TimePicker:
@@ -197,7 +206,12 @@ public class DatePickerControl : IControlRecord
 
     public string GetFormattedValue()
     {
-        var selectedDateTime = ((DatePicker)Control).SelectedDate?.DateTime;
+        var selectedDateTime =  Control switch
+        {
+            DatePicker dp => dp.SelectedDate?.DateTime,
+            CalendarDatePicker cdp => cdp.SelectedDate?.Date,
+            _ => null
+        };
         if (string.IsNullOrWhiteSpace(Format) == false && selectedDateTime is {} value)
         {
             return value.ToString(Format);
