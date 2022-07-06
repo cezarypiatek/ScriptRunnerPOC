@@ -1,9 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.ScriptReader;
@@ -14,6 +20,46 @@ namespace ScriptRunner.GUI.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
+    public string GetProductFullVersion()
+    {
+        var assemblyVersion = this.GetType().Assembly.GetName().Version;
+        return $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
+    }
+
+    public class ReleaseResponse
+    {
+        public string tag_name { get; set; }
+    }
+
+    public async Task<bool> CheckIsNewerVersionAvailable()
+    {
+        using var httpClient = new HttpClient();
+        var currentProductVersionRaw = GetProductFullVersion();
+        try
+        {
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("ScriptRunner", currentProductVersionRaw));
+            var response = await httpClient.GetAsync("https://api.github.com/repos/cezarypiatek/ScriptRunnerPOC/releases/latest").ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
+            {
+                var payload = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<ReleaseResponse>(payload);
+                if (string.IsNullOrWhiteSpace(result?.tag_name) == false)
+                {
+                    var latestVersion = Version.Parse(result.tag_name);
+
+                    var currentVersion = Version.Parse(currentProductVersionRaw);
+                    return latestVersion > currentVersion;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+
+        return  false;
+    }
+
     /// <summary>
     /// Contains panels with generated controls for every defined action
     /// </summary>
@@ -70,12 +116,49 @@ public class MainWindowViewModel : ViewModelBase
         return false;
     }
 
+    public bool IsNewerVersionAvailable
+    {
+        get => _isNewerVersionAvailable;
+        set => this.RaiseAndSetIfChanged(ref _isNewerVersionAvailable, value);
+    }
+
+    private bool _isNewerVersionAvailable;
+
+
+
+
     public MainWindowViewModel()
     {
+        Task.Run(async () =>
+        {
+            var isNewerVersion = await CheckIsNewerVersionAvailable();
+            if (isNewerVersion)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    IsNewerVersionAvailable = true;
+                });
+            }
+        });
         ActionParametersPanel = new ObservableCollection<IPanel>();
         Actions = new ObservableCollection<ScriptConfig>();
         ParameterSetsForCurrentAction = new ObservableCollection<ArgumentSet>();
         BuildUi();
+    }
+
+    public void CheckForUpdates()
+    {
+        OpenWebsite(@"https://github.com/cezarypiatek/ScriptRunnerPOC/releases/");
+    }
+
+
+    public static void OpenWebsite(string url)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = url.Replace("&", "^&"),
+            UseShellExecute = true
+        });
     }
 
     private IEnumerable<IControlRecord> _controlRecords;
