@@ -57,9 +57,16 @@
       <StackPanel Margin="20, 10" IsVisible="{Binding IsActionSelected, Mode=OneWay}">
         <StackPanel Orientation="Vertical">
 
+            <StackPanel Orientation="Horizontal" Margin="7,0" >
+                <Label VerticalAlignment="Center">From: </Label>
+                <TextBlock Margin="10, 0"
+                           Text="{Binding SelectedAction.Source}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            </StackPanel>
           <TextBlock Classes="h1" Margin="10"
                      Text="{Binding SelectedAction.Name}" />
 
+          
+          
           <TextBlock Margin="10, 0"
                      Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
 

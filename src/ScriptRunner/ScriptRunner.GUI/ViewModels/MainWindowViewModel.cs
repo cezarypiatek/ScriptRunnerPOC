@@ -194,7 +194,7 @@ public class MainWindowViewModel : ViewModelBase
             }
         };
         Actions.Clear();
-        foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x.Path)))
+        foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x)))
         {
             Actions.Add(action);
         }
