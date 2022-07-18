@@ -32,7 +32,7 @@
             <ItemsControl Items="{Binding ConfigScriptFiles}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Grid>
+                        <Grid Margin="0,0,0,10">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"></RowDefinition>
                                 <RowDefinition Height="Auto"></RowDefinition>
@@ -41,15 +41,15 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="100" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2">
-                                <TextBox Text="{Binding Name, Mode=TwoWay}"></TextBox>
-                                <ComboBox Name="SourceType" SelectedIndex="{Binding Type, Mode=TwoWay}">
+                            <StackPanel Margin="0,0,0,10" Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2">
+                                <TextBox Width="150" Text="{Binding Name, Mode=TwoWay}"></TextBox>
+                                <ComboBox Margin="10,0" Name="SourceType" SelectedIndex="{Binding Type, Mode=TwoWay}">
                                     <ComboBoxItem IsSelected="True" Name="FileSelected" >File</ComboBoxItem>
                                     <ComboBoxItem Name="DirectorySelected">Directory</ComboBoxItem>
                                 </ComboBox>
 
 								<!-- RECURSIVE SCAN CONTROL -->
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" Margin="10,0">
                                     <i:Interaction.Behaviors>
                                         <ia:DataTriggerBehavior Binding="{Binding #SourceType.SelectedIndex}" Value="1">
                                             <ia:ChangePropertyAction PropertyName="IsVisible" Value="True"></ia:ChangePropertyAction>
