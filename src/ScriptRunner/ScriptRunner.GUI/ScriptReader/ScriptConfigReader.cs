@@ -50,6 +50,7 @@ public static class ScriptConfigReader
             var scriptConfig = JsonSerializer.Deserialize<ActionsConfig>(jsonString, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
                 Converters = {new PromptTypeJsonConverter(), new ParamTypeJsonConverter()}
             })!;
 
@@ -57,10 +58,22 @@ public static class ScriptConfigReader
             foreach (var action in scriptConfig.Actions)
             {
                 action.Source = fileName;
+
+                if (string.IsNullOrWhiteSpace(action.WorkingDirectory))
+                {
+                    action.WorkingDirectory = Path.GetDirectoryName(fileName);
+                }
+
+                if (string.IsNullOrWhiteSpace(action.InstallCommandWorkingDirectory))
+                {
+                    action.InstallCommandWorkingDirectory = Path.GetDirectoryName(fileName);
+                }
+
                 var defaultSet = new ArgumentSet()
                 {
                     Description = "<default>"
                 };
+
                 foreach (var param in action.Params)
                 {
                     defaultSet.Arguments[param.Name] = param.Default;
@@ -78,14 +91,22 @@ public static class ScriptConfigReader
                 }
 
                 action.PredefinedArgumentSets.Insert(0, defaultSet);
-                if (string.IsNullOrWhiteSpace(action.WorkingDirectory))
-                {
-                    action.WorkingDirectory = Path.GetDirectoryName(fileName);
-                }
 
-                if (string.IsNullOrWhiteSpace(action.InstallCommandWorkingDirectory))
+                foreach (var param in action.Params.Where(x=>x.Prompt == PromptType.FileContent))
                 {
-                    action.InstallCommandWorkingDirectory = Path.GetDirectoryName(fileName);
+                    foreach (var set in action.PredefinedArgumentSets)
+                    {
+                        if (set.Arguments.TryGetValue(param.Name, out var defaultValue))
+                        {
+                            if (string.IsNullOrWhiteSpace(defaultValue) == false)
+                            {
+                                if (Path.IsPathRooted(defaultValue) == false)
+                                {
+                                    set.Arguments[param.Name] = Path.Combine(Path.GetDirectoryName(fileName)!, defaultValue);
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

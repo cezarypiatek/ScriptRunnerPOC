@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -146,6 +148,17 @@ public class ParamsPanelFactory
                         Text = value
                     }
                 };
+            case PromptType.FileContent:
+                return new FileContent(p.GetPromptSettings("extension", out var extension)?extension:"dat")
+                {
+                    Control = new TextBox
+                    {
+                        TextWrapping = TextWrapping.Wrap,
+                        AcceptsReturn = true,
+                        Height = 100,
+                        Text = File.Exists(value)? File.ReadAllText(value): string.Empty
+                    }
+                };
             case PromptType.FilePicker:
                 return new FilePickerControl
                 {
@@ -265,6 +278,26 @@ public class TextControl : IControlRecord
     public string GetFormattedValue()
     {
         return ((TextBox)Control).Text;
+    }
+
+    public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
+}
+public class FileContent : IControlRecord
+{
+    public IControl Control { get; set; }
+    public string FileName { get; set; }
+
+    public FileContent(string extension)
+    {
+        FileName = Path.GetTempFileName() + "." + extension;
+    }
+
+    public string GetFormattedValue()
+    {
+        var fileContent = ((TextBox)Control).Text;
+        File.WriteAllText(FileName, fileContent, Encoding.UTF8);
+        return FileName;
     }
 
     public string Name { get; set; }
