@@ -4,56 +4,96 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using ScriptRunner.GUI.ScriptConfigs;
+using ScriptRunner.GUI.Settings;
 
 namespace ScriptRunner.GUI.ScriptReader;
 
 public static class ScriptConfigReader
 {
-    public static IEnumerable<ScriptConfig> Load(string fileName)
+    public static IEnumerable<ScriptConfig> Load(ConfigScriptEntry source)
+    {
+        if (source.Type == ConfigScriptType.File)
+        {
+            foreach (var scriptConfig in LoadFileSource(source.Path))
+            {
+                yield return scriptConfig;
+            }
+            yield break;
+        }
+
+        if (source.Type == ConfigScriptType.Directory)
+        {
+            foreach (var file in Directory.EnumerateFiles(source.Path, "*.json", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
+            {
+                foreach (var scriptConfig in LoadFileSource(file))
+                {
+                    yield return scriptConfig;
+                }
+            }
+            yield break;
+        }
+    }
+
+    private static IEnumerable<ScriptConfig> LoadFileSource(string fileName)
     {
         if (!File.Exists(fileName)) return Array.Empty<ScriptConfig>();
 
-        var jsonString = File.ReadAllText(fileName);
-        var scriptConfig = JsonSerializer.Deserialize<ActionsConfig>(jsonString, new JsonSerializerOptions
+        try
         {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new PromptTypeJsonConverter(), new ParamTypeJsonConverter() }
-        })!;
+            var jsonString = File.ReadAllText(fileName);
 
-
-        foreach (var action in scriptConfig.Actions)
-        {
-            var defaultSet = new ArgumentSet()
+            if (jsonString.Contains("ScriptRunnerSchema.json") == false)
             {
-                Description = "<default>"
-            };
-            foreach (var param in action.Params)
-            {
-                defaultSet.Arguments[param.Name] = param.Default;
+                return Array.Empty<ScriptConfig>();
             }
 
-            foreach (var set in action.PredefinedArgumentSets.Where(x=>x.FallbackToDefault))
+            var scriptConfig = JsonSerializer.Deserialize<ActionsConfig>(jsonString, new JsonSerializerOptions
             {
-                foreach (var (key,val) in defaultSet.Arguments)
+                PropertyNameCaseInsensitive = true,
+                Converters = {new PromptTypeJsonConverter(), new ParamTypeJsonConverter()}
+            })!;
+
+
+            foreach (var action in scriptConfig.Actions)
+            {
+                action.Source = fileName;
+                var defaultSet = new ArgumentSet()
                 {
-                    if (set.Arguments.ContainsKey(key) == false)
+                    Description = "<default>"
+                };
+                foreach (var param in action.Params)
+                {
+                    defaultSet.Arguments[param.Name] = param.Default;
+                }
+
+                foreach (var set in action.PredefinedArgumentSets.Where(x => x.FallbackToDefault))
+                {
+                    foreach (var (key, val) in defaultSet.Arguments)
                     {
-                        set.Arguments[key] = val;
+                        if (set.Arguments.ContainsKey(key) == false)
+                        {
+                            set.Arguments[key] = val;
+                        }
                     }
+                }
+
+                action.PredefinedArgumentSets.Insert(0, defaultSet);
+                if (string.IsNullOrWhiteSpace(action.WorkingDirectory))
+                {
+                    action.WorkingDirectory = Path.GetDirectoryName(fileName);
+                }
+
+                if (string.IsNullOrWhiteSpace(action.InstallCommandWorkingDirectory))
+                {
+                    action.InstallCommandWorkingDirectory = Path.GetDirectoryName(fileName);
                 }
             }
 
-            action.PredefinedArgumentSets.Insert(0, defaultSet);
-            if (string.IsNullOrWhiteSpace(action.WorkingDirectory))
-            {
-                action.WorkingDirectory = Path.GetDirectoryName(fileName);
-            }
-            if (string.IsNullOrWhiteSpace(action.InstallCommandWorkingDirectory))
-            {
-                action.InstallCommandWorkingDirectory = Path.GetDirectoryName(fileName);
-            }
+            return scriptConfig.Actions;
         }
-
-        return scriptConfig.Actions;
+        catch
+        {
+            return Enumerable.Empty<ScriptConfig>();
+        }
     }
 }

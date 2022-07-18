@@ -16,6 +16,7 @@ public class ScriptConfig
     public List<ScriptParam> Params { get; set; } = new();
     public List<ArgumentSet> PredefinedArgumentSets { get; set; } = new();
     public Dictionary<string, string?> EnvironmentVariables { get; set; } = new();
+    public string? Source { get; set; }
 
 }
 public class ArgumentSet
