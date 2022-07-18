@@ -80,7 +80,8 @@
                                         "directoryPicker",
                                         "datePicker",
                                         "numeric",
-                                        "timePicker"
+                                        "timePicker",
+                                        "fileContent"
                                     ]
                                 }
                             },
@@ -201,6 +202,22 @@
                                                     "type": "string"
                                                 },
                                                 "step": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "const": "fileContent"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "properties": {
+                                                "extension": {
                                                     "type": "string"
                                                 }
                                             }
