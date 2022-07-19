@@ -9,7 +9,7 @@
           <ColumnDefinition Width="*"></ColumnDefinition>
           <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <TextBox Grid.Column="0" x:Name="FilePathTextBox"></TextBox>
+      <TextBox Grid.Column="0" x:Name="FilePathTextBox" IsReadOnly="True"></TextBox>
       <Button Margin="5,0"  Grid.Column="1" Width="100" Click="ChangeFileClick" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">...</Button>
   </Grid>
 </UserControl>
