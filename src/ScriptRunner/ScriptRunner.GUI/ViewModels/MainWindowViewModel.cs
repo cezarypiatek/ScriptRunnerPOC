@@ -288,6 +288,12 @@ public class MainWindowViewModel : ViewModelBase
         BuildUi();
     }
 
+    public void OpenVaultWindow()
+    {
+        var window = new Vault();
+        window.Show();
+    }
+
 
     public bool SelectedActionInstalled
     {
