@@ -81,11 +81,17 @@ public class AppSettingsService
 
     private static string GetSettingsPath()
     {
+        return GetSettingsPathFor("settings.json");
+    }
+
+    public static string GetSettingsPathFor(string settingsFile)
+    {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ScriptRunner");
         if (Directory.Exists(path) == false)
         {
             Directory.CreateDirectory(path);
         }
-        return Path.Combine(path, "settings.json");
+
+        return Path.Combine(path, settingsFile);
     }
 }

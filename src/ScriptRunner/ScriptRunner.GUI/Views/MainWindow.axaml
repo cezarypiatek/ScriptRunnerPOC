@@ -48,7 +48,8 @@
       </ListBox>
       <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" VerticalAlignment="Bottom" Grid.Row="1">
         <Button i:Attached.Icon="fas fa-cog" Margin="5" Height="35" Width="50" FontSize="18" Command="{Binding OpenSettingsWindow}"   ToolTip.Tip="Configure actions sources"/>
-        <Button i:Attached.Icon="fas fa-sync" Height="35" Width="50" FontSize="18" Command="{Binding RefreshSettings}"   ToolTip.Tip="Refresh actions" />
+        <Button i:Attached.Icon="fas fa-sync" Margin="0,0,5,0" Height="35" Width="50" FontSize="18" Command="{Binding RefreshSettings}"   ToolTip.Tip="Refresh actions" />
+        <Button i:Attached.Icon="fas fa-lock" Height="35" Width="50" FontSize="18" Command="{Binding OpenVaultWindow}"   ToolTip.Tip="Open Vault" />
       </StackPanel>
     </Grid>
     <GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"></GridSplitter>
