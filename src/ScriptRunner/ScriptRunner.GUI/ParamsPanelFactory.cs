@@ -63,12 +63,11 @@ public class ParamsPanelFactory
                     }
                 };
             case PromptType.Password:
-                return new TextControl
+                return new PasswordControl
                 {
-                    Control = new TextBox
+                    Control = new PasswordBox()
                     {
-                        PasswordChar = '*',
-                        Text = value
+                        Password = value
                     },
                     MaskingRequired = true
                 };
@@ -278,6 +277,18 @@ public class TextControl : IControlRecord
     public string GetFormattedValue()
     {
         return ((TextBox)Control).Text;
+    }
+
+    public string Name { get; set; }
+    public bool MaskingRequired { get; set; }
+}
+public class PasswordControl : IControlRecord
+{
+    public IControl Control { get; set; }
+
+    public string GetFormattedValue()
+    {
+        return ((PasswordBox)Control).Password;
     }
 
     public string Name { get; set; }
