@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" Width="400"
+        SizeToContent="WidthAndHeight"
+        x:Class="ScriptRunner.GUI.Views.VaultPicker"
+        WindowStartupLocation="CenterOwner"
+        Title="Pick secret">
+  <StackPanel Margin="40">
+      <ComboBox Name="SecretsCombo" Items="{Binding}"  HorizontalAlignment="Center" Margin="10,0,0,20" Width="250">
+          <ComboBox.ItemTemplate>
+              <DataTemplate>
+                  <TextBlock Text="{Binding Name}" FontFamily="{Binding}" />
+              </DataTemplate>
+          </ComboBox.ItemTemplate>
+      </ComboBox>
+      <Button HorizontalAlignment="Center" Click="Accept">Use selected secret</Button>
+  </StackPanel>
+</Window>
