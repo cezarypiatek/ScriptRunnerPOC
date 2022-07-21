@@ -16,6 +16,7 @@ public static class ScriptConfigReader
         {
             foreach (var scriptConfig in LoadFileSource(source.Path))
             {
+                scriptConfig.SourceName = source.Name;
                 yield return scriptConfig;
             }
             yield break;
@@ -27,6 +28,7 @@ public static class ScriptConfigReader
             {
                 foreach (var scriptConfig in LoadFileSource(file))
                 {
+                    scriptConfig.SourceName = source.Name;
                     yield return scriptConfig;
                 }
             }
