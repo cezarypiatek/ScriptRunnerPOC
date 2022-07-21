@@ -80,6 +80,8 @@ public class MainWindowViewModel : ViewModelBase
         private set => this.RaiseAndSetIfChanged(ref _actions, value);
     }
 
+
+
     public ObservableCollection<RunningJobViewModel> RunningJobs { get; set; } = new();
 
     public RunningJobViewModel SelectedRunningJob
@@ -188,13 +190,13 @@ public class MainWindowViewModel : ViewModelBase
         {
             new ConfigScriptEntry
             {
-                Name = "Solution test script",
+                Name = "Samples",
                 Path = Path.Combine(AppContext.BaseDirectory,"Scripts/TextInputScript.json"),
                 Type = ConfigScriptType.File
             }
         };
         Actions.Clear();
-        foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x)))
+        foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x)).OrderBy(x=>x.SourceName).ThenBy(x=>x.Name))
         {
             Actions.Add(action);
         }
