@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.Versioning;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using ReactiveUI;
@@ -19,20 +17,27 @@ namespace ScriptRunner.GUI.ViewModels
             var vaultPath = AppSettingsService.GetSettingsPathFor("Vault.dat");
             if (File.Exists(vaultPath))
             {
-                File.Decrypt(vaultPath);
-                var content = File.ReadAllText(vaultPath);
-                File.Encrypt(vaultPath);
-                var data = JsonSerializer.Deserialize<List<VaultEntry>>(content);
-                return data ?? new List<VaultEntry>();
+                var contentEncrypted = File.ReadAllText(vaultPath);
+                try
+                {
+                    var content = EncryptionHelper.Decrypt(contentEncrypted);
+                    var data = JsonSerializer.Deserialize<List<VaultEntry>>(content);
+                    return data ?? new List<VaultEntry>();
+                }
+                catch (Exception e)
+                {
+                    //TODO: Invalid key 
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
             return Array.Empty<VaultEntry>();
         }
 
-        public static void UpdateVault(List<VaultEntry> date)
+        public static void UpdateVault(List<VaultEntry> data)
         {
             var vaultPath = AppSettingsService.GetSettingsPathFor("Vault.dat");
-            File.WriteAllText(vaultPath, JsonSerializer.Serialize(date), Encoding.UTF8);
-            File.Encrypt(vaultPath);
+            File.WriteAllText(vaultPath, EncryptionHelper.Encrypt(JsonSerializer.Serialize(data)), Encoding.UTF8);
         }
     }
 
