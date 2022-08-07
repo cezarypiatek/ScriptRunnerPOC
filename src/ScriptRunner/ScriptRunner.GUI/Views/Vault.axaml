@@ -32,10 +32,15 @@
                             <Label Margin="0,0,10,0" VerticalAlignment="Center">Key</Label>
                             <TextBox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}"></TextBox>
                             <Label Grid.Column="2" Margin="10,0,10,0" VerticalAlignment="Center">Value</Label>
-                            <TextBox  PasswordChar="*" Grid.Column="3" Text="{Binding Secret, Mode=TwoWay}"></TextBox>
+                            <TextBox  PasswordChar="*" Grid.Column="3" Text="{Binding Secret, Mode=TwoWay}" ></TextBox>
                         </Grid>
                   </DataTemplate>
               </ItemsControl.ItemTemplate>
+              <ItemsControl.Styles>
+                  <Style Selector="ItemsPresenter">
+                      <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
+                  </Style>
+              </ItemsControl.Styles>
           </ItemsControl>
           <Button  Command="{Binding AddNewVaultEntry}" Margin="20">
               <StackPanel Orientation="Horizontal">

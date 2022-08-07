@@ -59,7 +59,7 @@
         <Button i:Attached.Icon="fas fa-lock" Height="35" Width="50" FontSize="18" Command="{Binding OpenVaultWindow}"   ToolTip.Tip="Open Vault" />
       </StackPanel>
     </Grid>
-    <GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"></GridSplitter>
+    <GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns" IsTabStop="False"></GridSplitter>
     <!-- Below instead of stack panel will be Reactive UI View Host displaying current action props-->
     <ScrollViewer Grid.Column="2" Grid.Row="1">
       <StackPanel Margin="20, 10" IsVisible="{Binding IsActionSelected, Mode=OneWay}">
@@ -101,7 +101,13 @@
                 </ComboBox.DataTemplates>
               </ComboBox>
             </StackPanel>
-            <ItemsControl Items="{Binding ActionParametersPanel}"></ItemsControl>
+            <ItemsControl Items="{Binding ActionParametersPanel}">
+                <ItemsControl.Styles>
+                    <Style Selector="ItemsPresenter">
+                        <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
+                    </Style>
+                </ItemsControl.Styles>
+            </ItemsControl>
           </StackPanel>
 
           <StackPanel Orientation="Horizontal" Margin="0, 20, 0 , 5">
@@ -111,7 +117,7 @@
 
       </StackPanel>
     </ScrollViewer>
-    <GridSplitter Grid.Row="2" Grid.Column="0"  ResizeDirection="Rows" Grid.ColumnSpan="3" BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
+    <GridSplitter IsTabStop="False" Grid.Row="2" Grid.Column="0"  ResizeDirection="Rows" Grid.ColumnSpan="3" BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
     <TabControl x:Name="RunningJobsPanel" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Items="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
       <TabControl.ItemTemplate>
         <DataTemplate>

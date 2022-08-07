@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -21,10 +22,10 @@ public class ParamsPanelFactory
 
         var controlRecords = new List<IControlRecord>();
 
-        foreach (var param in parameters)
+        foreach (var (param,i) in parameters.Select((x,i)=>(x,i)))
         {
             values.TryGetValue(param.Name, out var value);
-            var controlRecord = CreateControlRecord(param, value);
+            var controlRecord = CreateControlRecord(param, value, i);
             controlRecord.Name = param.Name;
             var actionPanel = new StackPanel
             {
@@ -50,7 +51,7 @@ public class ParamsPanelFactory
         };
     }
 
-    private static IControlRecord CreateControlRecord(ScriptParam p, string? value)
+    private static IControlRecord CreateControlRecord(ScriptParam p, string? value, int index)
     {
         switch (p.Prompt)
         {
@@ -59,7 +60,9 @@ public class ParamsPanelFactory
                 {
                     Control = new TextBox
                     {
-                        Text = value
+                        Text = value,
+                        TabIndex = index,
+                        IsTabStop = true
                     }
                 };
             case PromptType.Password:
@@ -67,7 +70,9 @@ public class ParamsPanelFactory
                 {
                     Control = new PasswordBox()
                     {
-                        Password = value
+                        Password = value,
+                        TabIndex = index,
+                        IsTabStop = true
                     },
                     MaskingRequired = true
                 };
@@ -77,7 +82,9 @@ public class ParamsPanelFactory
                     Control = new ComboBox
                     { 
                         Items = p.GetPromptSettings("options", out var options) ? options.Split(","):Array.Empty<string>(),
-                        SelectedItem = value
+                        SelectedItem = value,
+                        TabIndex = index,
+                        IsTabStop = true
                     }
                 };
             case PromptType.Multiselect:
@@ -88,7 +95,9 @@ public class ParamsPanelFactory
                     {
                         SelectionMode = SelectionMode.Multiple,
                         Items = p.GetPromptSettings("options", out var multiSelectOptions) ? multiSelectOptions.Split(delimiter) : Array.Empty<string>(),
-                        SelectedItems = new AvaloniaList<string>((value ?? string.Empty).Split(delimiter))
+                        SelectedItems = new AvaloniaList<string>((value ?? string.Empty).Split(delimiter)),
+                        TabIndex = index,
+                        IsTabStop = true
                     },
                     Delimiter = delimiter
                 };
@@ -103,7 +112,9 @@ public class ParamsPanelFactory
                             new CalendarDatePicker
                             {
                                 SelectedDate = selectedDate?.Date,
-                                IsTodayHighlighted = true
+                                IsTodayHighlighted = true,
+                                TabIndex = index,
+                                IsTabStop = true
                             }
                             : new DatePicker
                             {
@@ -111,7 +122,9 @@ public class ParamsPanelFactory
                                 YearVisible = yearVisible,
                                 MonthVisible = monthVisible,
                                 DayVisible = dayVisible,
-                                
+                                TabIndex = index,
+                                IsTabStop = true
+
                             },
                     Format = p.GetPromptSettings("format", out var format) ? format : null,
                 };
@@ -121,7 +134,9 @@ public class ParamsPanelFactory
                     Control = new TimePicker
                     {
                         SelectedTime = string.IsNullOrWhiteSpace(value)?null: TimeSpan.Parse(value),
-                        ClockIdentifier = "24HourClock"
+                        ClockIdentifier = "24HourClock",
+                        TabIndex = index,
+                        IsTabStop = true
                     },
                     Format = p.GetPromptSettings("format", out var timeFormat) ? timeFormat : null,
                 };
@@ -131,7 +146,9 @@ public class ParamsPanelFactory
                 {
                     Control = new CheckBox
                     {
-                        IsChecked = string.IsNullOrWhiteSpace(value) == false && value == checkedValueText
+                        IsChecked = string.IsNullOrWhiteSpace(value) == false && value == checkedValueText,
+                        TabIndex = index,
+                        IsTabStop = true
                     },
                     CheckedValue = checkedValueText,
                     UncheckedValue =  p.GetPromptSettings("uncheckedValue", out var uncheckedValue)? uncheckedValue: "false",
@@ -144,7 +161,9 @@ public class ParamsPanelFactory
                         TextWrapping = TextWrapping.Wrap,
                         AcceptsReturn = true,
                         Height = 100,
-                        Text = value
+                        Text = value,
+                        TabIndex = index,
+                        IsTabStop = true
                     }
                 };
             case PromptType.FileContent:
@@ -155,7 +174,9 @@ public class ParamsPanelFactory
                         TextWrapping = TextWrapping.Wrap,
                         AcceptsReturn = true,
                         Height = 100,
-                        Text = File.Exists(value)? File.ReadAllText(value): string.Empty
+                        Text = File.Exists(value)? File.ReadAllText(value): string.Empty,
+                        TabIndex = index,
+                        IsTabStop = true
                     }
                 };
             case PromptType.FilePicker:
@@ -163,7 +184,9 @@ public class ParamsPanelFactory
                 {
                     Control = new FilePicker
                     {
-                        FilePath = value
+                        FilePath = value,
+                        TabIndex = index,
+                        IsTabStop = true
                     }
                 };
             case PromptType.DirectoryPicker:
@@ -171,7 +194,9 @@ public class ParamsPanelFactory
                 {
                     Control = new DirectoryPicker
                     {
-                        DirPath = value
+                        DirPath = value,
+                        TabIndex = index,
+                        IsTabStop = true
                     }
                 };
             case PromptType.Numeric:
@@ -182,6 +207,8 @@ public class ParamsPanelFactory
                         Minimum = p.GetPromptSettings("min", out var minValue) && double.TryParse(minValue, out var mindDouble)? mindDouble : double.MinValue,
                         Maximum = p.GetPromptSettings("max", out var maxValue) && double.TryParse(maxValue, out var maxDouble)? maxDouble: double.MaxValue,
                         Increment = p.GetPromptSettings("step", out var stepValue) && double.TryParse(stepValue, out var stepDouble)? stepDouble: 1.0,
+                        TabIndex = index,
+                        IsTabStop = true
                     }
                 };
             default:
