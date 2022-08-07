@@ -7,7 +7,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using Avalonia.Media;
 
 namespace ScriptRunner.GUI.ViewModels;
 
@@ -188,6 +190,28 @@ public class RunningJobViewModel : ViewModelBase
 
     private static readonly Regex ConsoleSpecialCharsPattern = new Regex(@"\u001b\[[\d;]+\w?");
 
+    static readonly Channel<(RunningJobViewModel, string)> ch = Channel.CreateUnbounded<(RunningJobViewModel, string)>();
+
+    static RunningJobViewModel()
+    {
+        try
+        {
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                while (await ch.Reader.WaitToReadAsync())
+                {
+                    var (instance, newContent) = await ch.Reader.ReadAsync();
+                    instance.CurrentRunOutput += newContent + Environment.NewLine;
+                    instance.OutputIndex = instance.CurrentRunOutput.Length;
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            
+        }
+    }
+
     private void AppendToOutput(string? s)
     {
         if (s != null)
@@ -198,12 +222,7 @@ public class RunningJobViewModel : ViewModelBase
                 return;
             }
 
-            Dispatcher.UIThread.Post(() =>
-            {
-                
-                CurrentRunOutput += newContent + Environment.NewLine;
-                OutputIndex = CurrentRunOutput.Length;
-            });
+            ch.Writer.WriteAsync((this, s));
         }
     }
 
