@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Media;
 using ScriptRunner.GUI.ScriptConfigs;
+using ScriptRunner.GUI.ViewModels;
 using ScriptRunner.GUI.Views;
 
 namespace ScriptRunner.GUI;
@@ -414,4 +418,32 @@ public interface IControlRecord
     public string Name { get; set; }
 
     public bool MaskingRequired { get; set; }
+}
+
+public class JobStatusToColorConverter:  IValueConverter
+{
+
+    public static JobStatusToColorConverter Instance { get; } = new();
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is RunningJobStatus status)
+        {
+            return status switch
+            {
+                RunningJobStatus.NotStarted => new SolidColorBrush(Colors.Black),
+                RunningJobStatus.Running => new SolidColorBrush(Colors.LightGreen),
+                RunningJobStatus.Cancelled => new SolidColorBrush(Colors.Yellow),
+                RunningJobStatus.Failed => new SolidColorBrush(Colors.Red),
+                RunningJobStatus.Finished => new SolidColorBrush(Colors.Gray),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        return new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
 }

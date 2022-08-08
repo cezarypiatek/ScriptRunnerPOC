@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:gui="clr-namespace:ScriptRunner.GUI"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="700"
         x:Class="ScriptRunner.GUI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
@@ -126,7 +127,7 @@
               <TextBlock FontSize="16" Text="{Binding Tile}" Margin="0,0,5,0" />
               <TextBlock FontSize="16" Text="{Binding CommandName}" />
             </StackPanel>
-            <TextBlock FontSize="12" Text="{Binding Status, StringFormat='({0})'}"></TextBlock>
+            <TextBlock FontSize="12" Text="{Binding Status, StringFormat='({0})'}" Foreground="{Binding Status, Converter={x:Static gui:JobStatusToColorConverter.Instance}}"></TextBlock>
           </StackPanel>
         </DataTemplate>
       </TabControl.ItemTemplate>
