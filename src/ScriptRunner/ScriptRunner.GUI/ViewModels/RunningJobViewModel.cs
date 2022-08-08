@@ -222,7 +222,7 @@ public class RunningJobViewModel : ViewModelBase
                 return;
             }
 
-            ch.Writer.WriteAsync((this, s));
+            ch.Writer.WriteAsync((this, newContent));
         }
     }
 
