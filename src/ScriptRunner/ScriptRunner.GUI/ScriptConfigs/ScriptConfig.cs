@@ -18,8 +18,7 @@ public class ScriptConfig
     public Dictionary<string, string?> EnvironmentVariables { get; set; } = new();
     public string? Source { get; set; }
     public string? SourceName { get; set; }
-    
-
+    public string AutoParameterBuilderPattern { get; set; }
 }
 public class ArgumentSet
 {
@@ -34,6 +33,7 @@ public class ScriptParam
     public PromptType Prompt { get; set; }
     public string Default { get; set; }
     public Dictionary<string, string> PromptSettings { get; set; } = new();
+    public string? AutoParameterBuilderPattern { get; set; }
 
     public bool GetPromptSettings(string name, [NotNullWhen(true)] out string? value)
     {

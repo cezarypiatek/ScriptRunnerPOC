@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
+using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.Settings;
 
@@ -60,6 +62,22 @@ public static class ScriptConfigReader
             foreach (var action in scriptConfig.Actions)
             {
                 action.Source = fileName;
+
+                var autoParamBuilder = new StringBuilder();
+                foreach (var param in action.Params)
+                {
+                    var actionAutoParameterBuilderPattern = action.AutoParameterBuilderPattern ?? param.AutoParameterBuilderPattern ?? string.Empty;
+                    var paramString = actionAutoParameterBuilderPattern
+                        .Replace("{name}", param.Name)
+                        .Replace("{value}", $"{{{param.Name}}}");
+                    
+                    if (string.IsNullOrWhiteSpace(paramString) == false)
+                    {
+                        autoParamBuilder.Append($" {paramString}");
+                    }
+                }
+
+                action.Command += autoParamBuilder.ToString();
 
                 if (string.IsNullOrWhiteSpace(action.WorkingDirectory))
                 {
