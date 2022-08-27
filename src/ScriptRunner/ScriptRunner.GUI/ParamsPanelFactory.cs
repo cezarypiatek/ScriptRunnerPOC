@@ -10,6 +10,7 @@ using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using ScriptRunner.GUI.ScriptConfigs;
+using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.ViewModels;
 using ScriptRunner.GUI.Views;
 
@@ -17,7 +18,7 @@ namespace ScriptRunner.GUI;
 
 public class ParamsPanelFactory
 {
-    public ParamsPanel Create(IEnumerable<ScriptParam> parameters, Dictionary<string, string> values)
+    public ParamsPanel Create(ScriptConfig action, Dictionary<string, string> values)
     {
         var paramsPanel = new StackPanel
         {
@@ -25,11 +26,12 @@ public class ParamsPanelFactory
         };
 
         var controlRecords = new List<IControlRecord>();
-
-        foreach (var (param,i) in parameters.Select((x,i)=>(x,i)))
+        var appSettings = AppSettingsService.Load();
+        var secretBindings = appSettings.VaultBindings ?? new List<VaultBinding>();
+        foreach (var (param,i) in action.Params.Select((x,i)=>(x,i)))
         {
             values.TryGetValue(param.Name, out var value);
-            var controlRecord = CreateControlRecord(param, value, i);
+            var controlRecord = CreateControlRecord(param, value, i, action, secretBindings);
             controlRecord.Name = param.Name;
             var actionPanel = new StackPanel
             {
@@ -55,7 +57,8 @@ public class ParamsPanelFactory
         };
     }
 
-    private static IControlRecord CreateControlRecord(ScriptParam p, string? value, int index)
+    private static IControlRecord CreateControlRecord(ScriptParam p, string? value, int index,
+        ScriptConfig scriptConfig, List<VaultBinding> secretBindings)
     {
         switch (p.Prompt)
         {
@@ -70,15 +73,40 @@ public class ParamsPanelFactory
                     }
                 };
             case PromptType.Password:
+
+                var passwordBox = new PasswordBox
+                {
+                    Password = value,
+                    TabIndex = index,
+                    IsTabStop = true
+                };
+
+                if (secretBindings.FirstOrDefault(x => x.ActionName == scriptConfig.Name && x.ParameterName == p.Name) is { } binding)
+                {
+                    var vaultEntries = VaultProvider.ReadFromVault();
+                    if (vaultEntries.FirstOrDefault(x => x.Name == binding.VaultKey) is { } vaultEntry)
+                    {
+                        passwordBox.VaultKey = vaultEntry.Name;
+                        passwordBox.Password = vaultEntry.Secret;
+                    }
+                }
+                
+                passwordBox.VaultBindingChanged += (sender, args) =>
+                {
+                    if (args.VaultEntryChoice.RememberBinding)
+                    {
+                        AppSettingsService.UpdateVaultBindings(new VaultBinding
+                        {
+                            ActionName = scriptConfig.Name,
+                            ParameterName = p.Name,
+                            VaultKey = args.VaultEntryChoice.SelectedEntry.Name
+                        });
+                    }
+                };
                 return new PasswordControl
                 {
-                    Control = new PasswordBox()
-                    {
-                        Password = value,
-                        TabIndex = index,
-                        IsTabStop = true
-                    },
-                    MaskingRequired = true
+                    Control = passwordBox,
+                    MaskingRequired = true,
                 };
             case PromptType.Dropdown:
                 return new DropdownControl

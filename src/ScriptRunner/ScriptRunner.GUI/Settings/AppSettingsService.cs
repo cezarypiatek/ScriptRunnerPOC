@@ -79,6 +79,23 @@ public class AppSettingsService
         Save(allSettings);
     }
 
+    public static void UpdateVaultBindings(VaultBinding binding)
+    {
+        var allSettings = Load();
+        allSettings.VaultBindings ??= new List<VaultBinding>();
+        var existingBinding = allSettings.VaultBindings.FirstOrDefault(x => x.ActionName == binding.ActionName && x.ParameterName == x.ParameterName);
+        if (existingBinding != null)
+        {
+            existingBinding.VaultKey = binding.VaultKey;
+        }
+        else
+        {
+            allSettings.VaultBindings.Add(binding);
+        }
+
+        Save(allSettings);
+    }
+
     private static string GetSettingsPath()
     {
         return GetSettingsPathFor("settings.json");

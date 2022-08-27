@@ -2,19 +2,26 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:ScriptRunner.GUI.Views"
         mc:Ignorable="d" Width="400"
         SizeToContent="WidthAndHeight"
         x:Class="ScriptRunner.GUI.Views.VaultPicker"
         WindowStartupLocation="CenterOwner"
         Title="Pick secret">
-  <StackPanel Margin="40">
-      <ComboBox Name="SecretsCombo" Items="{Binding}"  HorizontalAlignment="Center" Margin="10,0,0,20" Width="250">
-          <ComboBox.ItemTemplate>
-              <DataTemplate>
-                  <TextBlock Text="{Binding Name}" FontFamily="{Binding}" />
-              </DataTemplate>
-          </ComboBox.ItemTemplate>
-      </ComboBox>
-      <Button HorizontalAlignment="Center" Click="Accept">Use selected secret</Button>
-  </StackPanel>
-</Window>
+    <Design.DataContext>
+      <vm:VaultPickerViewModel />
+    </Design.DataContext>
+    <Border BorderBrush="#A1A1A1" BorderThickness="1">
+        <StackPanel Margin="40, 40, 40, 20" >
+            <ComboBox Name="SecretsCombo" Items="{Binding Entries}" SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"  HorizontalAlignment="Center" Margin="10,0,0,20" Width="300">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"  />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <CheckBox Name="Remember" Margin="0,0,0,20">Remember binding</CheckBox>
+            <Button HorizontalAlignment="Center" Click="Accept">Use selected secret</Button>
+        </StackPanel>
+    </Border>
+  </Window>

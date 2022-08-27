@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -22,23 +23,44 @@ namespace ScriptRunner.GUI.Views
             AvaloniaXamlLoader.Load(this);
         }
 
+        public string VaultKey { get; set; }
+
         private async void PickFromVault(object? sender, RoutedEventArgs e)
         {
             var pickerDialog = new VaultPicker();
+            if (string.IsNullOrWhiteSpace(VaultKey) == false)
+            {
+                pickerDialog.ViewModel.SelectedEntry = pickerDialog.ViewModel.Entries.FirstOrDefault(x => x.Name == VaultKey);
+            }
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var sourceWindow = (sender as IControl)?.GetVisualRoot() as Window ?? desktop.MainWindow;
-                var selectedPassword = await pickerDialog.ShowDialog<string?>(sourceWindow);
-                if (selectedPassword != null)
+                if (await pickerDialog.ShowDialog<VaultEntryChoice>(sourceWindow) is { } choice)
                 {
+                    VaultKey = choice.SelectedEntry.Name;
+                    OnVaultBindingChanged(new VaultBindingChangedEventArgs(choice));
                     Dispatcher.UIThread.Post(() =>
                     {
-                        Password = selectedPassword;
+                        Password = choice.SelectedEntry.Secret;
                     });
-
                 }
             }
         }
+
+        public event EventHandler<VaultBindingChangedEventArgs> VaultBindingChanged;
+
+        public class VaultBindingChangedEventArgs : EventArgs
+        {
+            public VaultEntryChoice VaultEntryChoice { get; }
+
+            public VaultBindingChangedEventArgs(VaultEntryChoice vaultEntryChoice)
+            {
+                VaultEntryChoice = vaultEntryChoice;
+            }
+        }
+
+        private void OnVaultBindingChanged(VaultBindingChangedEventArgs e) => VaultBindingChanged?.Invoke(this, e);
+
 
         public static readonly DirectProperty<PasswordBox, string?> PasswordProperty = AvaloniaProperty.RegisterDirect<PasswordBox, string?>
         (

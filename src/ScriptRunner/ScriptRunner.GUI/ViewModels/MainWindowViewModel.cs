@@ -236,7 +236,7 @@ public class MainWindowViewModel : ViewModelBase
         //var actionPanel = new StackPanel();
 
         // Create IPanel with controls for all parameters
-        var paramsPanel = new ParamsPanelFactory().Create(action.Params, parameterValues);
+        var paramsPanel = new ParamsPanelFactory().Create(action, parameterValues);
 
         // Add panel with param controls to action panel
         //actionPanel.Children.Add(paramsPanel.Panel);
