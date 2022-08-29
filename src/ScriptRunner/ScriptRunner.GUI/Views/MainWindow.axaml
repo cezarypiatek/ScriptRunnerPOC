@@ -30,7 +30,8 @@
         <Border BorderBrush="#FF0000" BorderThickness="1"  >
             <StackPanel  Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
                 <TextBlock VerticalAlignment="Center">A newer version is available</TextBlock>
-                <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding CheckForUpdates}">Check for update</Button>
+                <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding CheckForUpdates}">Check release log</Button>
+                <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding InstallUpdate}">Install update</Button>
             </StackPanel>
         </Border>
     </StackPanel>

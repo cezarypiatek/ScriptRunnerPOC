@@ -4,9 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -20,45 +17,10 @@ namespace ScriptRunner.GUI.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    public string GetProductFullVersion()
-    {
-        var assemblyVersion = this.GetType().Assembly.GetName().Version;
-        return $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
-    }
+    
 
-    public class ReleaseResponse
-    {
-        public string tag_name { get; set; }
-    }
 
-    public async Task<bool> CheckIsNewerVersionAvailable()
-    {
-        using var httpClient = new HttpClient();
-        var currentProductVersionRaw = GetProductFullVersion();
-        try
-        {
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("ScriptRunner", currentProductVersionRaw));
-            var response = await httpClient.GetAsync("https://api.github.com/repos/cezarypiatek/ScriptRunnerPOC/releases/latest").ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
-            {
-                var payload = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ReleaseResponse>(payload);
-                if (string.IsNullOrWhiteSpace(result?.tag_name) == false)
-                {
-                    var latestVersion = Version.Parse(result.tag_name);
-
-                    var currentVersion = Version.Parse(currentProductVersionRaw);
-                    return latestVersion > currentVersion;
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
-
-        return  false;
-    }
+   
 
     /// <summary>
     /// Contains panels with generated controls for every defined action
@@ -144,15 +106,23 @@ public class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
+        this.appUpdater = new GithubUpdater();
+
+
         Task.Run(async () =>
         {
-            var isNewerVersion = await CheckIsNewerVersionAvailable();
-            if (isNewerVersion)
+            while (true)
             {
-                Dispatcher.UIThread.Post(() =>
+                var isNewerVersion = await appUpdater.CheckIsNewerVersionAvailable();
+                if (isNewerVersion)
                 {
-                    IsNewerVersionAvailable = true;
-                });
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        IsNewerVersionAvailable = true;
+                    });
+                }
+
+                await Task.Delay(TimeSpan.FromDays(1));
             }
         });
         ActionParametersPanel = new ObservableCollection<IPanel>();
@@ -163,18 +133,15 @@ public class MainWindowViewModel : ViewModelBase
 
     public void CheckForUpdates()
     {
-        OpenWebsite(@"https://github.com/cezarypiatek/ScriptRunnerPOC/releases/");
+        appUpdater.OpenLatestReleaseLog();
+        
     }
 
-
-    public static void OpenWebsite(string url)
+    public void InstallUpdate()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = url.Replace("&", "^&"),
-            UseShellExecute = true
-        });
+        appUpdater.InstallLatestVersion();
     }
+
 
     private IEnumerable<IControlRecord> _controlRecords;
 
@@ -251,6 +218,7 @@ public class MainWindowViewModel : ViewModelBase
     private int jobCounter;
     private RunningJobViewModel _selectedRunningJob;
     private bool _selectedActionInstalled;
+    private readonly GithubUpdater appUpdater;
 
     public void InstallScript()
     {

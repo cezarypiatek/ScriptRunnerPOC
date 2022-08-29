@@ -12,6 +12,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Title = $"ScriptRunner {this.GetType().Assembly.GetName().Version}";
         if (AppSettingsService.Load().Layout is { } layoutSettings)
         {
             Width = layoutSettings.Width;
