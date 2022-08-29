@@ -83,7 +83,7 @@ public class AppSettingsService
     {
         var allSettings = Load();
         allSettings.VaultBindings ??= new List<VaultBinding>();
-        var existingBinding = allSettings.VaultBindings.FirstOrDefault(x => x.ActionName == binding.ActionName && x.ParameterName == x.ParameterName);
+        var existingBinding = allSettings.VaultBindings.FirstOrDefault(x => x.ActionName == binding.ActionName && x.ParameterName == binding.ParameterName);
         if (existingBinding != null)
         {
             existingBinding.VaultKey = binding.VaultKey;
