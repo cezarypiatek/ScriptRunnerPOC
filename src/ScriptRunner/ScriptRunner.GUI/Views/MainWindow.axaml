@@ -12,7 +12,9 @@
                            Icon="/Assets/avalonia-logo.ico"
                            Title="ScriptRunner.GUI"
                            FontFamily="Segoe UI Variable">
-
+   <reactiveUi:ReactiveWindow.Resources>
+        <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+    </reactiveUi:ReactiveWindow.Resources>
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
@@ -28,16 +30,37 @@
       <RowDefinition Height="3" MaxHeight="3"></RowDefinition>
       <RowDefinition Height="300" ></RowDefinition>
     </Grid.RowDefinitions>
-    <StackPanel Grid.Row="0" Grid.ColumnSpan="3" IsVisible="{Binding IsNewerVersionAvailable}" Height="75">
-        <Border BorderBrush="#FF0000" BorderThickness="1"  >
-            <StackPanel  Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
-                <TextBlock VerticalAlignment="Center">A newer version is available</TextBlock>
-                <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding CheckForUpdates}">Check release log</Button>
-                <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding InstallUpdate}">Install update</Button>
-            </StackPanel>
-        </Border>
+    <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Vertical">
+        <StackPanel IsVisible="{Binding IsNewerVersionAvailable}" Height="75">
+            <Border BorderBrush="#FF0000" BorderThickness="1"  >
+                <StackPanel  Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center">A newer version is available</TextBlock>
+                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding CheckForUpdates}">Check release log</Button>
+                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding InstallUpdate}">Install update</Button>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+        <StackPanel IsVisible="{Binding OutOfDateConfigRepositories.Count, Converter={StaticResource CountToVisibilityConverter}}">
+            <Border BorderBrush="#FF0000" BorderThickness="1"  >
+                <StackPanel  Orientation="Vertical" Margin="20" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center">You have some outdated repositories with script configuration files:</TextBlock>
+                    <ItemsControl Items="{Binding OutOfDateConfigRepositories}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Path}"></TextBlock>
+                                    <Button Margin="20,0,0,0" VerticalAlignment="Center" 
+                                            Command="{Binding DataContext.PullRepoChanges, RelativeSource={RelativeSource AncestorType={x:Type views:MainWindow}}}"
+                                            CommandParameter="{Binding}">Pull</Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
     </StackPanel>
-    <Grid Grid.Row="1" Grid.Column="0">
+      <Grid Grid.Row="1" Grid.Column="0">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto"></RowDefinition>
         <RowDefinition Height="*"></RowDefinition>

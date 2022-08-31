@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -9,6 +8,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using ReactiveUI;
+using ScriptRunner.GUI.BackgroundTasks;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.ScriptReader;
 using ScriptRunner.GUI.Settings;
@@ -18,11 +18,6 @@ namespace ScriptRunner.GUI.ViewModels;
 
 public class MainWindowViewModel : ReactiveObject
 {
-    
-
-
-   
-
     /// <summary>
     /// Contains panels with generated controls for every defined action
     /// </summary>
@@ -109,6 +104,15 @@ public class MainWindowViewModel : ReactiveObject
     private bool _isNewerVersionAvailable;
 
 
+    public ObservableCollection<OutdatedRepositoryModel> OutOfDateConfigRepositories
+    {
+        get => _outOfDateConfigRepositories;
+        set => this.RaiseAndSetIfChanged(ref _outOfDateConfigRepositories, value);
+    }
+
+    private ObservableCollection<OutdatedRepositoryModel> _outOfDateConfigRepositories;
+
+
 
 
     public MainWindowViewModel()
@@ -146,6 +150,21 @@ public class MainWindowViewModel : ReactiveObject
                 await Task.Delay(TimeSpan.FromDays(1));
             }
         });
+
+        Task.Run(async () =>
+        {
+            while (true)
+            {
+                var outOfDateRepos = await ConfigRepositoryUpdater.CheckAllRepositories();
+                Dispatcher.UIThread.Post(() =>
+                {
+                    OutOfDateConfigRepositories = new ObservableCollection<OutdatedRepositoryModel>(outOfDateRepos);
+                });
+                
+                await Task.Delay(TimeSpan.FromDays(1));
+            }
+        });
+
         ActionParametersPanel = new ObservableCollection<IPanel>();
         ParameterSetsForCurrentAction = new ObservableCollection<ArgumentSet>();
         BuildUi();
@@ -284,6 +303,15 @@ public class MainWindowViewModel : ReactiveObject
         window.Show();
     }
 
+    public async void PullRepoChanges(OutdatedRepositoryModel record)
+    {
+        var result = false;
+        await Task.Run(async () => result = await ConfigRepositoryUpdater.PullRepository(record.Path));
+        if (result)
+        {
+            OutOfDateConfigRepositories.Remove(record);
+        }
+    }
 
     public bool SelectedActionInstalled
     {
