@@ -66,7 +66,7 @@ public static class ScriptConfigReader
                 var autoParamBuilder = new StringBuilder();
                 foreach (var param in action.Params)
                 {
-                    var actionAutoParameterBuilderPattern = action.AutoParameterBuilderPattern ?? param.AutoParameterBuilderPattern ?? string.Empty;
+                    var actionAutoParameterBuilderPattern =   param.AutoParameterBuilderPattern?? action.AutoParameterBuilderPattern ?? string.Empty;
                     var paramString = actionAutoParameterBuilderPattern
                         .Replace("{name}", param.Name)
                         .Replace("{value}", $"{{{param.Name}}}");
