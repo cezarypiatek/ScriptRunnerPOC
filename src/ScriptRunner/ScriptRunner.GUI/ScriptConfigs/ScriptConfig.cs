@@ -18,7 +18,9 @@ public class ScriptConfig
     public Dictionary<string, string?> EnvironmentVariables { get; set; } = new();
     public string? Source { get; set; }
     public string? SourceName { get; set; }
-    public string AutoParameterBuilderPattern { get; set; }
+    public string? AutoParameterBuilderPattern { get; set; }
+    public string? AutoParameterBuilderStyle { get; set; }
+
 }
 public class ArgumentSet
 {
