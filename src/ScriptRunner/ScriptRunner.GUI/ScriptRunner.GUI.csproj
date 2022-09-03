@@ -36,6 +36,7 @@
     <PackageReference Include="Avalonia.Xaml.Interactivity" Version="0.10.14" />
     <PackageReference Include="CliWrap" Version="3.4.4" />
     <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
+    <PackageReference Include="Microsoft.Alm.Authentication" Version="4.3.0" />
     <PackageReference Include="Projektanker.Icons.Avalonia" Version="4.4.0" />
     <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="4.4.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="6.0.0" />

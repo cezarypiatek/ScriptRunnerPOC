@@ -7,19 +7,21 @@
                            xmlns:gui="clr-namespace:ScriptRunner.GUI"
                            xmlns:reactiveUi="http://reactiveui.net"
                            xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
+                           xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
                            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="700"
                            x:Class="ScriptRunner.GUI.Views.MainWindow"
                            Icon="/Assets/avalonia-logo.ico"
                            Title="ScriptRunner.GUI"
                            FontFamily="Segoe UI Variable">
-   <reactiveUi:ReactiveWindow.Resources>
-        <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
-    </reactiveUi:ReactiveWindow.Resources>
+   
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
   <Grid x:Name="MainGrid">
-    <Grid.ColumnDefinitions>
+      <Grid.Resources>
+          <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+      </Grid.Resources>
+      <Grid.ColumnDefinitions>
       <ColumnDefinition Width="200" ></ColumnDefinition>
       <ColumnDefinition Width="4"></ColumnDefinition>
       <ColumnDefinition Width="*"></ColumnDefinition>
