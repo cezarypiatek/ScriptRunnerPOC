@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -15,7 +16,7 @@ using ScriptRunner.GUI.Views;
 
 namespace ScriptRunner.GUI.ViewModels;
 
-public class MainWindowViewModel : ViewModelBase
+public class MainWindowViewModel : ReactiveObject
 {
     
 
@@ -35,13 +36,19 @@ public class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Contains list of actions defined in json file
     /// </summary>
-    private ObservableCollection<ScriptConfig> _actions;
-    public ObservableCollection<ScriptConfig> Actions
+    public ObservableCollection<ScriptConfig> Actions { get; } = new ();
+
+
+    public string ActionFilter
     {
-        get => _actions;
-        private set => this.RaiseAndSetIfChanged(ref _actions, value);
+        get => _actionFilter;
+        set => this.RaiseAndSetIfChanged(ref _actionFilter, value);
     }
 
+    private string _actionFilter;
+
+    private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfig>> _filteredActionList;
+    public IEnumerable<ScriptConfig> FilteredActionList => _filteredActionList.Value;
 
 
     public ObservableCollection<RunningJobViewModel> RunningJobs { get; set; } = new();
@@ -108,6 +115,20 @@ public class MainWindowViewModel : ViewModelBase
     {
         this.appUpdater = new GithubUpdater();
 
+        this.WhenAnyValue(x => x.ActionFilter, x => x.Actions)
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .DistinctUntilChanged()
+            .Select((pair, cancellationToken) =>
+            {
+                if (string.IsNullOrWhiteSpace(pair.Item1))
+                {
+                    return pair.Item2;
+                }
+                var configs = pair.Item2.Where(x => x.Name.Contains(pair.Item1, StringComparison.InvariantCultureIgnoreCase));
+                return configs;
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
 
         Task.Run(async () =>
         {
@@ -126,7 +147,6 @@ public class MainWindowViewModel : ViewModelBase
             }
         });
         ActionParametersPanel = new ObservableCollection<IPanel>();
-        Actions = new ObservableCollection<ScriptConfig>();
         ParameterSetsForCurrentAction = new ObservableCollection<ArgumentSet>();
         BuildUi();
     }
@@ -339,5 +359,5 @@ public class MainWindowViewModel : ViewModelBase
         return command.Split(' ', 2);
     }
 
-    
+
 }

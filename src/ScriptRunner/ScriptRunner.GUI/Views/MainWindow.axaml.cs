@@ -1,17 +1,27 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Mixins;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
+using ReactiveUI;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.ViewModels;
 using static System.Double;
 
 namespace ScriptRunner.GUI.Views;
 
-public partial class MainWindow : Window
+public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
     public MainWindow()
     {
         InitializeComponent();
+        ViewModel = new MainWindowViewModel();
+        this.WhenActivated((disposableRegistration) =>
+        {
+            this.Bind(ViewModel, vm => vm.ActionFilter, v => v.ActionFilter.Text).DisposeWith(disposableRegistration);
+            this.OneWayBind(ViewModel, vm => vm.FilteredActionList, v=>v.ActionList.Items).DisposeWith(disposableRegistration);
+        });
         Title = $"ScriptRunner {this.GetType().Assembly.GetName().Version}";
         if (AppSettingsService.Load().Layout is { } layoutSettings)
         {

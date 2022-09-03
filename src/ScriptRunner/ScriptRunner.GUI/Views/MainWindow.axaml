@@ -1,15 +1,17 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:ScriptRunner.GUI.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
-        xmlns:gui="clr-namespace:ScriptRunner.GUI"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="700"
-        x:Class="ScriptRunner.GUI.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="ScriptRunner.GUI"
-        FontFamily="Segoe UI Variable">
+<reactiveUi:ReactiveWindow x:TypeArguments="vm:MainWindowViewModel" xmlns="https://github.com/avaloniaui"
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                           xmlns:vm="using:ScriptRunner.GUI.ViewModels"
+                           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                           xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+                           xmlns:gui="clr-namespace:ScriptRunner.GUI"
+                           xmlns:reactiveUi="http://reactiveui.net"
+                           xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
+                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="700"
+                           x:Class="ScriptRunner.GUI.Views.MainWindow"
+                           Icon="/Assets/avalonia-logo.ico"
+                           Title="ScriptRunner.GUI"
+                           FontFamily="Segoe UI Variable">
 
     <Design.DataContext>
         <vm:MainWindowViewModel />
@@ -37,11 +39,13 @@
     </StackPanel>
     <Grid Grid.Row="1" Grid.Column="0">
       <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"></RowDefinition>
         <RowDefinition Height="*"></RowDefinition>
         <RowDefinition Height="Auto"></RowDefinition>
       </Grid.RowDefinitions>
+        <TextBox x:Name="ActionFilter" ></TextBox>
       <!-- List of available actions, selectable -->
-      <ListBox Items="{Binding Actions}" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
+      <ListBox Grid.Row="1" x:Name="ActionList" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
         <ListBox.DataTemplates>
           <DataTemplate>
               <TextBlock>
@@ -55,7 +59,7 @@
           </DataTemplate>
         </ListBox.DataTemplates>
       </ListBox>
-      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" VerticalAlignment="Bottom" Grid.Row="1">
+      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" VerticalAlignment="Bottom" Grid.Row="2">
         <Button i:Attached.Icon="fas fa-cog" Margin="5" Height="35" Width="50" FontSize="18" Command="{Binding OpenSettingsWindow}"   ToolTip.Tip="Configure actions sources"/>
         <Button i:Attached.Icon="fas fa-sync" Margin="0,0,5,0" Height="35" Width="50" FontSize="18" Command="{Binding RefreshSettings}"   ToolTip.Tip="Refresh actions" />
         <Button i:Attached.Icon="fas fa-lock" Height="35" Width="50" FontSize="18" Command="{Binding OpenVaultWindow}"   ToolTip.Tip="Open Vault" />
@@ -157,4 +161,4 @@
     </TabControl>
   </Grid>
 
-</Window>
+</reactiveUi:ReactiveWindow>
