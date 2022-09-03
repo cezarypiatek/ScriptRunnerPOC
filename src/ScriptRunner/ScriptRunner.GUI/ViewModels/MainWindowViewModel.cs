@@ -107,8 +107,6 @@ public class MainWindowViewModel : ReactiveObject
 
     public ObservableCollection<OutdatedRepositoryModel> OutOfDateConfigRepositories { get; } = new();
 
-
-
     public MainWindowViewModel()
     {
         this.appUpdater = new GithubUpdater();
@@ -128,37 +126,32 @@ public class MainWindowViewModel : ReactiveObject
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
 
-        Task.Run(async () =>
+        _appUpdateScheduler = new RealTimeScheduler(TimeSpan.FromDays(1), TimeSpan.FromHours(1), async () =>
         {
-            while (true)
+            var isNewerVersion = await appUpdater.CheckIsNewerVersionAvailable();
+            if (isNewerVersion)
             {
-                var isNewerVersion = await appUpdater.CheckIsNewerVersionAvailable();
-                if (isNewerVersion)
-                {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        IsNewerVersionAvailable = true;
-                    });
-                }
-
-                await Task.Delay(TimeSpan.FromDays(1));
-            }
-        });
-
-        Task.Run(async () =>
-        {
-            while (true)
-            {
-                var outOfDateRepos = await ConfigRepositoryUpdater.CheckAllRepositories();
                 Dispatcher.UIThread.Post(() =>
                 {
-                    OutOfDateConfigRepositories.Clear();
-                    OutOfDateConfigRepositories.AddRange(outOfDateRepos);
+                    IsNewerVersionAvailable = true;
                 });
-                
-                await Task.Delay(TimeSpan.FromDays(1));
             }
         });
+        _appUpdateScheduler.Run();
+
+        _outdatedRepoCheckingScheduler = new RealTimeScheduler(TimeSpan.FromHours(
+            4), TimeSpan.FromHours(1), async () =>
+        {
+            var outOfDateRepos = await ConfigRepositoryUpdater.CheckAllRepositories();
+            Dispatcher.UIThread.Post(() =>
+            {
+                OutOfDateConfigRepositories.Clear();
+                OutOfDateConfigRepositories.AddRange(outOfDateRepos);
+            });
+        });
+
+        _outdatedRepoCheckingScheduler.Run();
+
 
         ActionParametersPanel = new ObservableCollection<IPanel>();
         ParameterSetsForCurrentAction = new ObservableCollection<ArgumentSet>();
@@ -253,6 +246,8 @@ public class MainWindowViewModel : ReactiveObject
     private RunningJobViewModel _selectedRunningJob;
     private bool _selectedActionInstalled;
     private readonly GithubUpdater appUpdater;
+    private readonly RealTimeScheduler _appUpdateScheduler;
+    private readonly RealTimeScheduler _outdatedRepoCheckingScheduler;
 
     public void InstallScript()
     {
