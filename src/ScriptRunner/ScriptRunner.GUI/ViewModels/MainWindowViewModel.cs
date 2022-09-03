@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using DynamicData;
 using ReactiveUI;
 using ScriptRunner.GUI.BackgroundTasks;
 using ScriptRunner.GUI.ScriptConfigs;
@@ -104,14 +105,7 @@ public class MainWindowViewModel : ReactiveObject
     private bool _isNewerVersionAvailable;
 
 
-    public ObservableCollection<OutdatedRepositoryModel> OutOfDateConfigRepositories
-    {
-        get => _outOfDateConfigRepositories;
-        set => this.RaiseAndSetIfChanged(ref _outOfDateConfigRepositories, value);
-    }
-
-    private ObservableCollection<OutdatedRepositoryModel> _outOfDateConfigRepositories;
-
+    public ObservableCollection<OutdatedRepositoryModel> OutOfDateConfigRepositories { get; } = new();
 
 
 
@@ -158,7 +152,8 @@ public class MainWindowViewModel : ReactiveObject
                 var outOfDateRepos = await ConfigRepositoryUpdater.CheckAllRepositories();
                 Dispatcher.UIThread.Post(() =>
                 {
-                    OutOfDateConfigRepositories = new ObservableCollection<OutdatedRepositoryModel>(outOfDateRepos);
+                    OutOfDateConfigRepositories.Clear();
+                    OutOfDateConfigRepositories.AddRange(outOfDateRepos);
                 });
                 
                 await Task.Delay(TimeSpan.FromDays(1));
@@ -310,6 +305,7 @@ public class MainWindowViewModel : ReactiveObject
         if (result)
         {
             OutOfDateConfigRepositories.Remove(record);
+            RefreshSettings();
         }
     }
 
