@@ -8,7 +8,7 @@
     <OutputType>WinExe</OutputType>
     <TrimMode>copyused</TrimMode>
   </PropertyGroup>
-  <Target Name="ZipOutputPath" AfterTargets="AfterBuild">
+  <Target Name="ZipOutputPath" AfterTargets="CopyFilesToOutputDirectory">
     <ZipDirectory Overwrite="true" SourceDirectory="$(OutputPath)" DestinationFile="$(OutputPath)\..\AppInstaller.zip" />
   </Target>
 </Project>
