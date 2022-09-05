@@ -7,6 +7,7 @@
     <TrimMode>copyused</TrimMode>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <WarningsAsErrors>NU1701</WarningsAsErrors>
+    <ApplicationIcon>Assets/avalonia-logo.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
 	<AvaloniaResource Include="Assets\**" />
