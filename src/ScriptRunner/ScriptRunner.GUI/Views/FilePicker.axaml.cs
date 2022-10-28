@@ -32,7 +32,7 @@ namespace ScriptRunner.GUI.Views
             set => SetValue(FilePathProperty, value);
         }
 
-        private void ChangeFileClick(object? sender, RoutedEventArgs e)
+        private async void ChangeFileClick(object? sender, RoutedEventArgs e)
         {
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -47,8 +47,8 @@ namespace ScriptRunner.GUI.Views
                 }
                 
                 dialog.AllowMultiple = false;
-                
-                var result = dialog.ShowAsync(sourceWindow).GetAwaiter().GetResult();
+
+                var result = await dialog.ShowAsync(sourceWindow);
                 if (result?.FirstOrDefault() is { } file)
                 {
                     FilePath = file;
