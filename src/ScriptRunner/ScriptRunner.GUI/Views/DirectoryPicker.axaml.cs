@@ -33,7 +33,7 @@ namespace ScriptRunner.GUI.Views
             set => SetValue(DirPathProperty, value);
         }
 
-        private void ChangeDirClick(object? sender, RoutedEventArgs e)
+        private async void ChangeDirClick(object? sender, RoutedEventArgs e)
         {
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -45,7 +45,7 @@ namespace ScriptRunner.GUI.Views
                     dialog.Directory = DirPath;
                 }
 
-                if (dialog.ShowAsync(sourceWindow).GetAwaiter().GetResult() is { } selectedDirPath)
+                if (await dialog.ShowAsync(sourceWindow) is { } selectedDirPath)
                 {
                     DirPath = selectedDirPath;
                     OnDirectoryPicked?.Invoke(this, new FilePickedArgs(selectedDirPath));
