@@ -14,18 +14,19 @@
       ],
       "predefinedArgumentSets": [
         {
-          "description": "Ping Github",
-          "arguments": {
-            "address": "wwww.github.com"
-          }
-        },
-        {
           "description": "Ping Twitter",
           "arguments": {
             "address": "wwww.twitter.com"
           }
+        },
+        {
+          "description": "Ping Github",
+          "arguments": {
+            "address": "wwww.github.com"
+          }
         }
-      ]
+      ],
+      "predefinedArgumentSetsOrdering": "ascending"
     },{
       "name": "AllControlsTest",
       "description": "Demo of all available controls",

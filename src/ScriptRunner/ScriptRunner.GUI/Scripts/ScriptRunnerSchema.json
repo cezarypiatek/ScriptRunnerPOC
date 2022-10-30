@@ -48,6 +48,13 @@
                             }
                         }
                     },
+                    "predefinedArgumentSetsOrdering": {
+                        "type": "string",
+                        "enum": [
+                            "ascending",
+                            "descending"
+                        ]
+                    },
                     "environmentVariables":{
                         "type":"object",
                         "additionalProperties": true
