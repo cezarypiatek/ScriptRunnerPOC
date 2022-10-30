@@ -3,12 +3,19 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using ReactiveUI;
+using ScriptRunner.GUI.Infrastructure;
 using ScriptRunner.GUI.ViewModels;
+using Splat;
 
 namespace ScriptRunner.GUI.Views
 {
-    public class VaultPickerViewModel:ViewModelBase
+    public class VaultPickerViewModel : ViewModelBase
     {
+        public VaultPickerViewModel(VaultProvider vaultProvider)
+        {
+            Entries = vaultProvider.ReadFromVault();
+        }
+        
         public IReadOnlyList<VaultEntry> Entries { get; set; }
 
         public VaultEntry? SelectedEntry
@@ -18,20 +25,14 @@ namespace ScriptRunner.GUI.Views
         }
 
         private VaultEntry? _selectedEntry;
-
-
-
     }
 
     public partial class VaultPicker : Window
     {
         public VaultPicker()
         {
+            DataContext = this.ViewModel = Locator.Current.GetService<VaultPickerViewModel>()!;
 
-            DataContext = this.ViewModel = new VaultPickerViewModel
-            {
-                Entries = VaultProvider.ReadFromVault()
-            };
             InitializeComponent();
 #if DEBUG
             this.AttachDevTools();

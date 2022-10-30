@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
+using ScriptRunner.GUI.Infrastructure;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.ViewModels;
@@ -18,11 +19,18 @@ namespace ScriptRunner.GUI;
 
 public class ParamsPanelFactory
 {
+    private readonly VaultProvider _vaultProvider;
+
+    public ParamsPanelFactory(VaultProvider vaultProvider)
+    {
+        _vaultProvider = vaultProvider;
+    }
+    
     public ParamsPanel Create(ScriptConfig action, Dictionary<string, string> values)
     {
         var paramsPanel = new StackPanel
         {
-            Classes = new Classes("paramsPanel"),
+            Classes = new Classes("paramsPanel")
         };
 
         var controlRecords = new List<IControlRecord>();
@@ -57,7 +65,7 @@ public class ParamsPanelFactory
         };
     }
 
-    private static IControlRecord CreateControlRecord(ScriptParam p, string? value, int index,
+    private IControlRecord CreateControlRecord(ScriptParam p, string? value, int index,
         ScriptConfig scriptConfig, List<VaultBinding> secretBindings)
     {
         switch (p.Prompt)
@@ -83,7 +91,7 @@ public class ParamsPanelFactory
 
                 if (secretBindings.FirstOrDefault(x => x.ActionName == scriptConfig.Name && x.ParameterName == p.Name) is { } binding)
                 {
-                    var vaultEntries = VaultProvider.ReadFromVault();
+                    var vaultEntries = _vaultProvider.ReadFromVault();
                     if (vaultEntries.FirstOrDefault(x => x.Name == binding.VaultKey) is { } vaultEntry)
                     {
                         passwordBox.VaultKey = vaultEntry.Name;

@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using ScriptRunner.GUI.ViewModels;
+using Splat;
 
 namespace ScriptRunner.GUI.Views
 {
@@ -11,7 +12,8 @@ namespace ScriptRunner.GUI.Views
         public Vault()
         {
             InitializeComponent();
-            DataContext = this.ViewModel = new VaultViewModel();
+            
+            DataContext = this.ViewModel = Locator.Current.GetService<VaultViewModel>()!;
 #if DEBUG
             this.AttachDevTools();
 #endif

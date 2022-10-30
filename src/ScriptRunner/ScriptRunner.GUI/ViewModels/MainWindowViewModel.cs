@@ -19,6 +19,8 @@ namespace ScriptRunner.GUI.ViewModels;
 
 public class MainWindowViewModel : ReactiveObject
 {
+    private readonly ParamsPanelFactory _paramsPanelFactory;
+
     /// <summary>
     /// Contains panels with generated controls for every defined action
     /// </summary>
@@ -107,8 +109,9 @@ public class MainWindowViewModel : ReactiveObject
 
     public ObservableCollection<OutdatedRepositoryModel> OutOfDateConfigRepositories { get; } = new();
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(ParamsPanelFactory paramsPanelFactory)
     {
+        _paramsPanelFactory = paramsPanelFactory;
         this.appUpdater = new GithubUpdater();
 
         this.WhenAnyValue(x => x.ActionFilter, x => x.Actions)
@@ -230,7 +233,7 @@ public class MainWindowViewModel : ReactiveObject
         //var actionPanel = new StackPanel();
 
         // Create IPanel with controls for all parameters
-        var paramsPanel = new ParamsPanelFactory().Create(action, parameterValues);
+        var paramsPanel = _paramsPanelFactory.Create(action, parameterValues);
 
         // Add panel with param controls to action panel
         //actionPanel.Children.Add(paramsPanel.Panel);

@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
-using ScriptRunner.GUI.Settings;
 
-namespace ScriptRunner.GUI;
+namespace ScriptRunner.GUI.Settings;
 
 public class ScriptRunnerAppSettings
 {
