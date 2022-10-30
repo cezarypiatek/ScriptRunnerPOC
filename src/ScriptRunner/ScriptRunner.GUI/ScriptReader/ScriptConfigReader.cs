@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.Settings;
@@ -70,9 +72,8 @@ public static class ScriptConfigReader
             {
                 PropertyNameCaseInsensitive = true,
                 AllowTrailingCommas = true,
-                Converters = {new PromptTypeJsonConverter(), new ParamTypeJsonConverter()}
+                Converters = { new PromptTypeJsonConverter(), new ParamTypeJsonConverter(), new JsonStringEnumConverter() }
             })!;
-
 
             foreach (var action in scriptConfig.Actions)
             {
@@ -111,6 +112,16 @@ public static class ScriptConfigReader
                             set.Arguments[key] = val;
                         }
                     }
+                }
+
+                switch (action.PredefinedArgumentSetsOrdering)
+                {
+                    case PredefinedArgumentSetsOrdering.Ascending:
+                        action.PredefinedArgumentSets.Sort((s1, s2) => string.CompareOrdinal(s1.Description, s2.Description));
+                        break;
+                    case PredefinedArgumentSetsOrdering.Descending:
+                        action.PredefinedArgumentSets.Sort((s1, s2) => string.CompareOrdinal(s2.Description, s1.Description));
+                        break;
                 }
 
                 action.PredefinedArgumentSets.Insert(0, defaultSet);

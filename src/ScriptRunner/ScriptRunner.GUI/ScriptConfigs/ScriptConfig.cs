@@ -14,20 +14,28 @@ public class ScriptConfig
     public string? InstallCommandWorkingDirectory { get; set; }
     public string? WorkingDirectory { get; set; }
     public List<ScriptParam> Params { get; set; } = new();
+    public PredefinedArgumentSetsOrdering? PredefinedArgumentSetsOrdering { get; set; }
     public List<ArgumentSet> PredefinedArgumentSets { get; set; } = new();
     public Dictionary<string, string?> EnvironmentVariables { get; set; } = new();
     public string? Source { get; set; }
     public string? SourceName { get; set; }
     public string? AutoParameterBuilderPattern { get; set; }
     public string? AutoParameterBuilderStyle { get; set; }
-
 }
+
 public class ArgumentSet
 {
     public string Description { get; set; }
     public bool FallbackToDefault { get; set; }
     public Dictionary<string, string> Arguments { get; set; } = new();
 }
+
+public enum PredefinedArgumentSetsOrdering
+{
+    Ascending,
+    Descending
+}
+
 public class ScriptParam
 {
     public string Name { get; set; }
@@ -51,5 +59,4 @@ public class ScriptParam
 
         return @default;
     }
-
 }
