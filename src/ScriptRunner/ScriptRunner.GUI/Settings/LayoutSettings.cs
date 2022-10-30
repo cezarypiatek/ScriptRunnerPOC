@@ -1,4 +1,4 @@
-namespace ScriptRunner.GUI;
+namespace ScriptRunner.GUI.Settings;
 
 public class LayoutSettings
 {

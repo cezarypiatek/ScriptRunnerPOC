@@ -7,6 +7,7 @@ using Avalonia.ReactiveUI;
 using ReactiveUI;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.ViewModels;
+using Splat;
 using static System.Double;
 
 namespace ScriptRunner.GUI.Views;
@@ -16,7 +17,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     public MainWindow()
     {
         InitializeComponent();
-        ViewModel = new MainWindowViewModel();
+        ViewModel = Locator.Current.GetService<MainWindowViewModel>();
         this.WhenActivated((disposableRegistration) =>
         {
             this.Bind(ViewModel, vm => vm.ActionFilter, v => v.ActionFilter.Text).DisposeWith(disposableRegistration);

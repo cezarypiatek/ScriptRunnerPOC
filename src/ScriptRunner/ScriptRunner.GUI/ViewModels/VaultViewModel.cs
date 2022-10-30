@@ -1,48 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Text.Json;
 using ReactiveUI;
-using ScriptRunner.GUI.Settings;
+using ScriptRunner.GUI.Infrastructure;
 
 namespace ScriptRunner.GUI.ViewModels
 {
-    public static class VaultProvider
-    {
-        public static IReadOnlyList<VaultEntry> ReadFromVault()
-        {
-            var vaultPath = AppSettingsService.GetSettingsPathFor("Vault.dat");
-            if (File.Exists(vaultPath))
-            {
-                var contentEncrypted = File.ReadAllText(vaultPath);
-                try
-                {
-                    var content = EncryptionHelper.Decrypt(contentEncrypted);
-                    var data = JsonSerializer.Deserialize<List<VaultEntry>>(content);
-                    return data ?? new List<VaultEntry>();
-                }
-                catch (Exception e)
-                {
-                    //TODO: Invalid key 
-                    Console.WriteLine(e);
-                    throw;
-                }
-            }
-            return Array.Empty<VaultEntry>();
-        }
-
-        public static void UpdateVault(List<VaultEntry> data)
-        {
-            var vaultPath = AppSettingsService.GetSettingsPathFor("Vault.dat");
-            File.WriteAllText(vaultPath, EncryptionHelper.Encrypt(JsonSerializer.Serialize(data)), Encoding.UTF8);
-        }
-    }
-
     public class VaultViewModel : ViewModelBase
     {
+        private readonly VaultProvider _vaultProvider;
+
         public ObservableCollection<VaultEntry> Entries
         {
             get => _entries;
@@ -52,9 +18,10 @@ namespace ScriptRunner.GUI.ViewModels
         private ObservableCollection<VaultEntry> _entries;
 
 
-        public VaultViewModel()
+        public VaultViewModel(VaultProvider vaultProvider)
         {
-            Entries = new ObservableCollection<VaultEntry>(VaultProvider.ReadFromVault());
+            _vaultProvider = vaultProvider;
+            Entries = new ObservableCollection<VaultEntry>(_vaultProvider.ReadFromVault());
         }
 
         public void AddNewVaultEntry()
@@ -65,9 +32,8 @@ namespace ScriptRunner.GUI.ViewModels
         public void SaveVault()
         {
             var date = Entries.ToList();
-            VaultProvider.UpdateVault(date);
+            _vaultProvider.UpdateVault(date);
         }
-      
     }
 
     public class VaultEntry

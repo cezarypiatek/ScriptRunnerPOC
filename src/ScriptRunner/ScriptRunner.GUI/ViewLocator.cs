@@ -2,11 +2,19 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using ScriptRunner.GUI.ViewModels;
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ScriptRunner.GUI;
 
 public class ViewLocator : IDataTemplate
 {
+    private readonly IServiceProvider _serviceProvider;
+
+    public ViewLocator(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+    
     public IControl Build(object data)
     {
         var name = data.GetType().FullName!.Replace("ViewModel", "View");
@@ -14,7 +22,7 @@ public class ViewLocator : IDataTemplate
 
         if (type != null)
         {
-            return (Control)Activator.CreateInstance(type)!;
+            return (Control)ActivatorUtilities.CreateInstance(_serviceProvider, type);
         }
         else
         {
