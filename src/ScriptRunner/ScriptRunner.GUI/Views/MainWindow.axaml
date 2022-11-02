@@ -152,12 +152,15 @@
     <TabControl x:Name="RunningJobsPanel" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Items="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
       <TabControl.ItemTemplate>
         <DataTemplate>
-          <StackPanel>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock FontSize="16" Text="{Binding Tile}" Margin="0,0,5,0" />
-              <TextBlock FontSize="16" Text="{Binding CommandName}" />
-            </StackPanel>
-            <TextBlock FontSize="12" Text="{Binding Status, StringFormat='({0})'}" Foreground="{Binding Status, Converter={x:Static gui:JobStatusToColorConverter.Instance}}"></TextBlock>
+          <StackPanel Orientation="Horizontal">
+              <StackPanel >
+                  <StackPanel Orientation="Horizontal">
+                      <TextBlock FontSize="16" Text="{Binding Tile}" Margin="0,0,5,0" />
+                      <TextBlock FontSize="16" Text="{Binding CommandName}" />
+                  </StackPanel>
+                  <TextBlock FontSize="12" Text="{Binding Status, StringFormat='({0})'}" Foreground="{Binding Status, Converter={x:Static gui:JobStatusToColorConverter.Instance}}"></TextBlock>
+              </StackPanel>
+              <Button i:Attached.Icon="fas fa-times"  Height="20" Width="30" Background="Transparent" VerticalContentAlignment="Top" VerticalAlignment="Top" FontSize="8"  ToolTip.Tip="Close tab" CommandParameter="{Binding}" Command="{Binding $parent[TabControl].DataContext.CloseJob}" />
           </StackPanel>
         </DataTemplate>
       </TabControl.ItemTemplate>

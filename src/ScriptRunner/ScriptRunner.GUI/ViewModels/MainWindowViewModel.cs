@@ -10,6 +10,8 @@ using Avalonia.Threading;
 using DynamicData;
 using ReactiveUI;
 using ScriptRunner.GUI.BackgroundTasks;
+using ScriptRunner.GUI.Infrastructure;
+using ScriptRunner.GUI.Infrastructure.DataProtection;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.ScriptReader;
 using ScriptRunner.GUI.Settings;
@@ -357,7 +359,11 @@ public class MainWindowViewModel : ReactiveObject
         
     }
 
-    
+    public async Task CloseJob(RunningJobViewModel job)
+    {
+        job.CancelExecution();
+        RunningJobs.Remove(job);
+    }
 
     private static string[] SplitCommand(string command)
     {
