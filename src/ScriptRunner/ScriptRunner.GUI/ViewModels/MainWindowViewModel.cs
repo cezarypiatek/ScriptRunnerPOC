@@ -36,7 +36,11 @@ public class MainWindowViewModel : ReactiveObject
     /// <summary>
     /// Contains list of actions defined in json file
     /// </summary>
-    public ObservableCollection<ScriptConfig> Actions { get; } = new ();
+    public List<ScriptConfig> Actions
+    {
+        get => _actions;
+        set => this.RaiseAndSetIfChanged(ref _actions, value);
+    }
 
 
     public string ActionFilter
@@ -75,6 +79,18 @@ public class MainWindowViewModel : ReactiveObject
         get => _selectedAction;
         set
         {
+            if (value == null && _selectedAction != null)
+            {
+                var prev = _selectedAction;
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (Actions.FirstOrDefault(x => x.Name == prev.Name) is { } old)
+                    {
+                        SelectedAction = old;
+                    }
+                });
+            }
+
             this.RaiseAndSetIfChanged(ref _selectedAction, value);
             if (value != null)
             {
@@ -194,11 +210,13 @@ public class MainWindowViewModel : ReactiveObject
                 Type = ConfigScriptType.File
             }
         };
-        Actions.Clear();
+        var actions = new List<ScriptConfig>();
         foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x)).OrderBy(x=>x.SourceName).ThenBy(x=>x.Name))
         {
-            Actions.Add(action);
+            actions.Add(action);
         }
+
+        Actions = actions;
 
         if (string.IsNullOrWhiteSpace(selectedActionName) == false && Actions.FirstOrDefault(x => x.Name == selectedActionName) is { } previouslySelected)
         {
@@ -253,6 +271,7 @@ public class MainWindowViewModel : ReactiveObject
     private readonly GithubUpdater appUpdater;
     private readonly RealTimeScheduler _appUpdateScheduler;
     private readonly RealTimeScheduler _outdatedRepoCheckingScheduler;
+    private List<ScriptConfig> _actions = new ();
 
     public void InstallScript()
     {
