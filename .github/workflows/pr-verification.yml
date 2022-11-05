@@ -34,4 +34,4 @@ jobs:
         dotnet nuget locals all --clear
         dotnet restore $env:SolutionPath         
     - name: Build extension
-      run: dotnet publish $env:SolutionPath -r win-x64 -p:PublishSingleFile=true --self-contained false -p:PublishReadyToRun=true
+      run: dotnet publish $env:SolutionPath -r win-x64 -maxcpucount:1 -p:PublishSingleFile=true --self-contained false -p:PublishReadyToRun=true
