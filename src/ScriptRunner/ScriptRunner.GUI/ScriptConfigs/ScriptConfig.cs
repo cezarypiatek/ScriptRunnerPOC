@@ -10,6 +10,8 @@ public class ScriptConfig
     public string Name { get; set; }
     public string? Description { get; set; }
     public string Command { get; set; }
+
+    public List<string> Categories { get; set; } = new();
     public string? InstallCommand { get; set; }
     public string? InstallCommandWorkingDirectory { get; set; }
     public string? WorkingDirectory { get; set; }

@@ -21,7 +21,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         this.WhenActivated((disposableRegistration) =>
         {
             this.Bind(ViewModel, vm => vm.ActionFilter, v => v.ActionFilter.Text).DisposeWith(disposableRegistration);
-            this.OneWayBind(ViewModel, vm => vm.FilteredActionList, v=>v.ActionList.Items).DisposeWith(disposableRegistration);
+            this.OneWayBind(ViewModel, vm => vm.FilteredActionList, v=>v.ActionTree.Items).DisposeWith(disposableRegistration);
         });
         Title = $"ScriptRunner {this.GetType().Assembly.GetName().Version}";
         if (AppSettingsService.Load().Layout is { } layoutSettings)

@@ -51,8 +51,8 @@ public class MainWindowViewModel : ReactiveObject
 
     private string _actionFilter;
 
-    private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfig>> _filteredActionList;
-    public IEnumerable<ScriptConfig> FilteredActionList => _filteredActionList.Value;
+    private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfigGroupWrapper>> _filteredActionList;
+    public IEnumerable<ScriptConfigGroupWrapper> FilteredActionList => _filteredActionList.Value;
 
 
     public ObservableCollection<RunningJobViewModel> RunningJobs { get; set; } = new();
@@ -137,12 +137,27 @@ public class MainWindowViewModel : ReactiveObject
             .DistinctUntilChanged()
             .Select((pair, cancellationToken) =>
             {
-                if (string.IsNullOrWhiteSpace(pair.Item1))
-                {
-                    return pair.Item2;
-                }
-                var configs = pair.Item2.Where(x => x.Name.Contains(pair.Item1, StringComparison.InvariantCultureIgnoreCase));
-                return configs;
+                
+                var configs = string.IsNullOrWhiteSpace(pair.Item1)? pair.Item2:pair.Item2.Where(x => x.Name.Contains(pair.Item1, StringComparison.InvariantCultureIgnoreCase));
+
+
+                IEnumerable<ScriptConfigGroupWrapper> scriptConfigGroupWrappers = configs.SelectMany(c =>
+                    {
+                        if (c.Categories is {Count: > 0})
+                        {
+                            return c.Categories.Select((cat) => (category: cat, script: c));
+                        }
+
+                        return new[] {(category: "(No Category)", script: c)};
+                    }).GroupBy(x => x.category)
+                    .Select(x=> new ScriptConfigGroupWrapper
+                    {
+                        Name = x.Key,
+                        Children = x.Select(p=>p.script)
+                    });
+                return scriptConfigGroupWrappers;
+                
+                
             })
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
@@ -407,4 +422,10 @@ public class MainWindowViewModel : ReactiveObject
     }
 
 
+}
+
+public class ScriptConfigGroupWrapper
+{
+    public string Name { get; set; }
+    public IEnumerable<ScriptConfig> Children { get; set; }
 }
