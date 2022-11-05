@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using ScriptRunner.GUI.Infrastructure.DataProtection;
 using ScriptRunner.GUI.Settings;
@@ -31,6 +33,11 @@ public class VaultProvider
                 var data = _dataProtector.Unprotect(encryptedData);
                 return JsonSerializer.Deserialize<List<VaultEntry>>(data) ?? new List<VaultEntry>();
             }
+            catch (CryptographicException)
+            {
+                // Fallback for loading vault data saved using old format 
+                return ReadFromVaultFallback(vaultPath);
+            }
             catch (Exception e)
             {
                 //TODO: Invalid key 
@@ -40,6 +47,23 @@ public class VaultProvider
         }
 
         return Array.Empty<VaultEntry>();
+    }
+
+    private IReadOnlyList<VaultEntry> ReadFromVaultFallback(string vaultPath)
+    {
+        var contentEncrypted = File.ReadAllText(vaultPath);
+        try
+        {
+            byte[] protectedData = Convert.FromBase64String(contentEncrypted);
+            var data = _dataProtector.Unprotect(protectedData);
+            return JsonSerializer.Deserialize<List<VaultEntry>>(data) ?? new List<VaultEntry>();
+        }
+        catch (Exception e)
+        {
+            //TODO: Invalid key 
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public void UpdateVault(List<VaultEntry> entries)
