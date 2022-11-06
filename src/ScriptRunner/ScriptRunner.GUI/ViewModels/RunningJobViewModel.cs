@@ -195,16 +195,16 @@ public class RunningJobViewModel : ViewModelBase
    
     public RunningJobViewModel()
     {
-        this.WhenAnyValue(x => x.NumberOfLines)
-            .Throttle(TimeSpan.FromMilliseconds(200))
-            .DistinctUntilChanged()
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ =>
-            {
-                var text = outputBuilder.ToString();
-                this.CurrentRunOutputBuffered = text;
-                this.OutputIndex = text.Length;
-            });
+        // this.WhenAnyValue(x => x.NumberOfLines)
+        //     .Throttle(TimeSpan.FromMilliseconds(200))
+        //     .DistinctUntilChanged()
+        //     .Select(i =>  outputBuilder.ToString())
+        //     .ObserveOn(RxApp.MainThreadScheduler)
+        //     .Subscribe(text  =>
+        //     {
+        //         this.CurrentRunOutputBuffered = text;
+        //         this.OutputIndex = text.Length;
+        //     });
     }
 
     private async Task AppendToOutput(string? s)
@@ -244,6 +244,12 @@ public class RunningJobViewModel : ViewModelBase
     {
         outputBuilder.AppendLine(s);
         NumberOfLines++;
+        var output = outputBuilder.ToString();
+        Dispatcher.UIThread.Post(() =>
+        {
+            CurrentRunOutputBuffered = output;
+            OutputIndex = Math.Max(0, output.Length-1);
+        });
     }
     
     public string CurrentRunOutput
