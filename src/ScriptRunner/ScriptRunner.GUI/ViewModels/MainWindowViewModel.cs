@@ -149,11 +149,11 @@ public class MainWindowViewModel : ReactiveObject
                         }
 
                         return new[] {(category: "(No Category)", script: c)};
-                    }).GroupBy(x => x.category)
+                    }).GroupBy(x => x.category).OrderBy(x=>x.Key)
                     .Select(x=> new ScriptConfigGroupWrapper
                     {
                         Name = x.Key,
-                        Children = x.Select(p=>p.script)
+                        Children = x.Select(p=>p.script).OrderBy(x=>x.Name)
                     });
                 return scriptConfigGroupWrappers;
                 
