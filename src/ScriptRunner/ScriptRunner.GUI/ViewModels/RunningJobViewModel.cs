@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Avalonia.Controls.Documents;
 using Avalonia.Media;
 
 namespace ScriptRunner.GUI.ViewModels;
@@ -65,8 +66,8 @@ public class RunningJobViewModel : ViewModelBase
                     //TODO: Working dir should be read from the config with the fallback set to the config file dir
                     .WithWorkingDirectory(workingDirectory ?? "Scripts/")
                     .WithStandardInputPipe(PipeSource.FromStream(inputStream,autoFlush:true))
-                    .WithStandardOutputPipe(PipeTarget.ToDelegate(AppendToOutput))
-                    .WithStandardErrorPipe(PipeTarget.ToDelegate(AppendToOutput))
+                    .WithStandardOutputPipe(PipeTarget.ToDelegate(s => AppendToOutput(s, ConsoleOutputLevel.Normal)))
+                    .WithStandardErrorPipe(PipeTarget.ToDelegate(s => AppendToOutput(s, ConsoleOutputLevel.Error)))
                     .WithValidation(CommandResultValidation.None)
                     .WithEnvironmentVariables(EnvironmentVariables)
                     .ExecuteAsync(ExecutionCancellation.Token);
@@ -75,23 +76,25 @@ public class RunningJobViewModel : ViewModelBase
             }
             catch (Exception e)
             {
-                AppendToOutput("---------------------------------------------");
-                AppendToOutput(e.Message);
+                AppendToOutput("---------------------------------------------", ConsoleOutputLevel.Normal);
+                
                 if (e is not OperationCanceledException)
                 {
-                    AppendToOutput(e.StackTrace);
+                    AppendToOutput(e.Message, ConsoleOutputLevel.Error);
+                    AppendToOutput(e.StackTrace, ConsoleOutputLevel.Error);
                     ChangeStatus(RunningJobStatus.Failed);
                 }
                 else
                 {
+                    AppendToOutput(e.Message, ConsoleOutputLevel.Warn);
                     ChangeStatus(RunningJobStatus.Cancelled);
                 }
             }
             finally
             {
                 stopWatch.Stop();
-                AppendToOutput("---------------------------------------------");
-                AppendToOutput($"Execution finished after {stopWatch.Elapsed}");
+                AppendToOutput("---------------------------------------------", ConsoleOutputLevel.Normal);
+                AppendToOutput($"Execution finished after {stopWatch.Elapsed}", ConsoleOutputLevel.Normal);
                 Dispatcher.UIThread.Post(() => { ExecutionPending = false; });
             }
         });
@@ -207,7 +210,7 @@ public class RunningJobViewModel : ViewModelBase
         //     });
     }
 
-    private async Task AppendToOutput(string? s)
+    private async Task AppendToOutput(string? s, ConsoleOutputLevel level)
     {
         if (s != null)
         {
@@ -217,7 +220,7 @@ public class RunningJobViewModel : ViewModelBase
                 return;
             }
 
-            AppendOutput(s);
+            AppendOutput(s, level);
             //await ch.Writer.WriteAsync((this, newContent));
         }
     }
@@ -239,16 +242,34 @@ public class RunningJobViewModel : ViewModelBase
     private string _currentRunOutput;
 
 
-    private StringBuilder outputBuilder = new ();
-    public void AppendOutput(string s)
+    public enum ConsoleOutputLevel
     {
-        outputBuilder.AppendLine(s);
-        NumberOfLines++;
-        var output = outputBuilder.ToString();
+        Normal,
+        Warn,
+        Error
+    }
+    
+    public void AppendOutput(string s, ConsoleOutputLevel level)
+    {
+       
         Dispatcher.UIThread.Post(() =>
         {
-            CurrentRunOutputBuffered = output;
-            OutputIndex = Math.Max(0, output.Length-1);
+            foreach (var part in s.Split("\r\n"))
+            {
+                var inline = new Run(part);
+                
+                if (level == ConsoleOutputLevel.Error)
+                {
+                    inline.Foreground = Brushes.Red;
+                }else
+                if (level == ConsoleOutputLevel.Warn)
+                {
+                    inline.Foreground = Brushes.Yellow;
+                }
+                RichOutput.Add( inline);
+                RichOutput.Add(new  LineBreak());    
+            }
+            
         });
     }
     
@@ -293,4 +314,6 @@ public class RunningJobViewModel : ViewModelBase
 
     public CancellationTokenSource ExecutionCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }
+
+    public InlineCollection RichOutput { get; set; } = new();
 }

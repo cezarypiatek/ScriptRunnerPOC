@@ -118,12 +118,11 @@
         <Setter Property="Margin" Value="20 ,0" />
 	</Style>
 
-    <Style Selector="TextBox.consoleOutput">
-        <Setter Property="IsReadOnly" Value="True"></Setter>
-        <Setter Property="AcceptsReturn" Value="True" />
-		<Setter Property="TextWrapping" Value="Wrap" />
-		<Setter Property="Margin" Value="0, 10, 10, 0" />
+    <Style Selector="RichTextBlock.consoleOutput">
+        <Setter Property="Margin" Value="0, 10, 10, 0" />
         <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="Background" Value="Black"></Setter>
+        <Setter Property="Padding" Value="10"></Setter>
 	</Style>
 
 </Styles>

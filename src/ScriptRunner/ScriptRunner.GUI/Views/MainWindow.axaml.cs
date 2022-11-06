@@ -1,4 +1,6 @@
+using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Mixins;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -65,6 +67,14 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             {
                 viewModel.AcceptCommand();
             }
+        }
+    }
+
+    private void ScrollChangedHandler(object? sender, ScrollChangedEventArgs e)
+    {
+        if (sender is ScrollViewer sc && e.ExtentDelta.Length > 0)
+        {
+            sc.ScrollToEnd();
         }
     }
 }
