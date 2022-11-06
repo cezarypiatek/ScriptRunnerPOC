@@ -9,6 +9,7 @@
                            xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
                            xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
                            xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
+                           xmlns:backgroundTasks="clr-namespace:ScriptRunner.GUI.BackgroundTasks"
                            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="700"
                            x:Class="ScriptRunner.GUI.Views.MainWindow"
                            Icon="/Assets/avalonia-logo.ico"
@@ -37,7 +38,7 @@
         <StackPanel IsVisible="{Binding IsNewerVersionAvailable}" Height="75">
             <Border BorderBrush="#FF0000" BorderThickness="1"  >
                 <StackPanel  Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center">A newer version is available</TextBlock>
+                    <TextBlock VerticalAlignment="Center" Text="A newer version is available"></TextBlock>
                     <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding CheckForUpdates}">Check release log</Button>
                     <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding InstallUpdate}">Install update</Button>
                 </StackPanel>
@@ -46,10 +47,10 @@
         <StackPanel IsVisible="{Binding OutOfDateConfigRepositories.Count, Converter={StaticResource CountToVisibilityConverter}}">
             <Border BorderBrush="#FF0000" BorderThickness="1"  >
                 <StackPanel  Orientation="Vertical" Margin="20" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center">You have some outdated repositories with script configuration files:</TextBlock>
+                    <TextBlock VerticalAlignment="Center" Text="You have some outdated repositories with script configuration files:"></TextBlock>
                     <ItemsControl Items="{Binding OutOfDateConfigRepositories}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="backgroundTasks:OutdatedRepositoryModel">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Path}"></TextBlock>
                                     <Button Margin="20,0,0,0" VerticalAlignment="Center" 
@@ -127,10 +128,10 @@
         <StackPanel IsEnabled="{Binding SelectedActionInstalled}">
           <StackPanel>
             <StackPanel Orientation="Horizontal">
-              <TextBlock Classes="h2">Parameters: </TextBlock>
+              <TextBlock Classes="h2" Text="Parameters: "></TextBlock>
               <ComboBox Margin="20,0,0,5" Items="{Binding SelectedAction.PredefinedArgumentSets}" SelectedItem="{Binding SelectedArgumentSet, Mode=TwoWay}" MinWidth="200">
                 <ComboBox.DataTemplates>
-                  <DataTemplate>
+                  <DataTemplate x:DataType="scriptConfigs:ArgumentSet">
                     <TextBlock Text="{Binding Description}"></TextBlock>
                   </DataTemplate>
                 </ComboBox.DataTemplates>
@@ -155,7 +156,7 @@
     <GridSplitter IsTabStop="False" Grid.Row="2" Grid.Column="0"  ResizeDirection="Rows" Grid.ColumnSpan="3" BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
     <TabControl x:Name="RunningJobsPanel" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Items="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
       <TabControl.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate x:DataType="vm:RunningJobViewModel">
           <StackPanel Orientation="Horizontal">
               <StackPanel >
                   <StackPanel Orientation="Horizontal">

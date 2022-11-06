@@ -16,6 +16,11 @@ public static class ScriptConfigReader
 {
     public static IEnumerable<ScriptConfig> Load(ConfigScriptEntry source)
     {
+        if (string.IsNullOrWhiteSpace(source.Path))
+        {
+            yield break;
+        }
+        
         if (source.Type == ConfigScriptType.File)
         {
             foreach (var scriptConfig in LoadFileSource(source.Path))

@@ -243,10 +243,10 @@ public class ParamsPanelFactory
                 return new NumericControl
                 {
                     Control = new NumericUpDown{
-                        Value = double.TryParse(value, out var valueDouble)? valueDouble: 0,
-                        Minimum = p.GetPromptSettings("min", out var minValue) && double.TryParse(minValue, out var mindDouble)? mindDouble : double.MinValue,
-                        Maximum = p.GetPromptSettings("max", out var maxValue) && double.TryParse(maxValue, out var maxDouble)? maxDouble: double.MaxValue,
-                        Increment = p.GetPromptSettings("step", out var stepValue) && double.TryParse(stepValue, out var stepDouble)? stepDouble: 1.0,
+                        Value = decimal.TryParse(value, out var valueDouble)? valueDouble: 0,
+                        Minimum = p.GetPromptSettings("min", out var minValue) && decimal.TryParse(minValue, out var mindDouble)? mindDouble : decimal.MinValue,
+                        Maximum = p.GetPromptSettings("max", out var maxValue) && decimal.TryParse(maxValue, out var maxDouble)? maxDouble: decimal.MaxValue,
+                        Increment = p.GetPromptSettings("step", out var stepValue) && decimal.TryParse(stepValue, out var stepDouble)? stepDouble: 1.0m,
                         TabIndex = index,
                         IsTabStop = true
                     }

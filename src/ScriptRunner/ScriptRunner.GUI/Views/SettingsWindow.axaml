@@ -107,7 +107,7 @@
             <Button Command="{Binding AddNewConfigScriptRow}" Margin="0,10">
                 <StackPanel Orientation="Horizontal">
                     <avalonia:Icon Value="fa fa-plus" Margin="4,0"/>
-                    <TextBlock>Add new config script</TextBlock>
+                    <TextBlock Text="Add new config script"></TextBlock>
                 </StackPanel>
             </Button>
         </StackPanel>

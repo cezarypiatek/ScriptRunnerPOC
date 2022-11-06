@@ -45,7 +45,7 @@
           <Button  Command="{Binding AddNewVaultEntry}" Margin="20">
               <StackPanel Orientation="Horizontal">
                   <avalonia:Icon Value="fa fa-plus" Margin="4,0"/>
-                  <TextBlock>Add new vault entry</TextBlock>
+                  <TextBlock Text="Add new vault entry"></TextBlock>
               </StackPanel>
           </Button>
       </StackPanel>

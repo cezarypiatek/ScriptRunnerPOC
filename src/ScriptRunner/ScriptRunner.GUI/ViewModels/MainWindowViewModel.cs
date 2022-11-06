@@ -127,6 +127,13 @@ public class MainWindowViewModel : ReactiveObject
 
     public ObservableCollection<OutdatedRepositoryModel> OutOfDateConfigRepositories { get; } = new();
 
+
+
+    // public MainWindowViewModel():this(new ParamsPanelFactory(new VaultProvider(new NullDataProtector())))
+    // {
+    // }
+
+
     public MainWindowViewModel(ParamsPanelFactory paramsPanelFactory)
     {
         _paramsPanelFactory = paramsPanelFactory;
@@ -332,14 +339,17 @@ public class MainWindowViewModel : ReactiveObject
         window.Show();
     }
 
-    public async void PullRepoChanges(OutdatedRepositoryModel record)
+    public async void PullRepoChanges(object arg)
     {
-        var result = false;
-        await Task.Run(async () => result = await ConfigRepositoryUpdater.PullRepository(record.Path));
-        if (result)
+        if (arg is OutdatedRepositoryModel record)
         {
-            OutOfDateConfigRepositories.Remove(record);
-            RefreshSettings();
+            var result = false;
+            await Task.Run(async () => result = await ConfigRepositoryUpdater.PullRepository(record.Path));
+            if (result)
+            {
+                OutOfDateConfigRepositories.Remove(record);
+                RefreshSettings();
+            }
         }
     }
 
@@ -393,10 +403,13 @@ public class MainWindowViewModel : ReactiveObject
         
     }
 
-    public async Task CloseJob(RunningJobViewModel job)
+    public void CloseJob(object arg)
     {
-        job.CancelExecution();
-        RunningJobs.Remove(job);
+        if (arg is RunningJobViewModel job)
+        {
+            job.CancelExecution();
+            RunningJobs.Remove(job);
+        }
     }
 
     private static string[] SplitCommand(string command)

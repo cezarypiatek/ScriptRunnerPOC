@@ -33,10 +33,13 @@ public class SettingsWindowViewModel : ViewModelBase
         ConfigScriptFiles.Add(new ConfigScriptRow());
     }
     
-    public void RemoveConfigScript(ConfigScriptRow configScriptRow)
+    public void RemoveConfigScript(object arg)
     {
-        AppSettingsService.RemoveScriptConfig(ConfigScriptEntryMapper.Map(configScriptRow));
-        ConfigScriptFiles.Remove(configScriptRow);
+        if (arg is ConfigScriptRow configScriptRow)
+        {
+            AppSettingsService.RemoveScriptConfig(ConfigScriptEntryMapper.Map(configScriptRow));
+            ConfigScriptFiles.Remove(configScriptRow);
+        }
     }
 
     public void SaveConfigScripts()
@@ -73,14 +76,20 @@ public class ConfigScriptRow
 
     }
 
-    private void OnFilePicked(FilePickedArgs args)
+    public void OnFilePicked(object args)
     {
-        Path = args.Path;
+        if (args is FilePickedArgs {Path: var path})
+        {
+            Path = path;
+        }
     }
 
-    private void OnDirectoryPicked(FilePickedArgs args)
+    public void OnDirectoryPicked(object args)
     {
-        Path = args.Path;
+        if (args is FilePickedArgs {Path: var path})
+        {
+            Path = path;
+        }
     }
 
 }
