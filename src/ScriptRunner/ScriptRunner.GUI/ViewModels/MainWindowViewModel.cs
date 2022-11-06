@@ -140,7 +140,7 @@ public class MainWindowViewModel : ReactiveObject
         this.appUpdater = new GithubUpdater();
 
         this.WhenAnyValue(x => x.ActionFilter, x => x.Actions)
-            .Throttle(TimeSpan.FromMilliseconds(500))
+            .Throttle(TimeSpan.FromMilliseconds(200))
             .DistinctUntilChanged()
             .Select((pair, cancellationToken) =>
             {

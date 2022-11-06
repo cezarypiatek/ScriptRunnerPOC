@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Channels;
@@ -189,30 +192,22 @@ public class RunningJobViewModel : ViewModelBase
     }
 
     private static readonly Regex ConsoleSpecialCharsPattern = new Regex(@"\u001b\[[\d;]+\w?");
-
-    static readonly Channel<(RunningJobViewModel, string)> ch = Channel.CreateUnbounded<(RunningJobViewModel, string)>();
-
-    static RunningJobViewModel()
+   
+    public RunningJobViewModel()
     {
-        try
-        {
-            Dispatcher.UIThread.InvokeAsync(async () =>
+        this.WhenAnyValue(x => x.NumberOfLines)
+            .Throttle(TimeSpan.FromMilliseconds(200))
+            .DistinctUntilChanged()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ =>
             {
-                while (await ch.Reader.WaitToReadAsync())
-                {
-                    var (instance, newContent) = await ch.Reader.ReadAsync();
-                    instance.CurrentRunOutput += newContent + Environment.NewLine;
-                    instance.OutputIndex = instance.CurrentRunOutput.Length;
-                }
+                var text = outputBuilder.ToString();
+                this.CurrentRunOutputBuffered = text;
+                this.OutputIndex = text.Length;
             });
-        }
-        catch (Exception e)
-        {
-            
-        }
     }
 
-    private void AppendToOutput(string? s)
+    private async Task AppendToOutput(string? s)
     {
         if (s != null)
         {
@@ -222,7 +217,8 @@ public class RunningJobViewModel : ViewModelBase
                 return;
             }
 
-            ch.Writer.WriteAsync((this, newContent));
+            AppendOutput(s);
+            //await ch.Writer.WriteAsync((this, newContent));
         }
     }
 
@@ -240,10 +236,35 @@ public class RunningJobViewModel : ViewModelBase
     }
 
 
+    private string _currentRunOutput;
+
+
+    private StringBuilder outputBuilder = new ();
+    public void AppendOutput(string s)
+    {
+        outputBuilder.AppendLine(s);
+        NumberOfLines++;
+    }
+    
     public string CurrentRunOutput
     {
         get => _currentRunOutput;
         set => this.RaiseAndSetIfChanged(ref _currentRunOutput, value);
+    }
+    
+    private string _currentRunOutputBuffered;
+
+
+    public int NumberOfLines
+    {
+        get => _numberOfLines;
+        set => this.RaiseAndSetIfChanged(ref _numberOfLines, value);
+    }
+
+    public string CurrentRunOutputBuffered
+    {
+        get => _currentRunOutputBuffered;
+        set => this.RaiseAndSetIfChanged(ref _currentRunOutputBuffered, value);
     }
 
     public int OutputIndex
@@ -257,11 +278,12 @@ public class RunningJobViewModel : ViewModelBase
         get => _executionPending;
         set => this.RaiseAndSetIfChanged(ref _executionPending, value);
     }
-    private string _currentRunOutput;
+
     private int _outputIndex;
     private bool _executionPending;
     private StreamWriter? inputWriter;
     private string _inputCommand;
+    private int _numberOfLines;
 
     public CancellationTokenSource ExecutionCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }
