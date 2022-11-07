@@ -31,6 +31,7 @@ public class RunningJobViewModel : ViewModelBase
 {
     public string Tile { get; set; }
 
+    
 
     private RunningJobStatus _status;
 
@@ -96,6 +97,8 @@ public class RunningJobViewModel : ViewModelBase
                 AppendToOutput("---------------------------------------------", ConsoleOutputLevel.Normal);
                 AppendToOutput($"Execution finished after {stopWatch.Elapsed}", ConsoleOutputLevel.Normal);
                 Dispatcher.UIThread.Post(() => { ExecutionPending = false; });
+                await Task.Delay(1000);
+                outputSub?.Dispose();
             }
         });
     }
@@ -194,35 +197,178 @@ public class RunningJobViewModel : ViewModelBase
         });
     }
 
-    private static readonly Regex ConsoleSpecialCharsPattern = new Regex(@"\u001b\[[\d;]+\w?");
+    private static readonly Regex ConsoleSpecialCharsPattern = new Regex(@"(\u001b\[[\d;]+\w?)", RegexOptions.Compiled);
    
     public RunningJobViewModel()
     {
-        // this.WhenAnyValue(x => x.NumberOfLines)
-        //     .Throttle(TimeSpan.FromMilliseconds(200))
-        //     .DistinctUntilChanged()
-        //     .Select(i =>  outputBuilder.ToString())
-        //     .ObserveOn(RxApp.MainThreadScheduler)
-        //     .Subscribe(text  =>
-        //     {
-        //         this.CurrentRunOutputBuffered = text;
-        //         this.OutputIndex = text.Length;
-        //     });
+        
+       this.outputSub =  Observable.FromEventPattern<EventHandler<string>, string>(
+                h => this.OnAddOutput += h,
+                h => this.OnAddOutput -= h
+            )
+            .Buffer(TimeSpan.FromMilliseconds(200))
+            .Subscribe(list =>
+            {
+                AppendToUiOutput(list.Select(x=>x.EventArgs).ToArray());
+            });
+
+        
     }
 
+
+
+    public event EventHandler<string> OnAddOutput; 
+
+
+    private IBrush currentConsoleTextColor = Brushes.White;
+    private IBrush currentConsoleBackgroundColor = Brushes.Transparent;
+
+    private bool underline = false;
+    private bool bold = false;
     private async Task AppendToOutput(string? s, ConsoleOutputLevel level)
     {
+        
         if (s != null)
         {
-            var newContent = ConsoleSpecialCharsPattern.Replace(s, "");
-            if (string.IsNullOrEmpty(newContent))
+            // var newContent = ConsoleSpecialCharsPattern.Replace(s, "");
+            // if (string.IsNullOrEmpty(newContent))
+            // {
+            //     return;
+            // }
+
+            //AppendToUiOutput(s);
+            //await ch.Writer.WriteAsync((this, newContent));
+            OnAddOutput?.Invoke(this, s);
+        }
+    }
+
+    private void AppendToUiOutput(IReadOnlyList<string> s)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            var tmp = new List<Inline>();
+            foreach (var part in s.SelectMany(x=>x.Split("\r\n")))
             {
-                return;
+                var subParts = ConsoleSpecialCharsPattern.Split(part);
+                foreach (var subPart in subParts)
+                {
+                    if (subPart.StartsWith("\u001b["))
+                    {
+                        var foreground = subPart switch
+                        {
+                            "\u001b[30m" => Brushes.Black,
+                            "\u001b[31m" => Brushes.DarkRed,
+                            "\u001b[32m" => Brushes.DarkGreen,
+                            "\u001b[33m" => Brushes.Yellow,
+                            "\u001b[34m" => Brushes.DarkBlue,
+                            "\u001b[35m," => Brushes.DarkMagenta,
+                            "\u001b[36m" => Brushes.DarkCyan,
+                            "\u001b[37m" => Brushes.White,
+                            "\u001b[30;1m" => Brushes.Gray,
+                            "\u001b[31;1m" => Brushes.Red,
+                            "\u001b[32;1m" => Brushes.Green,
+                            "\u001b[33;1m" => Brushes.LightYellow,
+                            "\u001b[34;1m" => Brushes.Blue,
+                            "\u001b[35;1m," => Brushes.Magenta,
+                            "\u001b[36;1m" => Brushes.Cyan,
+                            "\u001b[37;1m" => Brushes.White,
+                            "\u001b[0m" => Brushes.White,
+                            _ => null
+                        };
+
+                        if (foreground != null)
+                        {
+                            currentConsoleTextColor = foreground;
+                        }
+
+                        var background = subPart switch
+                        {
+                            "\u001b[40m" => Brushes.Black,
+                            "\u001b[41m" => Brushes.DarkRed,
+                            "\u001b[42m" => Brushes.DarkGreen,
+                            "\u001b[43m" => Brushes.Yellow,
+                            "\u001b[44m" => Brushes.DarkBlue,
+                            "\u001b[45m," => Brushes.DarkMagenta,
+                            "\u001b[46m" => Brushes.DarkCyan,
+                            "\u001b[47m" => Brushes.White,
+                            "\u001b[40;1m" => Brushes.Gray,
+                            "\u001b[41;1m" => Brushes.Red,
+                            "\u001b[42;1m" => Brushes.Green,
+                            "\u001b[43;1m" => Brushes.LightYellow,
+                            "\u001b[44;1m" => Brushes.Blue,
+                            "\u001b[45;1m," => Brushes.Magenta,
+                            "\u001b[46;1m" => Brushes.Cyan,
+                            "\u001b[47;1m" => Brushes.White,
+                            "\u001b[0m" => Brushes.Transparent,
+                            _ => null
+                        };
+
+                        if (background != null)
+                        {
+                            currentConsoleBackgroundColor = background;
+                        }
+
+                        if (subPart == "\u001b[7m")
+                        {
+                            (currentConsoleTextColor, currentConsoleBackgroundColor) =
+                                (currentConsoleBackgroundColor, currentConsoleTextColor);
+                        }
+
+                        if (subPart == "\u001b[1m")
+                        {
+                            bold = true;
+                        }
+                        else if (subPart == "\u001b[4m")
+                        {
+                            underline = true;
+                        }
+                        else if (subPart == "\u001b[0m")
+                        {
+                            bold = false;
+                            underline = false;
+                        }
+
+
+                        continue;
+                    }
+
+                    var inline = new Run(subPart);
+
+                    // if (level == ConsoleOutputLevel.Error)
+                    // {
+                    //     inline.Foreground = Brushes.Red;
+                    // }
+                    // else
+                    // if (level == ConsoleOutputLevel.Warn)
+                    // {
+                    //     inline.Foreground = Brushes.Yellow;
+                    // }
+                    // else
+                    {
+                        inline.Foreground = currentConsoleTextColor;
+                        inline.Background = currentConsoleBackgroundColor;
+
+                        if (bold)
+                        {
+                            inline.FontStyle = FontStyle.Oblique;
+                        }
+
+                        if (underline)
+                        {
+                            inline.TextDecorations.Add(new TextDecoration()
+                            {
+                                Location = TextDecorationLocation.Underline,
+                            });
+                        }
+                    }
+                    tmp.Add(inline);
+                }
+
+                tmp.Add(new LineBreak());
             }
 
-            AppendOutput(s, level);
-            //await ch.Writer.WriteAsync((this, newContent));
-        }
+            RichOutput.AddRange(tmp);
+        });
     }
 
     public void AcceptCommand()
@@ -311,9 +457,11 @@ public class RunningJobViewModel : ViewModelBase
     private StreamWriter? inputWriter;
     private string _inputCommand;
     private int _numberOfLines;
+    private readonly IDisposable outputSub;
 
     public CancellationTokenSource ExecutionCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }
 
     public InlineCollection RichOutput { get; set; } = new();
+   
 }
