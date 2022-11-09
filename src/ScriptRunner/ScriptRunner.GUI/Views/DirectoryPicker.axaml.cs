@@ -40,7 +40,7 @@ namespace ScriptRunner.GUI.Views
                 var sourceWindow = (sender as IControl)?.GetVisualRoot() as Window ?? desktop.MainWindow;
 
                 var dialog = new OpenFolderDialog();
-                if (string.IsNullOrWhiteSpace(DirPath) == false)
+                if (string.IsNullOrWhiteSpace(DirPath) == false && Directory.Exists(DirPath))
                 {
                     dialog.Directory = DirPath;
                 }
