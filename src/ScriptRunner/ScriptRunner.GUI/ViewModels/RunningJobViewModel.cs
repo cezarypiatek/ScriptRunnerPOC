@@ -3,6 +3,7 @@ using CliWrap;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,8 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
+using DynamicData;
+using ScriptRunner.GUI.ScriptConfigs;
 
 namespace ScriptRunner.GUI.ViewModels;
 
@@ -47,9 +50,10 @@ public class RunningJobViewModel : ViewModelBase
 
     public event EventHandler ExecutionCompleted;
     public void RaiseExecutionCompleted() => ExecutionCompleted?.Invoke(this, EventArgs.Empty);
-
-    public void RunJob(string commandPath, string args, string? workingDirectory)
+    private List<InteractiveInputDescription> _inputs = new List<InteractiveInputDescription>();
+    public void RunJob(string commandPath, string args, string? workingDirectory, List<InteractiveInputDescription> interactiveInputs)
     {
+        _inputs = interactiveInputs;
         CurrentRunOutput = "";
         ExecutionPending = true;
         Task.Run(async () =>
@@ -225,11 +229,39 @@ public class RunningJobViewModel : ViewModelBase
 
     private bool underline = false;
     private bool bold = false;
+
+    public ObservableCollection<InteractiveInputItem> CurrentInteractiveInputs { get; set; } = new();
+
+    public void ExecuteInteractiveInput(object data)
+    {
+        if (data is string text)
+        {
+          ExecuteInput(text);
+          CurrentInteractiveInputs.Clear();
+        }
+    }
     private async Task AppendToOutput(string? s, ConsoleOutputLevel level)
     {
         
         if (s != null)
         {
+            if (_inputs.Count > 0)
+            {
+                foreach (var input in _inputs)
+                {
+                    var regex = Regex.Match(s, input.WhenMatched);
+                    if (regex.Success)
+                    {
+                       Dispatcher.UIThread.Post(() =>
+                       {
+                           CurrentInteractiveInputs.Clear();
+                           CurrentInteractiveInputs.AddRange(input.Inputs);
+                       });
+                        break;
+                    }
+                }
+            }
+            
             // var newContent = ConsoleSpecialCharsPattern.Replace(s, "");
             // if (string.IsNullOrEmpty(newContent))
             // {
@@ -375,12 +407,21 @@ public class RunningJobViewModel : ViewModelBase
     {
         if (inputWriter != null)
         {
-            Dispatcher.UIThread.Post(() =>
-            {
-                inputWriter.WriteLine(InputCommand);
-                inputWriter.Flush();
+            var inputCommand = InputCommand;
+            ExecuteInput(inputCommand);
+            Dispatcher.UIThread.Post(() => {
+              
                 InputCommand = string.Empty;
             });
+        }
+    }
+
+    private void ExecuteInput(string inputCommand)
+    {
+        if (inputWriter != null)
+        {
+            inputWriter.WriteLine(inputCommand);
+            inputWriter.Flush();
         }
     }
 
@@ -458,6 +499,7 @@ public class RunningJobViewModel : ViewModelBase
     private string _inputCommand;
     private int _numberOfLines;
     private readonly IDisposable outputSub;
+    private InteractiveInputDescription _currentInteractiveInput;
 
     public CancellationTokenSource ExecutionCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }

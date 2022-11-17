@@ -183,7 +183,22 @@
               <ScrollViewer Grid.Row="1" ScrollChanged="ScrollChangedHandler">
                   <RichTextBlock  IsTextSelectionEnabled="True"  Classes="consoleOutput" Text="{Binding CurrentRunOutputBuffered, Mode=OneWay}"   Inlines="{Binding RichOutput}" ></RichTextBlock>
               </ScrollViewer>
-            <TextBox IsVisible="{Binding ExecutionPending, Mode=OneWay}" Text="{Binding InputCommand, Mode=TwoWay}" KeyUp="AcceptCommand"  Grid.Row="2" Margin="0,10,10,0" FontFamily="Consolas"></TextBox>
+              <StackPanel Grid.Row="2" IsVisible="{Binding ExecutionPending, Mode=OneWay}" >
+                  <ItemsRepeater Items="{Binding CurrentInteractiveInputs}" Margin="0, 10, 0,0">
+                      <ItemsRepeater.Layout>
+                          <StackLayout Spacing="10"
+                                       Orientation="Horizontal" />
+                      </ItemsRepeater.Layout>
+                      <ItemsRepeater.ItemTemplate>
+                          <DataTemplate x:DataType="scriptConfigs:InteractiveInputItem">
+                              <Button Content="{Binding Label}" Command="{Binding $parent[ItemsRepeater].DataContext.ExecuteInteractiveInput}" CommandParameter="{Binding Value}"></Button>
+                          </DataTemplate>
+                      </ItemsRepeater.ItemTemplate>
+                      
+                  </ItemsRepeater>
+                  <TextBox  Text="{Binding InputCommand, Mode=TwoWay}" KeyUp="AcceptCommand"  Margin="0,10,10,0" FontFamily="Consolas"></TextBox>
+              </StackPanel>
+            
             <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,10,0,10">
               <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0"
                        Command="{Binding CancelExecution}" IsEnabled="{Binding ExecutionPending}">Cancel</Button>

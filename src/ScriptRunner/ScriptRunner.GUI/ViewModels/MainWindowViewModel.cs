@@ -314,7 +314,7 @@ public class MainWindowViewModel : ReactiveObject
             };
             this.RunningJobs.Add(job);
             SelectedRunningJob = job;
-            job.RunJob(commandPath, args, selectedAction.InstallCommandWorkingDirectory);
+            job.RunJob(commandPath, args, selectedAction.InstallCommandWorkingDirectory, new ());
         }
     }
 
@@ -398,7 +398,7 @@ public class MainWindowViewModel : ReactiveObject
             };
             this.RunningJobs.Add(job);
             SelectedRunningJob = job;
-            job.RunJob(commandPath, args, selectedAction.WorkingDirectory);
+            job.RunJob(commandPath, args, selectedAction.WorkingDirectory, selectedAction.InteractiveInputs);
         }
         
     }

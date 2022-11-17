@@ -23,6 +23,7 @@ public class ScriptConfig
     public string? SourceName { get; set; }
     public string? AutoParameterBuilderPattern { get; set; }
     public string? AutoParameterBuilderStyle { get; set; }
+    public List<InteractiveInputDescription> InteractiveInputs { get; set; } = new();
 }
 
 public class ArgumentSet
@@ -61,4 +62,16 @@ public class ScriptParam
 
         return @default;
     }
+}
+
+public class InteractiveInputDescription
+{
+    public string WhenMatched { get; set; }
+    public List<InteractiveInputItem> Inputs { get; set; } = new();
+}
+
+public class InteractiveInputItem
+{
+    public string Label { get; set; }
+    public string Value { get; set; }
 }
