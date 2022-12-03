@@ -6,9 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Avalonia.Remote.Protocol.Viewport;
 using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.Settings;
+using ScriptRunner.GUI.ViewModels;
 
 namespace ScriptRunner.GUI.ScriptReader;
 
@@ -100,7 +102,7 @@ public static class ScriptConfigReader
 
                 var defaultSet = new ArgumentSet()
                 {
-                    Description = "<default>"
+                    Description = MainWindowViewModel.DefaultParameterSetName
                 };
 
                 foreach (var param in action.Params)

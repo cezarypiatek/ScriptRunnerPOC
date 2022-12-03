@@ -10,10 +10,11 @@
                            xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
                            xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
                            xmlns:backgroundTasks="clr-namespace:ScriptRunner.GUI.BackgroundTasks"
-                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="700"
+                           mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="900"
                            x:Class="ScriptRunner.GUI.Views.MainWindow"
                            Icon="/Assets/avalonia-logo.ico"
                            Title="ScriptRunner.GUI"
+                           x:DataType="vm:MainWindowViewModel"
                            FontFamily="Segoe UI Variable">
    
     <Design.DataContext>
@@ -146,9 +147,15 @@
             </ItemsControl>
           </StackPanel>
 
-          <StackPanel Orientation="Horizontal" Margin="0, 20, 0 , 5">
-            <Button Width="60" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
-          </StackPanel>
+          
+          <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch">
+            <Button DockPanel.Dock="Left"  HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"  HorizontalAlignment="Right">
+                <Button HorizontalContentAlignment="Center" Margin="0,0,5,0" Command="{Binding SaveAsDefault}"  ToolTip.Tip="Set current parameter values as default">Save as defaults</Button>
+                
+            </StackPanel>
+
+          </DockPanel>
         </StackPanel>
 
       </StackPanel>

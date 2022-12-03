@@ -89,10 +89,13 @@ public class ParamsPanelFactory
                     IsTabStop = true
                 };
 
-                if (secretBindings.FirstOrDefault(x => x.ActionName == scriptConfig.Name && x.ParameterName == p.Name) is { } binding)
+                var vaultKey = value?.StartsWith(MainWindowViewModel.VaultReferencePrefix) == true
+                        ? value.Substring(MainWindowViewModel.VaultReferencePrefix.Length -1)
+                        : secretBindings.FirstOrDefault(x => x.ActionName == scriptConfig.Name && x.ParameterName == p.Name)?.VaultKey;
+                if (string.IsNullOrWhiteSpace(vaultKey) == false )
                 {
                     var vaultEntries = _vaultProvider.ReadFromVault();
-                    if (vaultEntries.FirstOrDefault(x => x.Name == binding.VaultKey) is { } vaultEntry)
+                    if (vaultEntries.FirstOrDefault(x => x.Name == vaultKey) is { } vaultEntry)
                     {
                         passwordBox.VaultKey = vaultEntry.Name;
                         passwordBox.Password = vaultEntry.Secret;

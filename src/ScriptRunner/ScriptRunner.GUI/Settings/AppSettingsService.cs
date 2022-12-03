@@ -63,6 +63,30 @@ public class AppSettingsService
         Save(allSettings);
         Debug.WriteLine($"Width: {allSettings.Layout.Width}, Height: {allSettings.Layout.Height}, L: {allSettings.Layout.ActionsPanelWidth}, M: {allSettings.Layout.RunningJobsPanelHeight}");
     }
+    
+    public static void UpdateDefaultOverrides(ActionDefaultOverrides overrides)
+    {
+        var allSettings = AppSettingsService.Load();
+        allSettings.DefaultOverrides ??= new ();
+
+        var existingOverride = allSettings.DefaultOverrides.FirstOrDefault(x => x.ActionName == overrides.ActionName);
+        if (existingOverride != null)
+        {
+            allSettings.DefaultOverrides.Remove(existingOverride);
+        }
+        allSettings.DefaultOverrides.Add(overrides);
+        Save(allSettings);
+    }
+
+    public static Dictionary<string, string>? TryGetDefaultOverrides(string actionName)
+    {
+        var allSettings = AppSettingsService.Load();
+        if (allSettings.DefaultOverrides?.FirstOrDefault(x => x.ActionName == actionName) is { Defaults: var overrides } )
+        {
+            return overrides;
+        }
+        return null;
+    }
 
     public static void RemoveScriptConfig(ConfigScriptEntry entry)
     {

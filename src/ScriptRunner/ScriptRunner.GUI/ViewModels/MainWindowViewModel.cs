@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Threading;
 using DynamicData;
 using ReactiveUI;
@@ -21,7 +22,10 @@ namespace ScriptRunner.GUI.ViewModels;
 
 public class MainWindowViewModel : ReactiveObject
 {
+
+
     private readonly ParamsPanelFactory _paramsPanelFactory;
+    private readonly VaultProvider _vaultProvider;
 
     /// <summary>
     /// Contains panels with generated controls for every defined action
@@ -129,14 +133,15 @@ public class MainWindowViewModel : ReactiveObject
 
 
 
-    // public MainWindowViewModel():this(new ParamsPanelFactory(new VaultProvider(new NullDataProtector())))
-    // {
-    // }
+    public MainWindowViewModel() : this(new ParamsPanelFactory(new VaultProvider(new NullDataProtector())), new VaultProvider(new NullDataProtector()))
+    {
+    }
 
 
-    public MainWindowViewModel(ParamsPanelFactory paramsPanelFactory)
+    public MainWindowViewModel(ParamsPanelFactory paramsPanelFactory, VaultProvider vaultProvider)
     {
         _paramsPanelFactory = paramsPanelFactory;
+        _vaultProvider = vaultProvider;
         this.appUpdater = new GithubUpdater();
 
         this.WhenAnyValue(x => x.ActionFilter, x => x.Actions)
@@ -256,8 +261,20 @@ public class MainWindowViewModel : ReactiveObject
         set
         {
             this.RaiseAndSetIfChanged(ref _selectedArgumentSet, value);
-            if (SelectedAction is { } selectedAction && _selectedArgumentSet is { Arguments: {}  arguments})
+            if (SelectedAction is { } selectedAction && _selectedArgumentSet is { Arguments: {}  arguments, Description: var setName})
             {
+                if (setName == DefaultParameterSetName)
+                {
+                    if (AppSettingsService.TryGetDefaultOverrides(selectedAction.Name) is { } overrides)
+                    {
+                        arguments = new Dictionary<string, string>(arguments);
+                        foreach (var (argName, argValue) in overrides)
+                        {
+                            arguments[argName] = argValue;
+                        }
+                    }
+                }
+
                 RenderParameterForm(selectedAction, arguments);
             }
         }
@@ -364,6 +381,57 @@ public class MainWindowViewModel : ReactiveObject
         var parts = SplitCommand(command);
         return (parts.Length > 0 ? parts[0] : "", parts.Length > 1 ? parts[1] : "");
     }
+
+    public const string VaultReferencePrefix = "!!vault:";
+    public const string DefaultParameterSetName = "<default>";
+
+    public void SaveAsDefault()
+    {
+        if (SelectedAction == null)
+        {
+            return;
+        }
+
+        var defaultOverrides = new Dictionary<string, string>();
+        foreach (var controlRecord in _controlRecords)
+        {
+            if (controlRecord is PasswordControl {Control: PasswordBox passwordBox})
+            {
+                if (string.IsNullOrWhiteSpace(passwordBox.VaultKey) == false)
+                {
+                    defaultOverrides[controlRecord.Name] = $"{VaultReferencePrefix}{passwordBox.VaultKey}";
+                }
+                else if (string.IsNullOrWhiteSpace(passwordBox.Password) == false)
+                {
+                    var vaultEntries = _vaultProvider.ReadFromVault().ToList();
+                    var vaultKeyName = $"!default_{SelectedAction.Name}_{controlRecord.Name}";
+                    var existingEntry = vaultEntries.FirstOrDefault(x => x.Name == vaultKeyName);
+                    if (existingEntry != null)
+                    {
+                        vaultEntries.Remove(existingEntry);
+                    }
+                    vaultEntries.Add(new VaultEntry
+                    {
+                        Name = vaultKeyName,
+                        Secret = passwordBox.Password
+                    });
+                    _vaultProvider.UpdateVault(vaultEntries);
+                    defaultOverrides[controlRecord.Name] = $"{VaultReferencePrefix}{vaultKeyName}";
+                }
+            }
+            else
+            {
+                var controlValue = controlRecord.GetFormattedValue();
+                defaultOverrides[controlRecord.Name] = controlValue;
+            }
+        }
+        AppSettingsService.UpdateDefaultOverrides(new ActionDefaultOverrides()
+        {
+            ActionName = SelectedAction.Name,
+            Defaults = defaultOverrides
+        });
+    }
+
 
     public void RunScript()
     {
