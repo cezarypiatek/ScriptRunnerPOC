@@ -77,6 +77,20 @@ public class AppSettingsService
         allSettings.DefaultOverrides.Add(overrides);
         Save(allSettings);
     }
+    
+    public static void UpdateExtraParameterSet(ActionExtraPredefinedParameterSet parameterSet)
+    {
+        var allSettings = AppSettingsService.Load();
+        allSettings.ExtraParameterSets ??= new ();
+
+        var existingOne = allSettings.ExtraParameterSets.FirstOrDefault(x => x.ActionName == parameterSet.ActionName && x.Description == parameterSet.Description);
+        if (existingOne != null)
+        {
+            allSettings.ExtraParameterSets.Remove(existingOne);
+        }
+        allSettings.ExtraParameterSets.Add(parameterSet);
+        Save(allSettings);
+    }
 
     public static Dictionary<string, string>? TryGetDefaultOverrides(string actionName)
     {

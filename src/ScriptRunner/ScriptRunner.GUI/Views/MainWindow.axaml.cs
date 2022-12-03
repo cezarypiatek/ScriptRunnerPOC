@@ -1,11 +1,16 @@
 using System;
+using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Mixins;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using Avalonia.VisualTree;
 using ReactiveUI;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.ViewModels;
@@ -76,5 +81,36 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         {
             sc.ScrollToEnd();
         }
+    }
+
+    public async void SaveAsPredefined(object? sender, RoutedEventArgs e)
+    {
+        if (this.ViewModel?.SelectedAction == null)
+        {
+            return;
+        }
+        var popup = new PredefinedParameterSaveWindow();
+        popup.DataContext = new SavePredefinedParameterVM()
+        {
+            UseNew = true,
+            ExistingSets = this.ViewModel.SelectedAction.PredefinedArgumentSets.Select(x => x.Description).ToList(),
+            SelectedExisting = this.ViewModel.SelectedArgumentSet?.Description
+        };
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            var sourceWindow = (sender as IControl)?.GetVisualRoot() as Window ?? desktop.MainWindow;
+            if (await popup.ShowDialog<string>(sourceWindow) is { } setName && string.IsNullOrWhiteSpace(setName) == false)
+            {
+                if (setName == MainWindowViewModel.DefaultParameterSetName)
+                {
+                    this.ViewModel.SaveAsDefault();
+                }
+                else
+                {
+                    this.ViewModel.SaveAsPredefined(setName);
+                }
+            }
+        }
+
     }
 }

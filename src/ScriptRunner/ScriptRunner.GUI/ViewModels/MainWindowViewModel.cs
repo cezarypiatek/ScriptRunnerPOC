@@ -5,9 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Metadata;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using DynamicData;
 using ReactiveUI;
 using ScriptRunner.GUI.BackgroundTasks;
@@ -17,6 +21,7 @@ using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.ScriptReader;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.Views;
+using static ScriptRunner.GUI.Views.PasswordBox;
 
 namespace ScriptRunner.GUI.ViewModels;
 
@@ -202,7 +207,6 @@ public class MainWindowViewModel : ReactiveObject
 
 
         ActionParametersPanel = new ObservableCollection<IPanel>();
-        ParameterSetsForCurrentAction = new ObservableCollection<ArgumentSet>();
         BuildUi();
     }
 
@@ -228,7 +232,8 @@ public class MainWindowViewModel : ReactiveObject
     private void BuildUi()
     {
         var selectedActionName = SelectedAction?.Name;
-        var sources = AppSettingsService.Load().ConfigScripts ?? new List<ConfigScriptEntry>
+        var appSettings = AppSettingsService.Load();
+        var sources = appSettings.ConfigScripts ?? new List<ConfigScriptEntry>
         {
             new ConfigScriptEntry
             {
@@ -238,7 +243,7 @@ public class MainWindowViewModel : ReactiveObject
             }
         };
         var actions = new List<ScriptConfig>();
-        foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x)).OrderBy(x=>x.SourceName).ThenBy(x=>x.Name))
+        foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x, appSettings)).OrderBy(x=>x.SourceName).ThenBy(x=>x.Name))
         {
             actions.Add(action);
         }
@@ -280,7 +285,6 @@ public class MainWindowViewModel : ReactiveObject
         }
     }
 
-    public ObservableCollection<ArgumentSet> ParameterSetsForCurrentAction { get; set; }
 
     private void RenderParameterForm(ScriptConfig action, Dictionary<string, string> parameterValues)
     {
@@ -392,6 +396,16 @@ public class MainWindowViewModel : ReactiveObject
             return;
         }
 
+        var defaultOverrides = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{SelectedAction.Name}_{DefaultParameterSetName}");
+        AppSettingsService.UpdateDefaultOverrides(new ActionDefaultOverrides
+        {
+            ActionName = SelectedAction.Name,
+            Defaults = defaultOverrides
+        });
+    }
+
+    private Dictionary<string, string> HarvestCurrentParameters(string vaultPrefixForNewEntries)
+    {
         var defaultOverrides = new Dictionary<string, string>();
         foreach (var controlRecord in _controlRecords)
         {
@@ -404,12 +418,13 @@ public class MainWindowViewModel : ReactiveObject
                 else if (string.IsNullOrWhiteSpace(passwordBox.Password) == false)
                 {
                     var vaultEntries = _vaultProvider.ReadFromVault().ToList();
-                    var vaultKeyName = $"!default_{SelectedAction.Name}_{controlRecord.Name}";
+                    var vaultKeyName = $"!{vaultPrefixForNewEntries}_{controlRecord.Name}";
                     var existingEntry = vaultEntries.FirstOrDefault(x => x.Name == vaultKeyName);
                     if (existingEntry != null)
                     {
                         vaultEntries.Remove(existingEntry);
                     }
+
                     vaultEntries.Add(new VaultEntry
                     {
                         Name = vaultKeyName,
@@ -425,13 +440,45 @@ public class MainWindowViewModel : ReactiveObject
                 defaultOverrides[controlRecord.Name] = controlValue;
             }
         }
-        AppSettingsService.UpdateDefaultOverrides(new ActionDefaultOverrides()
-        {
-            ActionName = SelectedAction.Name,
-            Defaults = defaultOverrides
-        });
+
+        return defaultOverrides;
     }
 
+    public void SaveAsPredefined(string setName)
+    {
+        if (SelectedAction == null)
+        {
+            return;
+        }
+
+        var defaultOverrides = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{SelectedAction.Name}_{setName}");
+        AppSettingsService.UpdateExtraParameterSet(new ActionExtraPredefinedParameterSet
+        {
+            ActionName = SelectedAction.Name,
+            Description = setName,
+            Arguments = defaultOverrides
+        });
+
+        var newSet = new ArgumentSet()
+        {
+            Arguments = defaultOverrides,
+            Description = setName
+        };
+        var existing = SelectedAction.PredefinedArgumentSets.FirstOrDefault(x => x.Description == setName);
+        if (existing != null)
+        {
+
+            SelectedAction.PredefinedArgumentSets.Replace(existing, newSet);
+        }
+        else
+        {
+
+            SelectedAction.PredefinedArgumentSets.Add(newSet);
+            this.RaisePropertyChanged("SelectedAction.PredefinedArgumentSets");
+            SelectedArgumentSet = newSet;
+        }
+
+    }
 
     public void RunScript()
     {
@@ -501,8 +548,6 @@ public class MainWindowViewModel : ReactiveObject
 
         return command.Split(' ', 2);
     }
-
-
 }
 
 public class ScriptConfigGroupWrapper

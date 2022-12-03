@@ -9,6 +9,7 @@ public class ScriptRunnerAppSettings
     public List<ConfigScriptEntry>? ConfigScripts { get; set; }
     public List<VaultBinding> VaultBindings { get; set; }
     public List<ActionDefaultOverrides> DefaultOverrides { get; set; }
+    public List<ActionExtraPredefinedParameterSet> ExtraParameterSets { get; set; }
 }
 
 public record ConfigScriptEntry
@@ -35,4 +36,10 @@ public class ActionDefaultOverrides
 {
     public string ActionName { get; set; }
     public Dictionary<string,string> Defaults { get; set; }
+}
+public class ActionExtraPredefinedParameterSet
+{
+    public string ActionName { get; set; }
+    public string Description { get; set; }
+    public Dictionary<string,string> Arguments { get; set; }
 }

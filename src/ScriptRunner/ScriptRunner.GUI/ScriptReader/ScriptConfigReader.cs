@@ -16,7 +16,8 @@ namespace ScriptRunner.GUI.ScriptReader;
 
 public static class ScriptConfigReader
 {
-    public static IEnumerable<ScriptConfig> Load(ConfigScriptEntry source)
+    public static IEnumerable<ScriptConfig> Load(ConfigScriptEntry source,
+        ScriptRunnerAppSettings appSettings)
     {
         if (string.IsNullOrWhiteSpace(source.Path))
         {
@@ -25,7 +26,7 @@ public static class ScriptConfigReader
         
         if (source.Type == ConfigScriptType.File)
         {
-            foreach (var scriptConfig in LoadFileSource(source.Path))
+            foreach (var scriptConfig in LoadFileSource(source.Path, appSettings))
             {
                 scriptConfig.SourceName = source.Name;
                 yield return scriptConfig;
@@ -37,7 +38,7 @@ public static class ScriptConfigReader
         {
             foreach (var file in Directory.EnumerateFiles(source.Path, "*.json", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
-                foreach (var scriptConfig in LoadFileSource(file))
+                foreach (var scriptConfig in LoadFileSource(file, appSettings))
                 {
                     scriptConfig.SourceName = source.Name;
                     yield return scriptConfig;
@@ -62,7 +63,8 @@ public static class ScriptConfigReader
         return EmptyAutoParameterBuilder.Instance;
     }
 
-    private static IEnumerable<ScriptConfig> LoadFileSource(string fileName)
+    private static IEnumerable<ScriptConfig> LoadFileSource(string fileName,
+        ScriptRunnerAppSettings appSettings)
     {
         if (!File.Exists(fileName)) return Array.Empty<ScriptConfig>();
 
@@ -119,6 +121,28 @@ public static class ScriptConfigReader
                             set.Arguments[key] = val;
                         }
                     }
+                }
+
+                if (appSettings.ExtraParameterSets?.Where(x => x.ActionName == action.Name).ToList() is { } extraSets)
+                {
+                    foreach (var extraSet in extraSets.Select(x => new ArgumentSet
+                             {
+                                 Description = x.Description,
+                                 Arguments = x.Arguments
+                             }))
+                    {
+                        var existing = action.PredefinedArgumentSets.FirstOrDefault(x => x.Description == extraSet.Description);
+                        if (existing != null)
+                        {
+                            action.PredefinedArgumentSets[action.PredefinedArgumentSets.IndexOf(existing)] = extraSet;
+                        }
+                        else
+                        {
+                            action.PredefinedArgumentSets.Add(extraSet);
+                        }
+                    }
+
+                    
                 }
 
                 switch (action.PredefinedArgumentSetsOrdering)

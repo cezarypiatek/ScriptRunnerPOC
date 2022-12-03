@@ -152,7 +152,7 @@
             <Button DockPanel.Dock="Left"  HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"  HorizontalAlignment="Right">
                 <Button HorizontalContentAlignment="Center" Margin="0,0,5,0" Command="{Binding SaveAsDefault}"  ToolTip.Tip="Set current parameter values as default">Save as defaults</Button>
-                
+                <Button HorizontalContentAlignment="Center" Click="SaveAsPredefined"  ToolTip.Tip="Add current parameter values as predefined set">Save as predefined</Button>
             </StackPanel>
 
           </DockPanel>

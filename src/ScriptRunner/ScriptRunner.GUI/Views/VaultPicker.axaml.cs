@@ -11,6 +11,10 @@ namespace ScriptRunner.GUI.Views
 {
     public class VaultPickerViewModel : ViewModelBase
     {
+        public VaultPickerViewModel()
+        {
+        }
+
         public VaultPickerViewModel(VaultProvider vaultProvider)
         {
             Entries = vaultProvider.ReadFromVault();
