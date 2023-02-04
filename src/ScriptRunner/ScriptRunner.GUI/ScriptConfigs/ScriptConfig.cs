@@ -21,6 +21,7 @@ public class ScriptConfig
     public Dictionary<string, string?> EnvironmentVariables { get; set; } = new();
     public string? Source { get; set; }
     public string? SourceName { get; set; }
+    public string FullName => string.IsNullOrWhiteSpace(SourceName) ? Name : $"{SourceName} - {Name}";
     public string? AutoParameterBuilderPattern { get; set; }
     public string? AutoParameterBuilderStyle { get; set; }
     public List<InteractiveInputDescription> InteractiveInputs { get; set; } = new();
