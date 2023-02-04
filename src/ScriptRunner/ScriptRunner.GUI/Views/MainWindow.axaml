@@ -79,14 +79,7 @@
                   <TextBlock Text="{Binding Name}"></TextBlock>
               </TreeDataTemplate>
               <DataTemplate x:DataType="scriptConfigs:ScriptConfig">
-                  <TextBlock>
-                      <TextBlock.Text>
-                          <MultiBinding StringFormat="{}{0} - {1}">
-                              <Binding Path="SourceName" />
-                              <Binding Path="Name" />
-                          </MultiBinding>
-                      </TextBlock.Text>
-                  </TextBlock>
+                  <TextBlock Text="{Binding FullName}" />
               </DataTemplate>
           </TreeView.DataTemplates>
       </TreeView>
