@@ -67,13 +67,11 @@
     </StackPanel>
       <Grid Grid.Row="1" Grid.Column="0">
       <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"></RowDefinition>
         <RowDefinition Height="*"></RowDefinition>
         <RowDefinition Height="Auto"></RowDefinition>
       </Grid.RowDefinitions>
-        <TextBox x:Name="ActionFilter" ></TextBox>
       <!-- List of available actions, selectable -->
-      <TreeView x:Name="ActionTree" Grid.Row="1" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
+      <TreeView x:Name="ActionTree" Grid.Row="0" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
           <TreeView.DataTemplates>
               <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:ScriptConfigGroupWrapper">
                   <TextBlock Text="{Binding Name}"></TextBlock>
@@ -86,7 +84,8 @@
       <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" VerticalAlignment="Bottom" Grid.Row="2">
         <Button i:Attached.Icon="fas fa-cog" Margin="5" Height="35" Width="50" FontSize="18" Command="{Binding OpenSettingsWindow}"   ToolTip.Tip="Configure actions sources"/>
         <Button i:Attached.Icon="fas fa-sync" Margin="0,0,5,0" Height="35" Width="50" FontSize="18" Command="{Binding RefreshSettings}"   ToolTip.Tip="Refresh actions" />
-        <Button i:Attached.Icon="fas fa-lock" Height="35" Width="50" FontSize="18" Command="{Binding OpenVaultWindow}"   ToolTip.Tip="Open Vault" />
+        <Button i:Attached.Icon="fas fa-lock" Margin="0,0,5,0"  Height="35" Width="50" FontSize="18" Command="{Binding OpenVaultWindow}"   ToolTip.Tip="Open Vault" />
+        <Button i:Attached.Icon="fas fa-search" Height="35" Width="50" FontSize="18" Click="OpenSearchBox" HotKey="Ctrl+P"  ToolTip.Tip="Open Search Box (Ctrl+P)" />
       </StackPanel>
     </Grid>
     <GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns" IsTabStop="False"></GridSplitter>
