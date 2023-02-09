@@ -1,0 +1,44 @@
+<reactiveUi:ReactiveWindow x:TypeArguments="viewModels:SearchBoxViewModel" xmlns="https://github.com/avaloniaui"
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                           xmlns:reactiveUi="http://reactiveui.net"
+                           xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
+                           mc:Ignorable="d" 
+                           SizeToContent="WidthAndHeight"
+                           BorderThickness="0"
+                           CanResize="False"
+                           ExtendClientAreaToDecorationsHint="True"
+                           ExtendClientAreaChromeHints="NoChrome"
+                           ExtendClientAreaTitleBarHeightHint="0"
+                           WindowStartupLocation="CenterOwner"
+                           x:Class="ScriptRunner.GUI.Views.SearchBox"
+                           x:DataType="viewModels:SearchBoxViewModel"
+                           Title="SearchBox">
+  <StackPanel Width="400" MaxHeight="800">
+      <Border BorderThickness="1" BorderBrush="White"  >
+          <StackPanel Orientation="Vertical" Margin="10" >
+
+              <TextBlock Margin="0,0,0,2">Search</TextBlock>
+              <TextBox TabIndex="1" Name="SearchBoxInput" Text="{Binding SearchFilter }">
+
+              </TextBox>
+              <ListBox Items="{Binding FilteredActionList}" Name="FilteredItems" Margin="0,5,0,0" >
+                  <ListBox.ItemTemplate>
+                      <DataTemplate>
+                          <TextBlock Text="{Binding FullName}" ></TextBlock>
+                      </DataTemplate>
+                  </ListBox.ItemTemplate>
+              </ListBox>
+              <!--<ItemsControl Items="{Binding FilteredActionList}">
+                  <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                          <TextBlock Text="{Binding FullName}"></TextBlock>
+                      </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+
+              </ItemsControl>-->
+          </StackPanel>
+      </Border>
+  </StackPanel>
+</reactiveUi:ReactiveWindow>

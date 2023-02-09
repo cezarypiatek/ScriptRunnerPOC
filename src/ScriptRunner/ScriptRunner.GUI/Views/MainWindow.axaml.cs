@@ -12,6 +12,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Avalonia.VisualTree;
 using ReactiveUI;
+using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.ViewModels;
 using Splat;
@@ -27,7 +28,6 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         ViewModel = Locator.Current.GetService<MainWindowViewModel>();
         this.WhenActivated((disposableRegistration) =>
         {
-            this.Bind(ViewModel, vm => vm.ActionFilter, v => v.ActionFilter.Text).DisposeWith(disposableRegistration);
             this.OneWayBind(ViewModel, vm => vm.FilteredActionList, v=>v.ActionTree.Items).DisposeWith(disposableRegistration);
         });
         Title = $"ScriptRunner {this.GetType().Assembly.GetName().Version}";
@@ -113,4 +113,27 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         }
 
     }
+
+    private async void OpenSearchBox(object? sender, RoutedEventArgs e)
+    {
+        var popup = new SearchBox(this.ViewModel.Actions);
+        
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            var sourceWindow = (sender as IControl)?.GetVisualRoot() as Window ?? desktop.MainWindow;
+            popup.KeyUp += (o, args) =>
+            {
+                if (args.Key == Key.Escape)
+                {
+                    popup.Close();
+                }
+            };
+            
+            if (await popup.ShowDialog<ScriptConfig>(sourceWindow) is { } selectedCommand)
+            {
+                this.ViewModel.SelectedAction = selectedCommand;
+            }
+        }
+    }
+
 }

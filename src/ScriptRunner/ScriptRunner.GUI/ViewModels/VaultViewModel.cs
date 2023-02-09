@@ -17,6 +17,9 @@ namespace ScriptRunner.GUI.ViewModels
 
         private ObservableCollection<VaultEntry> _entries;
 
+        public VaultViewModel()
+        {
+        }
 
         public VaultViewModel(VaultProvider vaultProvider)
         {
