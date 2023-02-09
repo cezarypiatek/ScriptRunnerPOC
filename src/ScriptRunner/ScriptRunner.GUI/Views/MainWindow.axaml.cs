@@ -129,9 +129,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 }
             };
             
-            if (await popup.ShowDialog<ScriptConfig>(sourceWindow) is { } selectedCommand)
+            if (await popup.ShowDialog<ScriptConfigWithArgumentSet>(sourceWindow) is { } selectedCommand)
             {
-                this.ViewModel.SelectedAction = selectedCommand;
+                this.ViewModel.SelectedAction = selectedCommand.Config;
+                this.ViewModel.SelectedArgumentSet = selectedCommand.ArgumentSet;
             }
         }
     }

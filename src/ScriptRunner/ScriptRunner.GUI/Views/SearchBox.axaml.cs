@@ -98,7 +98,7 @@ namespace ScriptRunner.GUI.Views
 
         private void ChoseSelected()
         {
-            if (FilteredItems.SelectedItem is ScriptConfig selectedConfig)
+            if (FilteredItems.SelectedItem is ScriptConfigWithArgumentSet selectedConfig)
             {
                 Close(selectedConfig);
             }
