@@ -33,8 +33,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         Title = $"ScriptRunner {this.GetType().Assembly.GetName().Version}";
         if (AppSettingsService.Load().Layout is { } layoutSettings)
         {
-            Width = layoutSettings.Width;
-            Height = layoutSettings.Height;
+            Width = Math.Max(layoutSettings.Width, 600);
+            Height = Math.Max(layoutSettings.Height, 600);
             MainGrid.ColumnDefinitions[0].Width = new GridLength(layoutSettings.ActionsPanelWidth);
             MainGrid.RowDefinitions[2].Height = new GridLength(layoutSettings.RunningJobsPanelHeight);
         }
