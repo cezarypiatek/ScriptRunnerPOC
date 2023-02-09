@@ -11,7 +11,7 @@ namespace ScriptRunner.GUI.ViewModels
 {
     public class SearchBoxViewModel : ReactiveObject
     {
-        private readonly List<ScriptConfig> _allActions;
+        private readonly List<ScriptConfigWithArgumentSet> _allActions;
 
         public string SearchFilter
         {
@@ -21,13 +21,18 @@ namespace ScriptRunner.GUI.ViewModels
 
         private string _searchFilter;
 
-        private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfig>> _filteredActionList;
-        public IEnumerable<ScriptConfig> FilteredActionList => _filteredActionList.Value;
+        private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfigWithArgumentSet>> _filteredActionList;
+        public IEnumerable<ScriptConfigWithArgumentSet> FilteredActionList => _filteredActionList.Value;
 
 
         public SearchBoxViewModel(List<ScriptConfig> allActions)
         {
-            _allActions = allActions;
+            _allActions = allActions.SelectMany(x=> x.PredefinedArgumentSets.Select(p=> new ScriptConfigWithArgumentSet()
+            {
+                Config = x,
+                ArgumentSet = p,
+                FullName = p.Description == "<default>"? x.FullName : $"{x.FullName} - {p.Description}"
+            })).ToList();
 
             this.WhenAnyValue(x=>x.SearchFilter)
                 .Throttle(TimeSpan.FromMilliseconds(200))
@@ -37,13 +42,29 @@ namespace ScriptRunner.GUI.ViewModels
                     if (string.IsNullOrWhiteSpace(text) == false)
                     {
                         text = text.Trim();
-                        return _allActions.Where(x => x.Name.ToUpper().Contains(text.ToUpper()));
+                        return _allActions.Where(x =>
+                        {
+                            if (x.ArgumentSet.Description == "<default>")
+                            {
+                                return x.Config.Name.ToUpper().Contains(text.ToUpper());
+                            }
+
+                            return x.ArgumentSet.Description.ToUpper().Contains(text.ToUpper());
+                        });
                     }
 
-                    return Array.Empty<ScriptConfig>();
+                    return Array.Empty<ScriptConfigWithArgumentSet>();
                 })
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
         }
+    }
+
+    public class ScriptConfigWithArgumentSet
+    {
+        public ScriptConfig Config { get; set; }
+        public ArgumentSet ArgumentSet{ get; set; }
+        public string FullName { get; set; }
+        
     }
 }

@@ -14,8 +14,9 @@
                            WindowStartupLocation="CenterOwner"
                            x:Class="ScriptRunner.GUI.Views.SearchBox"
                            x:DataType="viewModels:SearchBoxViewModel"
+
                            Title="SearchBox">
-  <StackPanel Width="400" MaxHeight="800">
+  <StackPanel Width="400" >
       <Border BorderThickness="1" BorderBrush="White"  >
           <StackPanel Orientation="Vertical" Margin="10" >
 
@@ -23,7 +24,7 @@
               <TextBox TabIndex="1" Name="SearchBoxInput" Text="{Binding SearchFilter }">
 
               </TextBox>
-              <ListBox Items="{Binding FilteredActionList}" Name="FilteredItems" Margin="0,5,0,0" >
+              <ListBox Items="{Binding FilteredActionList}" Name="FilteredItems" Margin="0,5,0,0" MaxHeight="400">
                   <ListBox.ItemTemplate>
                       <DataTemplate>
                           <TextBlock Text="{Binding FullName}" ></TextBlock>
