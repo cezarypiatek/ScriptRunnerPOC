@@ -148,9 +148,11 @@ public class ParamsPanelFactory
                 var yearVisible = p.GetPromptSettings("yearVisible", bool.Parse, true);
                 var monthVisible = p.GetPromptSettings("monthVisible", bool.Parse, true);
                 var dayVisible = p.GetPromptSettings("dayVisible", bool.Parse, true);
-                DateTimeOffset? selectedDate = string.IsNullOrWhiteSpace(value)?(p.GetPromptSettings("todayAsDefault", bool.Parse, false)? DateTimeOffset.Now.Date:null) : DateTimeOffset.Parse(value);
+                var culture = p.GetPromptSettings("culture", CultureInfo.GetCultureInfo, CultureInfo.CurrentCulture);
+                DateTimeOffset? selectedDate = string.IsNullOrWhiteSpace(value)?(p.GetPromptSettings("todayAsDefault", bool.Parse, false)? DateTimeOffset.Now.Date:null) : DateTimeOffset.Parse(value, culture);
                 return new DatePickerControl
                 {
+                    Culture = culture,
                     Control = yearVisible && monthVisible && dayVisible? 
                             new CalendarDatePicker
                             {
@@ -296,7 +298,7 @@ public class DatePickerControl : IControlRecord
         };
         if (string.IsNullOrWhiteSpace(Format) == false && selectedDateTime is {} value)
         {
-            return value.ToString(Format);
+            return value.ToString(Format, Culture);
         }
         return selectedDateTime?.ToString() ?? string.Empty;
     }
@@ -305,6 +307,7 @@ public class DatePickerControl : IControlRecord
     public bool MaskingRequired { get; set; }
 
     public string? Format { get; set; }
+    public CultureInfo Culture { get; set; }
 }
 
 public class TimePickerControl : IControlRecord
