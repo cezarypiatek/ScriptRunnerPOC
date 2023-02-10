@@ -24,7 +24,7 @@
               <TextBox TabIndex="1" Name="SearchBoxInput" Text="{Binding SearchFilter }">
 
               </TextBox>
-              <ListBox Items="{Binding FilteredActionList}" Name="FilteredItems" Margin="0,5,0,0" MaxHeight="400">
+              <ListBox Items="{Binding FilteredActionList}" Name="FilteredItems" Margin="0,5,0,0" MaxHeight="400" PointerReleased="ClickOnItem">
                   <ListBox.ItemTemplate>
                       <DataTemplate>
                           <TextBlock Text="{Binding FullName}" ></TextBlock>

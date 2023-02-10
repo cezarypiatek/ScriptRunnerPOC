@@ -42,18 +42,28 @@ namespace ScriptRunner.GUI.ViewModels
                     if (string.IsNullOrWhiteSpace(text) == false)
                     {
                         text = text.Trim();
-                        return _allActions.Where(x =>
+                        var tokens = text.ToUpper().Split(' ');
+                        return _allActions.Select(a =>
                         {
-                            if (x.ArgumentSet.Description == "<default>")
-                            {
-                                return x.Config.Name.ToUpper().Contains(text.ToUpper());
-                            }
+                            var score = tokens.Sum(p => a.FullName.ToUpper().Contains(p) ? p.Length : -1000);
+                            return (score, a);
+                        })
+                            .Where(p => p.score > 0)
+                            .OrderByDescending(p => p.score)
+                            .Select(p=>p.a);
 
-                            return x.ArgumentSet.Description.ToUpper().Contains(text.ToUpper());
-                        });
+                        //return _allActions.Where(x =>
+                        //{
+                        //    if (x.ArgumentSet.Description == "<default>")
+                        //    {
+                        //        return x.Config.Name.ToUpper().Contains(text.ToUpper());
+                        //    }
+
+                        //    return x.ArgumentSet.Description.ToUpper().Contains(text.ToUpper());
+                        //});
                     }
 
-                    return Array.Empty<ScriptConfigWithArgumentSet>();
+                    return Enumerable.Empty<ScriptConfigWithArgumentSet>();
                 })
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
