@@ -103,5 +103,13 @@ namespace ScriptRunner.GUI.Views
                 Close(selectedConfig);
             }
         }
+
+        private void ClickOnItem(object? sender, PointerReleasedEventArgs e)
+        {
+            if (FilteredItems.SelectedItem is ScriptConfigWithArgumentSet selectedConfig)
+            {
+                Close(selectedConfig);
+            }
+        }
     }
 }
