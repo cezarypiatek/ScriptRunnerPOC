@@ -1,3 +1,4 @@
+using ScriptRunner.GUI.ScriptConfigs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -5,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using ScriptRunner.GUI.ViewModels;
+using static ScriptRunner.GUI.ViewModels.MainWindowViewModel;
 
 namespace ScriptRunner.GUI.Settings;
 
@@ -55,6 +58,8 @@ public class AppSettingsService
         Save(allSettings);
     }
 
+  
+
     public static void UpdateLayoutSettings(Action<LayoutSettings> updateSettings)
     {
         var allSettings = AppSettingsService.Load();
@@ -62,6 +67,14 @@ public class AppSettingsService
         updateSettings(allSettings.Layout);
         Save(allSettings);
         Debug.WriteLine($"Width: {allSettings.Layout.Width}, Height: {allSettings.Layout.Height}, L: {allSettings.Layout.ActionsPanelWidth}, M: {allSettings.Layout.RunningJobsPanelHeight}");
+    }
+    
+    public static void UpdateRecent(Action<Dictionary<string, RecentAction>> updateSettings)
+    {
+        var allSettings = AppSettingsService.Load();
+        allSettings.Recent ??= new();
+        updateSettings(allSettings.Recent);
+        Save(allSettings);
     }
     
     public static void UpdateDefaultOverrides(ActionDefaultOverrides overrides)

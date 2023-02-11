@@ -480,13 +480,16 @@ public class MainWindowViewModel : ReactiveObject
 
     }
 
+
     public void RunScript()
     {
         if (SelectedAction is { } selectedAction)
         {
-            
+            RegisterExecution(selectedAction);
+
             var (commandPath, args) = SplitCommandAndArgs(selectedAction.Command);
             var maskedArgs = args;
+
 
             var envVariables = new Dictionary<string, string?>(selectedAction.EnvironmentVariables);
 
@@ -517,6 +520,16 @@ public class MainWindowViewModel : ReactiveObject
         }
         
     }
+    
+    private void RegisterExecution(ScriptConfig selectedAction)
+    {
+        AppSettingsService.UpdateRecent(recent =>
+        {
+            var actionId = new ActionId(selectedAction.SourceName ?? string.Empty, selectedAction.Name, SelectedArgumentSet?.Description ?? "<default>");
+            recent[$"{actionId.SourceName}__{actionId.ActionName}__{actionId.ParameterSet}"] = new RecentAction(actionId, DateTime.UtcNow);
+        });
+    }
+
 
     public void CloseJob(object arg)
     {
@@ -549,6 +562,10 @@ public class MainWindowViewModel : ReactiveObject
         return command.Split(' ', 2);
     }
 }
+
+public record RecentAction(ActionId ActionId, DateTime Timestamp);
+
+public record ActionId(string SourceName, string ActionName, string ParameterSet);
 
 public class ScriptConfigGroupWrapper
 {

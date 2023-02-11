@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using ScriptRunner.GUI.ViewModels;
+using static ScriptRunner.GUI.ViewModels.MainWindowViewModel;
 
 namespace ScriptRunner.GUI.Settings;
 
@@ -10,6 +12,7 @@ public class ScriptRunnerAppSettings
     public List<VaultBinding> VaultBindings { get; set; }
     public List<ActionDefaultOverrides> DefaultOverrides { get; set; }
     public List<ActionExtraPredefinedParameterSet> ExtraParameterSets { get; set; }
+    public Dictionary<string, RecentAction>? Recent { get; set; } = new();
 }
 
 public record ConfigScriptEntry
