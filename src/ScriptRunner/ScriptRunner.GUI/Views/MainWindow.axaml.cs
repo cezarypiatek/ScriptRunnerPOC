@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -116,7 +117,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     private async void OpenSearchBox(object? sender, RoutedEventArgs e)
     {
-        var popup = new SearchBox(this.ViewModel.Actions);
+        var recent = AppSettingsService.Load().Recent.Values.OrderByDescending(x => x.Timestamp).Take(5).ToArray();
+        var popup = new SearchBox(this.ViewModel?.Actions ?? new List<ScriptConfig>(), recent);
         
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

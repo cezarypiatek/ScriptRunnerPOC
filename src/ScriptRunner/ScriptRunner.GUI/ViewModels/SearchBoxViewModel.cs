@@ -25,7 +25,7 @@ namespace ScriptRunner.GUI.ViewModels
         public IEnumerable<ScriptConfigWithArgumentSet> FilteredActionList => _filteredActionList.Value;
 
 
-        public SearchBoxViewModel(List<ScriptConfig> allActions)
+        public SearchBoxViewModel(IReadOnlyList<ScriptConfig> allActions, IReadOnlyList<RecentAction> recent)
         {
             _allActions = allActions.SelectMany(x=> x.PredefinedArgumentSets.Select(p=> new ScriptConfigWithArgumentSet()
             {
@@ -34,11 +34,19 @@ namespace ScriptRunner.GUI.ViewModels
                 FullName = p.Description == "<default>"? x.FullName : $"{x.FullName} - {p.Description}"
             })).ToList();
 
+            var intial = true;
             this.WhenAnyValue(x=>x.SearchFilter)
                 .Throttle(TimeSpan.FromMilliseconds(200))
                 .DistinctUntilChanged()
                 .Select(text =>
                 {
+                    if (intial)
+                    {
+                        intial = false;
+                        return GetRecentActions(_allActions, recent);
+
+                    }
+
                     if (string.IsNullOrWhiteSpace(text) == false)
                     {
                         text = text.Trim();
@@ -67,6 +75,22 @@ namespace ScriptRunner.GUI.ViewModels
                 })
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
+        }
+
+        private IEnumerable<ScriptConfigWithArgumentSet> GetRecentActions(List<ScriptConfigWithArgumentSet> allActions, IReadOnlyList<RecentAction> recent)
+        {
+            foreach (var recentAction in recent)
+            {
+                foreach (var sc in allActions)
+                {
+                    if (sc.Config.SourceName == recentAction.ActionId.SourceName &&
+                        sc.Config.Name == recentAction.ActionId.ActionName &&
+                        sc.ArgumentSet.Description == recentAction.ActionId.ParameterSet)
+                    {
+                        yield return sc;
+                    }
+                }
+            }
         }
     }
 

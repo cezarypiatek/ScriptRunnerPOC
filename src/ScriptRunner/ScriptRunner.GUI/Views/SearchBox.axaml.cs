@@ -14,10 +14,10 @@ namespace ScriptRunner.GUI.Views
         {
         }
 
-        public SearchBox(List<ScriptConfig> viewModelActions)
+        public SearchBox(IReadOnlyList<ScriptConfig> viewModelActions, IReadOnlyList<RecentAction> recentActions)
         {
             InitializeComponent();
-            ViewModel = new SearchBoxViewModel(viewModelActions);
+            ViewModel = new SearchBoxViewModel(viewModelActions, recentActions);
             this.Activated += (sender, args) =>
             {
                 this.SearchBoxInput.Focus();
