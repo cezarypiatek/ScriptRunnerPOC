@@ -107,8 +107,19 @@
                 </TextBlock>
 
             </StackPanel>
-          <TextBlock Classes="h1" Margin="10"
-                     Text="{Binding SelectedAction.Name}" />
+          <StackPanel Orientation="Horizontal">
+              <TextBlock Classes="h1" Margin="10" Text="{Binding SelectedAction.Name}" />
+                <SplitButton i:Attached.Icon="fas fa-cog" >
+
+                    <SplitButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                          <MenuItem Header="Save as defaults" Command="{Binding SaveAsDefault}"  />
+                          <MenuItem Header="Save as predefined"  Click="SaveAsPredefined" />
+                          <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
+                        </MenuFlyout>
+                    </SplitButton.Flyout>
+                </SplitButton>
+          </StackPanel>
 
           
           
@@ -140,12 +151,9 @@
           </StackPanel>
 
           
-          <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch">
-            <Button DockPanel.Dock="Left"  HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"  HorizontalAlignment="Right">
-                <Button HorizontalContentAlignment="Center" Margin="0,0,5,0" Command="{Binding SaveAsDefault}"  ToolTip.Tip="Set current parameter values as default">Save as defaults</Button>
-                <Button HorizontalContentAlignment="Center" Click="SaveAsPredefined"  ToolTip.Tip="Add current parameter values as predefined set">Save as predefined</Button>
-            </StackPanel>
+          <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch" >
+            <Button DockPanel.Dock="Right"  HorizontalAlignment="Right" Command="{Binding RunScript}">Run</Button>
+            
 
           </DockPanel>
         </StackPanel>

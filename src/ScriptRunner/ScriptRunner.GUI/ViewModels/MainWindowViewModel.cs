@@ -82,8 +82,13 @@ public class MainWindowViewModel : ReactiveObject
 
     private bool _isActionSelected;
 
+    public bool InstallAvailable
+    {
+        get => _installAvailable;
+        set => this.RaiseAndSetIfChanged(ref _installAvailable, value);
+    }
 
-
+    private bool _installAvailable;
 
     public ScriptConfig? SelectedAction
     {
@@ -106,7 +111,8 @@ public class MainWindowViewModel : ReactiveObject
             if (value != null)
             {
                 SelectedArgumentSet = value.PredefinedArgumentSets.FirstOrDefault();
-                SelectedActionInstalled = string.IsNullOrWhiteSpace(value.InstallCommand) ? true : IsActionInstalled(value.Name);
+                InstallAvailable = string.IsNullOrWhiteSpace(value.InstallCommand) == false;
+                SelectedActionInstalled = InstallAvailable ? IsActionInstalled(value.Name): true;
                 IsActionSelected = true;
             }
             else
