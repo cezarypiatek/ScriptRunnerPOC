@@ -39,6 +39,7 @@
     <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0-preview3" />
     <PackageReference Include="CliWrap" Version="3.4.4" />
     <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
+    <PackageReference Include="MessageBox.Avalonia" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="6.0.10" />
     <PackageReference Include="Projektanker.Icons.Avalonia" Version="6.2.0-preview1" />
     <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="6.2.0-preview1" />

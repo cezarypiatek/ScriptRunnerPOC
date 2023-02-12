@@ -10,10 +10,11 @@ public class ScriptConfig
     public string Name { get; set; }
     public string? Description { get; set; }
     public string Command { get; set; }
-
+    public bool RunCommandAsAdmin { get; set; }
     public List<string> Categories { get; set; } = new();
     public string? InstallCommand { get; set; }
     public string? InstallCommandWorkingDirectory { get; set; }
+    public bool RunInstallCommandAsAdmin { get; set; }
     public string? WorkingDirectory { get; set; }
     public List<ScriptParam> Params { get; set; } = new();
     public PredefinedArgumentSetsOrdering? PredefinedArgumentSetsOrdering { get; set; }
