@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Security.Principal;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -436,13 +438,28 @@ public class MainWindowViewModel : ReactiveObject
         });
     }
 
-    private Dictionary<string, string> HarvestCurrentParameters(string vaultPrefixForNewEntries)
+    public async void CopyParametersSetup()
+    {
+        var setup = HarvestCurrentParameters(string.Empty, includePasswords: false);
+        var serialized = JsonSerializer.Serialize(setup, new JsonSerializerOptions()
+        {
+            WriteIndented = true
+        });
+        await Application.Current!.Clipboard!.SetTextAsync(serialized);
+    }
+
+    private Dictionary<string, string> HarvestCurrentParameters(string vaultPrefixForNewEntries, bool includePasswords = true)
     {
         var defaultOverrides = new Dictionary<string, string>();
         foreach (var controlRecord in _controlRecords)
         {
             if (controlRecord is PasswordControl {Control: PasswordBox passwordBox})
             {
+                if (includePasswords == false)
+                {
+                    continue;
+                }
+
                 if (string.IsNullOrWhiteSpace(passwordBox.VaultKey) == false)
                 {
                     defaultOverrides[controlRecord.Name] = $"{VaultReferencePrefix}{passwordBox.VaultKey}";
