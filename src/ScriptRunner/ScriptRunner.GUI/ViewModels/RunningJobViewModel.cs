@@ -499,7 +499,6 @@ public class RunningJobViewModel : ViewModelBase
     private string _inputCommand;
     private int _numberOfLines;
     private readonly IDisposable outputSub;
-    private InteractiveInputDescription _currentInteractiveInput;
 
     public CancellationTokenSource ExecutionCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }

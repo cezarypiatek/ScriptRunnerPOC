@@ -28,11 +28,17 @@
                     "command": {
                         "type": "string"
                     },
+                    "runCommandAsAdmin":{
+                      "type":"boolean"  
+                    },
                     "workingDirectory": {
                         "type": "string"
                     },
                     "installCommand":{
                         "type": "string"
+                    },
+                    "runInstallCommandAsAdmin":{
+                        "type":"boolean"  
                     },
                     "installCommandWorkingDirectory":{
                         "type": "string"

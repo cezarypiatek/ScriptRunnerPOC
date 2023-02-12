@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -13,6 +14,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using DynamicData;
+using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using ScriptRunner.GUI.BackgroundTasks;
 using ScriptRunner.GUI.Infrastructure;
@@ -320,6 +322,12 @@ public class MainWindowViewModel : ReactiveObject
     {
         if (SelectedAction is { InstallCommand: {} installCommand } selectedAction )
         {
+            if (selectedAction.RunInstallCommandAsAdmin && IsAdministrator() == false)
+            {
+                NotifyAboutMissingAdminRights();
+                return;
+            }
+
             var (commandPath, args) = SplitCommandAndArgs(installCommand);
             var job = new RunningJobViewModel
             {
@@ -337,6 +345,24 @@ public class MainWindowViewModel : ReactiveObject
             SelectedRunningJob = job;
             job.RunJob(commandPath, args, selectedAction.InstallCommandWorkingDirectory, new ());
         }
+    }
+
+    private static void NotifyAboutMissingAdminRights()
+    {
+        var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow("Missing permissions", "This scripts requires administrator rights.\r\n\r\nPlease restart the app as administrator. ", icon: Icon.Forbidden);
+        messageBoxStandardWindow.Show();
+    }
+
+    public static bool IsAdministrator()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
+
+        return true;
     }
 
     public void OpenSettingsWindow()
@@ -485,6 +511,13 @@ public class MainWindowViewModel : ReactiveObject
     {
         if (SelectedAction is { } selectedAction)
         {
+            if (selectedAction.RunCommandAsAdmin && IsAdministrator() == false)
+            {
+                NotifyAboutMissingAdminRights();
+                return;
+            }
+
+
             RegisterExecution(selectedAction);
 
             var (commandPath, args) = SplitCommandAndArgs(selectedAction.Command);
