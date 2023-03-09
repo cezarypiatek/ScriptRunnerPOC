@@ -10,6 +10,7 @@
                            xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
                            xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
                            xmlns:backgroundTasks="clr-namespace:ScriptRunner.GUI.BackgroundTasks"
+                           xmlns:avalonia="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
                            mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="900"
                            x:Class="ScriptRunner.GUI.Views.MainWindow"
                            Icon="/Assets/avalonia-logo.ico"
@@ -120,7 +121,15 @@
                           <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
                         </MenuFlyout>
                     </SplitButton.Flyout>
+                    
                 </SplitButton>
+              <Button Height="30" Width="30" Margin="5,0,0,0" Background="Blue" i:Attached.Icon="fa-solid fa-circle-question" IsVisible="{Binding SelectedAction.HasDocs}">
+                  <Button.Flyout>
+                      <Flyout Placement="TopEdgeAlignedRight" >
+                          <avalonia:MarkdownScrollViewer xml:space="default"  MaxWidth="1200" Height="600"   Margin="10" Markdown="{Binding SelectedAction.DocsContent}" />
+                      </Flyout>
+                  </Button.Flyout>
+              </Button>
           </StackPanel>
 
           
