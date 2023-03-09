@@ -154,7 +154,7 @@
 
           
           <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch" >
-            <Button DockPanel.Dock="Right"  HorizontalAlignment="Right" Command="{Binding RunScript}">Run</Button>
+            <Button DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="100" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
             
 
           </DockPanel>
