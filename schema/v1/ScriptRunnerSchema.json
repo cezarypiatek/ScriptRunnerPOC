@@ -73,6 +73,10 @@
                         "type":"object",
                         "additionalProperties": true
                     },
+                    "docs":{
+                        "type":"string",
+                        "description": "path to markdown file with documentation"
+                    },
                     "params": {
                         "type": "array",
                         "items": {

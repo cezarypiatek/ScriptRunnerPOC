@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 
 namespace ScriptRunner.GUI.ScriptConfigs;
@@ -11,6 +12,9 @@ public class ScriptConfig
     public string? Description { get; set; }
     public string Command { get; set; }
     public bool RunCommandAsAdmin { get; set; }
+    public string Docs { get; set; }
+    public string DocsContent { get; set; } = string.Empty;
+    public bool HasDocs { get; set; }
     public List<string> Categories { get; set; } = new();
     public string? InstallCommand { get; set; }
     public string? InstallCommandWorkingDirectory { get; set; }
