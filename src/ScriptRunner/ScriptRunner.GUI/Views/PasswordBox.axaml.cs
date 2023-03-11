@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -16,6 +17,10 @@ namespace ScriptRunner.GUI.Views
         public PasswordBox()
         {
             InitializeComponent();
+            this.FindControl<TextBox>("PasswordTextBox").AddHandler(TextInputEvent, (sender, args) =>
+            {
+                VaultKey = null;
+            }, RoutingStrategies.Tunnel);
         }
 
         private void InitializeComponent()
