@@ -457,6 +457,16 @@ public class MainWindowViewModel : ReactiveObject
             {
                 var actualPayload = payload.Substring(first, (last+1) - first);
                 var data =  JsonSerializer.Deserialize<Dictionary<string, string>>(actualPayload);
+                var currentSetup = HarvestCurrentParameters(string.Empty, includePasswords: true);
+
+                foreach (var param in SelectedAction.Params)
+                {
+                    if (param.Prompt == PromptType.Password && currentSetup.TryGetValue(param.Name, out var password))
+                    {
+                        data[param.Name] = password;
+                    }
+                }
+
                 RenderParameterForm(SelectedAction, data);
             }
             catch
