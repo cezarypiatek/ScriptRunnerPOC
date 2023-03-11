@@ -263,6 +263,17 @@ public class MainWindowViewModel : ReactiveObject
         if (string.IsNullOrWhiteSpace(selectedActionName) == false && Actions.FirstOrDefault(x => x.Name == selectedActionName) is { } previouslySelected)
         {
             SelectedAction = previouslySelected;
+        }else if (appSettings.Recent?.OrderByDescending(x=>x.Value.Timestamp).FirstOrDefault() is { } recent && Actions.FirstOrDefault(a =>
+                          a.Name == recent.Value.ActionId.ActionName &&
+                          a.SourceName == recent.Value.ActionId.SourceName) is
+                      { } existingRecent)
+        {
+            SelectedAction = existingRecent;
+            if (existingRecent.PredefinedArgumentSets.FirstOrDefault(p =>
+                    p.Description == recent.Value.ActionId.ParameterSet) is { } ps)
+            {
+                SelectedArgumentSet = ps;
+            }
         }
         else if(Actions.FirstOrDefault() is { } firstAction)
         {
