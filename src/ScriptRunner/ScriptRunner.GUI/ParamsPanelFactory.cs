@@ -41,14 +41,18 @@ public class ParamsPanelFactory
             values.TryGetValue(param.Name, out var value);
             var controlRecord = CreateControlRecord(param, value, i, action, secretBindings);
             controlRecord.Name = param.Name;
+            
+            var label = new Label
+            {
+                Content = string.IsNullOrWhiteSpace(param.Description)? param.Name: param.Description,
+                        
+            };
+            ToolTip.SetTip(label, param.Name);
             var actionPanel = new StackPanel
             {
                 Children =
                 {
-                    new Label
-                    {
-                        Content = string.IsNullOrWhiteSpace(param.Description)? param.Name: param.Description
-                    },
+                    label,
                     controlRecord.Control
                 },
                 Classes = new Classes("paramRow")
