@@ -88,14 +88,14 @@ public class ParamsPanelFactory
 
                 var passwordBox = new PasswordBox
                 {
-                    Password = value,
                     TabIndex = index,
                     IsTabStop = true
                 };
 
                 var vaultKey = value?.StartsWith(MainWindowViewModel.VaultReferencePrefix) == true
-                        ? value.Substring(MainWindowViewModel.VaultReferencePrefix.Length -1)
+                        ? value.Substring(MainWindowViewModel.VaultReferencePrefix.Length)
                         : secretBindings.FirstOrDefault(x => x.ActionName == scriptConfig.Name && x.ParameterName == p.Name)?.VaultKey;
+                
                 if (string.IsNullOrWhiteSpace(vaultKey) == false )
                 {
                     var vaultEntries = _vaultProvider.ReadFromVault();
@@ -104,6 +104,10 @@ public class ParamsPanelFactory
                         passwordBox.VaultKey = vaultEntry.Name;
                         passwordBox.Password = vaultEntry.Secret;
                     }
+                }
+                else
+                {
+                    passwordBox.Password = value;
                 }
                 
                 passwordBox.VaultBindingChanged += (sender, args) =>
