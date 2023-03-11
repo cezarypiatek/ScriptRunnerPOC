@@ -447,6 +447,30 @@ public class MainWindowViewModel : ReactiveObject
         });
         await Application.Current!.Clipboard!.SetTextAsync(serialized);
     }
+    
+    public async void PasteParametersSetup()
+    {
+        var payload = await Application.Current!.Clipboard!.GetTextAsync();
+        if (payload.IndexOf('{') is { } first && payload.LastIndexOf('}') is { } last && first > -1 && last > -1 && last > first)
+        {
+            try
+            {
+                var actualPayload = payload.Substring(first, (last+1) - first);
+                var data =  JsonSerializer.Deserialize<Dictionary<string, string>>(actualPayload);
+                RenderParameterForm(SelectedAction, data);
+            }
+            catch
+            {
+                var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow("Incorrect data", "Clipboard content is not valid JSON with parameter set", icon: Icon.Error);
+                await messageBoxStandardWindow.Show();
+            }
+        }
+        else
+        {
+            var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow("Incorrect data", "Clipboard content is not JSON", icon: Icon.Error);
+            await messageBoxStandardWindow.Show();
+        }
+    }
 
     private Dictionary<string, string> HarvestCurrentParameters(string vaultPrefixForNewEntries, bool includePasswords = true)
     {
