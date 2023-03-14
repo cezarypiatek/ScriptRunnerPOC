@@ -247,15 +247,9 @@ public class MainWindowViewModel : ReactiveObject
     {
         var selectedActionName = SelectedAction?.Name;
         var appSettings = AppSettingsService.Load();
-        var sources = appSettings.ConfigScripts ?? new List<ConfigScriptEntry>
-        {
-            new ConfigScriptEntry
-            {
-                Name = "Samples",
-                Path = Path.Combine(AppContext.BaseDirectory,"Scripts/TextInputScript.json"),
-                Type = ConfigScriptType.File
-            }
-        };
+        var sources = appSettings.ConfigScripts == null || appSettings.ConfigScripts.Count == 0
+            ? SampleScripts
+            : appSettings.ConfigScripts;
         var actions = new List<ScriptConfig>();
         foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x, appSettings)).OrderBy(x=>x.SourceName).ThenBy(x=>x.Name))
         {
@@ -285,6 +279,16 @@ public class MainWindowViewModel : ReactiveObject
             SelectedAction = firstAction;
         }
     }
+
+    private static List<ConfigScriptEntry> SampleScripts => new()
+    {
+        new ConfigScriptEntry
+        {
+            Name = "Samples",
+            Path = Path.Combine(AppContext.BaseDirectory,"Scripts/TextInputScript.json"),
+            Type = ConfigScriptType.File
+        }
+    };
 
     public ArgumentSet? SelectedArgumentSet
     {
