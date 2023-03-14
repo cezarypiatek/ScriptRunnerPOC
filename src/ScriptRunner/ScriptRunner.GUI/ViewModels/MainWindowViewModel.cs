@@ -135,13 +135,13 @@ public class MainWindowViewModel : ReactiveObject
         return false;
     }
 
-    public bool IsNewerVersionAvailable
+    public bool ShowNewVersionAvailable
     {
-        get => _isNewerVersionAvailable;
-        set => this.RaiseAndSetIfChanged(ref _isNewerVersionAvailable, value);
+        get => _showNewVersionAvailable;
+        set => this.RaiseAndSetIfChanged(ref _showNewVersionAvailable, value);
     }
 
-    private bool _isNewerVersionAvailable;
+    private bool _showNewVersionAvailable;
 
 
     public ObservableCollection<OutdatedRepositoryModel> OutOfDateConfigRepositories { get; } = new();
@@ -196,7 +196,7 @@ public class MainWindowViewModel : ReactiveObject
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    IsNewerVersionAvailable = true;
+                    ShowNewVersionAvailable = true;
                 });
             }
         });
@@ -231,6 +231,10 @@ public class MainWindowViewModel : ReactiveObject
         appUpdater.InstallLatestVersion();
     }
 
+    public void DismissNewVersionAvailable()
+    {
+        ShowNewVersionAvailable = false;
+    }
 
     private IEnumerable<IControlRecord> _controlRecords;
 
