@@ -37,12 +37,13 @@
       <RowDefinition Height="300" ></RowDefinition>
     </Grid.RowDefinitions>
     <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Vertical">
-        <StackPanel IsVisible="{Binding IsNewerVersionAvailable}" Height="75">
+        <StackPanel IsVisible="{Binding ShowNewVersionAvailable}" Height="75">
             <Border BorderBrush="#FF0000" BorderThickness="1"  >
                 <StackPanel  Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
                     <TextBlock VerticalAlignment="Center" Text="A newer version is available"></TextBlock>
                     <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding CheckForUpdates}">Check release log</Button>
                     <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding InstallUpdate}">Install update</Button>
+                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding DismissNewVersionAvailable}">Dismiss</Button>
                 </StackPanel>
             </Border>
         </StackPanel>
