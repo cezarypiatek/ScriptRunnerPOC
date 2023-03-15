@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Avalonia.Controls.Documents;
+using Avalonia.Media;
 using Avalonia.Remote.Protocol.Viewport;
 using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
@@ -185,6 +187,26 @@ public static class ScriptConfigReader
                         }
                     }
                 }
+
+                var withMarkers = action.Params.Aggregate
+                (
+                    seed: action.Command,
+                    func: (string accumulate, ScriptParam source) =>
+                        accumulate.Replace("{" + source.Name + "}", "[!@#]{" + source.Name + "}[!@#]")
+                );
+
+                action.CommandFormatted.AddRange(withMarkers.Split("[!@#]").Select(x =>
+                {
+                    var inline = new Run(x);
+                    if (x.StartsWith("{"))
+                    {
+
+                        inline.Foreground = Brushes.LightGreen;
+                        inline.FontWeight = FontWeight.ExtraBold;
+                    }
+
+                    return inline;
+                }));
             }
 
             return scriptConfig.Actions;
