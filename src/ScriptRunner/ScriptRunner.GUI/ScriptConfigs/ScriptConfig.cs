@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Avalonia.Controls.Documents;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -30,6 +31,7 @@ public class ScriptConfig
     public string? AutoParameterBuilderPattern { get; set; }
     public string? AutoParameterBuilderStyle { get; set; }
     public List<InteractiveInputDescription> InteractiveInputs { get; set; } = new();
+    public InlineCollection CommandFormatted { get; set; } = new();
 }
 
 public class ArgumentSet
