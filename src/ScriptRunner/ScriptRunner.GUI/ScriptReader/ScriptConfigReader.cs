@@ -96,12 +96,15 @@ public static class ScriptConfigReader
 
                 var actionDir = Path.GetDirectoryName(fileName);
 
-                if (string.IsNullOrWhiteSpace(action.Docs) == false && File.Exists(action.Docs))
+                if (string.IsNullOrWhiteSpace(action.Docs) == false )
                 {
-                    action.HasDocs = true;
-
                     var docPaths = Path.IsPathRooted(action.Docs) ? action.Docs : Path.Combine(actionDir, action.Docs);
-                    action.DocsContent = File.ReadAllText(docPaths);
+                    if (File.Exists(docPaths))
+                    {
+                        action.HasDocs = true;
+                        action.DocsContent = File.ReadAllText(docPaths);
+                        action.DocAssetPath = Path.GetDirectoryName(docPaths);
+                    }
                 }
 
 

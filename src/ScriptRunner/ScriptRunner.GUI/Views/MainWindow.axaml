@@ -172,7 +172,7 @@
      </ScrollViewer>
      <!--<GridSplitter Grid.Column="1" ResizeDirection="Columns" IsTabStop="False" IsVisible="{Binding SelectedAction.HasDocs}" ></GridSplitter>-->
       <Border Grid.Column="1" BorderThickness="2" BorderBrush="{StaticResource SystemChromeWhiteColor}" IsVisible="{Binding SelectedAction.HasDocs}" >
-          <avalonia:MarkdownScrollViewer xml:space="default" Margin="20"   Width="400"  Markdown="{Binding SelectedAction.DocsContent}" />
+          <avalonia:MarkdownScrollViewer xml:space="default" Margin="20"   Width="400"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}"/>
       </Border>
    </Grid>
     <GridSplitter IsTabStop="False" Grid.Row="2" Grid.Column="0"  ResizeDirection="Rows" Grid.ColumnSpan="3" BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
