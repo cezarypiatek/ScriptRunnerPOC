@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive;
 using ReactiveUI;
 using ScriptRunner.GUI.Infrastructure;
 
@@ -15,6 +16,11 @@ namespace ScriptRunner.GUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _entries, value);
         }
 
+        public void RemoveVaultEntry(VaultEntry entry)
+        {
+            Entries.Remove(entry);
+        }
+
         private ObservableCollection<VaultEntry> _entries;
 
         public VaultViewModel()
@@ -23,9 +29,12 @@ namespace ScriptRunner.GUI.ViewModels
 
         public VaultViewModel(VaultProvider vaultProvider)
         {
+            RemoveVaultEntryCommand = ReactiveCommand.Create<VaultEntry>(RemoveVaultEntry);
             _vaultProvider = vaultProvider;
             Entries = new ObservableCollection<VaultEntry>(_vaultProvider.ReadFromVault());
         }
+
+        public ReactiveCommand<VaultEntry, Unit> RemoveVaultEntryCommand { get;  }
 
         public void AddNewVaultEntry()
         {
