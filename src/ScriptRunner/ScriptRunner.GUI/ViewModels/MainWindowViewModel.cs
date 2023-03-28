@@ -477,7 +477,7 @@ public class MainWindowViewModel : ReactiveObject
             {
                 var actualPayload = payload.Substring(first, (last+1) - first);
                 //INFO: When you send JSON via MSTeams, you will get extra non-breaking spaces on the other side. Those extra white-spaces breaks deserializer
-                actualPayload = actualPayload.Replace(" \u00A0", " ");
+                actualPayload = actualPayload.Replace(" "+ (char)160, " ");
                 var data =  JsonSerializer.Deserialize<Dictionary<string, string>>(actualPayload);
                 var currentSetup = HarvestCurrentParameters(string.Empty, includePasswords: true);
 
