@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Layout;
 using Avalonia.Media;
 using ScriptRunner.GUI.Infrastructure;
 using ScriptRunner.GUI.ScriptConfigs;
@@ -41,7 +42,11 @@ public class ParamsPanelFactory
             values.TryGetValue(param.Name, out var value);
             var controlRecord = CreateControlRecord(param, value, i, action, secretBindings);
             controlRecord.Name = param.Name;
-            
+            if (controlRecord.Control is Layoutable l)
+            {
+                l.MaxWidth = 500;
+            }
+
             var label = new Label
             {
                 Content = string.IsNullOrWhiteSpace(param.Description)? param.Name: param.Description,
@@ -81,7 +86,8 @@ public class ParamsPanelFactory
                     {
                         Text = value,
                         TabIndex = index,
-                        IsTabStop = true
+                        IsTabStop = true,
+                        Width = 500
                     }
                 };
             case PromptType.Password:
@@ -89,7 +95,8 @@ public class ParamsPanelFactory
                 var passwordBox = new PasswordBox
                 {
                     TabIndex = index,
-                    IsTabStop = true
+                    IsTabStop = true,
+                    Width = 500
                 };
 
                 var vaultKey = value?.StartsWith(MainWindowViewModel.VaultReferencePrefix) == true
@@ -216,7 +223,8 @@ public class ParamsPanelFactory
                         Height = 100,
                         Text = value,
                         TabIndex = index,
-                        IsTabStop = true
+                        IsTabStop = true,
+                        Width = 500
                     }
                 };
             case PromptType.FileContent:
@@ -229,7 +237,8 @@ public class ParamsPanelFactory
                         Height = 100,
                         Text = File.Exists(value)? File.ReadAllText(value): string.Empty,
                         TabIndex = index,
-                        IsTabStop = true
+                        IsTabStop = true,
+                        Width = 500
                     }
                 };
             case PromptType.FilePicker:
@@ -239,7 +248,8 @@ public class ParamsPanelFactory
                     {
                         FilePath = value,
                         TabIndex = index,
-                        IsTabStop = true
+                        IsTabStop = true,
+                        Width = 500
                     }
                 };
             case PromptType.DirectoryPicker:
@@ -249,7 +259,8 @@ public class ParamsPanelFactory
                     {
                         DirPath = value,
                         TabIndex = index,
-                        IsTabStop = true
+                        IsTabStop = true,
+                        Width = 500
                     }
                 };
             case PromptType.Numeric:
