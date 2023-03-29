@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:avalonia="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ScriptRunner.GUI.Views.DirectoryPicker">
     <Grid>
@@ -9,7 +10,7 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBox Grid.Column="0" x:Name="DirPathTextBox" IsReadOnly="True"></TextBox>
-        <Button Margin="5,0"  Grid.Column="1" Width="100" Click="ChangeDirClick" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">...</Button>
+        <TextBox Grid.Column="0" x:Name="DirPathTextBox" IsReadOnly="True" MinWidth="1"></TextBox>
+        <Button avalonia:Attached.Icon="fas fa-folder-open" Margin="5,0" ToolTip.Tip="Choose directory"  Grid.Column="1" Width="50" Click="ChangeDirClick" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Button>
     </Grid>
 </UserControl>
