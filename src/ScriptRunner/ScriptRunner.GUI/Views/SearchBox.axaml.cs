@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
@@ -111,5 +112,7 @@ namespace ScriptRunner.GUI.Views
                 Close(selectedConfig);
             }
         }
+
+        private void CloseWindow(object? sender, RoutedEventArgs e) => Close();
     }
 }
