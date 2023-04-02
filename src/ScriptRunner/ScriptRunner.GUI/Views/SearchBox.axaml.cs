@@ -41,10 +41,11 @@ namespace ScriptRunner.GUI.Views
                 {
                     if (FilteredItems.ItemCount > 0)
                     {
-                        FilteredItems.SelectedIndex = 0;
 
+                        this.FilteredItems.Focus();
                         if (FilteredItems.ItemContainerGenerator.ContainerFromIndex(0) is { } item)
                         {
+                            FilteredItems.Selection.Select(0);
                             item.Focus();
                         }
                     }
@@ -52,11 +53,9 @@ namespace ScriptRunner.GUI.Views
                 {
                     ChoseSelected();
                 }
-
-
             };
 
-            this.FilteredItems.KeyUp += (sender, args) =>
+            this.FilteredItems.KeyDown += (sender, args) =>
             {
                 if (args.Key == Key.Up)
                 {
@@ -64,9 +63,24 @@ namespace ScriptRunner.GUI.Views
                     {
                         this.SearchBoxInput.Focus();
 
+
                     }
                 }
-                else if (args.Key == Key.Enter)
+
+                else if (args.Key == Key.Down)
+                {
+                    if (FilteredItems.SelectedIndex == FilteredItems.ItemCount - 1)
+                    {
+                        this.SearchBoxInput.Focus();
+                    }
+                }
+                
+
+
+            };
+            this.FilteredItems.KeyUp += (sender, args) =>
+            {
+                if (args.Key == Key.Enter)
                 {
                     ChoseSelected();
                 }
@@ -87,13 +101,13 @@ namespace ScriptRunner.GUI.Views
 
 
 
-            this.FilteredItems.KeyDown += (sender, args) =>
-            {
-                if (args.Key is not Key.Escape or Key.Down or Key.Up or Key.Enter)
-                {
-                    SearchBoxInput.Focus();
-                }
-            };
+            //this.FilteredItems.KeyDown  += (sender, args) =>
+            //{
+            //    if (args.Key is not Key.Escape or Key.Down or Key.Up or Key.Enter)
+            //    {
+            //        SearchBoxInput.Focus();
+            //    }
+            //};
 
         }
 
