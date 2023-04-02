@@ -28,6 +28,11 @@ public static class ScriptConfigReader
         
         if (source.Type == ConfigScriptType.File)
         {
+            if (File.Exists(source.Path) == false)
+            {
+                yield break;
+            }
+
             foreach (var scriptConfig in LoadFileSource(source.Path, appSettings))
             {
                 scriptConfig.SourceName = source.Name;
@@ -38,6 +43,11 @@ public static class ScriptConfigReader
 
         if (source.Type == ConfigScriptType.Directory)
         {
+            if (Directory.Exists(source.Path) == false)
+            {
+                yield break;
+            }
+
             foreach (var file in Directory.EnumerateFiles(source.Path, "*.json", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
                 foreach (var scriptConfig in LoadFileSource(file, appSettings))
@@ -46,7 +56,6 @@ public static class ScriptConfigReader
                     yield return scriptConfig;
                 }
             }
-            yield break;
         }
     }
 
