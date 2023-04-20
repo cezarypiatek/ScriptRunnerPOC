@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ScriptRunner.GUI.Views.ContentWithSidebar">
+<UserControl.Styles>
+    <Style Selector="views|ContentWithSidebar">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="*,3,400">
+                    <Grid.Styles>
+                        <Style Selector="Panel#MainPanel.isSidebarOpen">
+                            <Setter Property="Grid.ColumnSpan" Value="1"></Setter>
+                        </Style>
+                        <Style Selector="Panel#MainPanel.isSidebarClose">
+                            <Setter Property="Grid.ColumnSpan" Value="3"></Setter>
+                        </Style>
+                        <Style Selector="Panel#SidebarPanel.isSidebarOpen">
+                            <Setter Property="IsVisible" Value="True"></Setter>
+                        </Style>
+                        <Style Selector="Panel#SidebarPanel.isSidebarClose">
+                            <Setter Property="IsVisible" Value="False"></Setter>
+                        </Style>
+                        <Style Selector="GridSplitter#Splitter.isSidebarOpen">
+                            <Setter Property="IsVisible" Value="True"></Setter>
+                        </Style>
+                        <Style Selector="GridSplitter#Splitter.isSidebarClose">
+                            <Setter Property="IsVisible" Value="False"></Setter>
+                        </Style>
+                    </Grid.Styles>
+                    <Panel Grid.Column="0"
+                           x:Name="MainPanel"
+                           Classes.isSidebarOpen="{TemplateBinding IsSidebarOpen}"
+                           Classes.isSidebarClose="{Binding !IsSidebarOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                    >
+                        <ContentPresenter Content="{TemplateBinding Main}"></ContentPresenter>
+                    </Panel>
+                    <GridSplitter Grid.Column="1"
+                                  x:Name="Splitter"
+                                  Classes.isSidebarOpen="{TemplateBinding IsSidebarOpen}"
+                                  Classes.isSidebarClose="{Binding !IsSidebarOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                  ></GridSplitter>
+                    <Panel Grid.Column="2"
+                           x:Name="SidebarPanel"
+                           Classes.isSidebarOpen="{TemplateBinding IsSidebarOpen}"
+                           Classes.isSidebarClose="{Binding !IsSidebarOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                        <ContentPresenter Content="{TemplateBinding Sidebar}"></ContentPresenter>
+                    </Panel>
+                </Grid>
+            </ControlTemplate>
+          </Setter>
+        </Style>
+      </UserControl.Styles>
+</UserControl>
