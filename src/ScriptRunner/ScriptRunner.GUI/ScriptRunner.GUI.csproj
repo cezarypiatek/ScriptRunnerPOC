@@ -8,6 +8,11 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <WarningsAsErrors>NU1701</WarningsAsErrors>
     <ApplicationIcon>Assets/avalonia-logo.ico</ApplicationIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>ScriptRunnerGUI</PackageId>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>scriptrunnergui</ToolCommandName>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
   <ItemGroup>
 	<AvaloniaResource Include="Assets\**" />
