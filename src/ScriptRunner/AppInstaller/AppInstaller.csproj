@@ -5,10 +5,13 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputType>WinExe</OutputType>
+    <!--<OutputType>WinExe</OutputType>-->
     <TrimMode>copyused</TrimMode>
   </PropertyGroup>
   <Target Name="ZipOutputPath" AfterTargets="CopyFilesToOutputDirectory">
     <ZipDirectory Overwrite="true" SourceDirectory="$(OutputPath)" DestinationFile="$(OutputPath)\..\AppInstaller.zip" />
   </Target>
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+  </ItemGroup>
 </Project>

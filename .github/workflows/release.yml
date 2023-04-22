@@ -37,7 +37,9 @@ jobs:
         dotnet nuget locals all --clear
         dotnet restore $env:SolutionPath         
     - name: Build extension
-      run: dotnet publish $env:SolutionPath -r win-x64 -p:PublishSingleFile=true -maxcpucount:1 --self-contained false -p:PublishReadyToRun=true
+      run: |
+        dotnet build $env:SolutionPath 
+        dotnet publish $env:SolutionPath -r win-x64 -p:PublishSingleFile=true -maxcpucount:1 --self-contained false -p:PublishReadyToRun=true
     - name: Generate release note
       run: |
         git fetch --prune
@@ -66,3 +68,6 @@ jobs:
         asset_path: ScriptRunner.${{ env.Version }}.zip
         asset_name: ScriptRunner.${{ env.Version }}.zip
         asset_content_type: binary/octet-stream    
+    - name: Publish extension to Nuget
+      run: |
+        dotnet nuget push src\ScriptRunner\ScriptRunner.GUI\bin\Release\ScriptRunnerGUI.${{ env.Version }}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

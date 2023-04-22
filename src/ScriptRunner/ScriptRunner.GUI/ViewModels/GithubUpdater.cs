@@ -82,20 +82,40 @@ public class GithubUpdater
     {
         if (string.IsNullOrWhiteSpace(LatestVersionDownloadLink) == false)
         {
-            var installerPath = Path.GetTempPath();
+            var installerPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ScriptRunnerUpdater");
+            if (Directory.Exists(installerPath))
+            {
+                Directory.Delete(installerPath, true);
+            }
             Directory.CreateDirectory(installerPath);
             ExtractArchiveFile(this.GetType().Assembly, "AppInstaller.zip", installerPath);
-            Process.Start(new ProcessStartInfo(Path.Combine(installerPath, "AppInstaller\\AppInstaller.exe"))
+            
+            var currentProcess = Process.GetCurrentProcess();
+            if (currentProcess.ProcessName == "scriptrunnergui")
             {
-                ArgumentList =
+                Process.Start(new ProcessStartInfo("dotnet")
                 {
-                    Process.GetCurrentProcess().MainModule?.FileName ?? "",
-                    LatestVersionDownloadLink
-                },
-                UseShellExecute = true,
-                WindowStyle = ProcessWindowStyle.Normal
-            });
-            Process.GetCurrentProcess().Kill();
+                    WorkingDirectory = Path.Combine(installerPath, "AppInstaller"),
+                    UseShellExecute = true,
+                    CreateNoWindow = false,
+                    WindowStyle = ProcessWindowStyle.Normal,
+                    Arguments = "AppInstaller.dll dotnet-tool --packageName scriptrunnergui"
+                });
+            }
+            else
+            {
+                Process.Start(new ProcessStartInfo("dotnet")
+                {
+                    WorkingDirectory = Path.Combine(installerPath, "AppInstaller"),
+                    UseShellExecute = true,
+                    CreateNoWindow = false,
+                    WindowStyle = ProcessWindowStyle.Normal,
+                    Arguments = $"AppInstaller.dll download-zip --startingProcess \"{currentProcess.MainModule?.FileName}\" --downloadPath \"{LatestVersionDownloadLink}\"",
+
+                });
+            }
+            
+            currentProcess.Kill();
         }
         
     }

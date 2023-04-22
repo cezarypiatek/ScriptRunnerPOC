@@ -2,7 +2,7 @@
   "profiles": {
     "AppInstaller": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Repositories\\ScriptRunnerPOC\\src\\ScriptRunner\\ScriptRunner.GUI\\bin\\Debug\\net6.0\\ScriptRunner.GUI.exe\" \"https://github.com/cezarypiatek/ScriptRunnerPOC/releases/download/1.14.0/ScriptRunner.1.14.0.zip\""
+      "commandLineArgs": "download-zip --startingProcess \\\"C:\\\\Repositories\\\\ScriptRunnerPOC\\\\src\\\\ScriptRunner\\\\ScriptRunner.GUI\\\\bin\\\\Debug\\\\net6.0\\\\ScriptRunner.GUI.exe\\\" --downloadPath \\\"https://github.com/cezarypiatek/ScriptRunnerPOC/releases/download/1.48.0/ScriptRunner.1.48.0.zip\\\""
     }
   }
 }
