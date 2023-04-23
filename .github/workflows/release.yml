@@ -37,8 +37,11 @@ jobs:
         dotnet nuget locals all --clear
         dotnet restore $env:SolutionPath         
     - name: Build extension
+      shell: pwsh
       run: |
+        New-Item -ItemType Directory -Name dist
         dotnet build $env:SolutionPath 
+        Copy-Item -Path src\ScriptRunner\ScriptRunner.GUI\bin\Release\ScriptRunnerGUI.${{ env.Version }}.nupkg -Destination ./dist/
         dotnet publish $env:SolutionPath -r win-x64 -p:PublishSingleFile=true -maxcpucount:1 --self-contained false -p:PublishReadyToRun=true
     - name: Generate release note
       run: |
@@ -70,4 +73,4 @@ jobs:
         asset_content_type: binary/octet-stream    
     - name: Publish extension to Nuget
       run: |
-        dotnet nuget push src\ScriptRunner\ScriptRunner.GUI\bin\Release\ScriptRunnerGUI.${{ env.Version }}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        dotnet nuget push dist\ScriptRunnerGUI.${{ env.Version }}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
