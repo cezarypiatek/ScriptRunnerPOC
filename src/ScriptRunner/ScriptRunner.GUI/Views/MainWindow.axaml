@@ -136,7 +136,7 @@
                <Button Margin="5,5,5,15" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
              </StackPanel>
              <StackPanel IsEnabled="{Binding SelectedActionInstalled}">
-               <StackPanel>
+               <StackPanel IsVisible="{Binding HasParams}">
                  <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                    <TextBlock Classes="h2" Text="Parameters: "></TextBlock>
                    <ComboBox Margin="20,0,0,5" Items="{Binding SelectedAction.PredefinedArgumentSets}" SelectedItem="{Binding SelectedArgumentSet, Mode=TwoWay}" MinWidth="200">

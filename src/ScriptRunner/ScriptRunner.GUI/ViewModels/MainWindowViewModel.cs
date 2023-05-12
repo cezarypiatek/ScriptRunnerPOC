@@ -6,15 +6,10 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Security.Principal;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls.Metadata;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using DynamicData;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
@@ -25,7 +20,6 @@ using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.ScriptReader;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.Views;
-using static ScriptRunner.GUI.Views.PasswordBox;
 
 namespace ScriptRunner.GUI.ViewModels;
 
@@ -76,21 +70,26 @@ public class MainWindowViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _selectedRunningJob, value);
     }
 
+    private bool _isActionSelected;
     public bool IsActionSelected
     {
         get => _isActionSelected;
         set => this.RaiseAndSetIfChanged(ref _isActionSelected, value);
     }
 
-    private bool _isActionSelected;
-
+    private bool _installAvailable;
     public bool InstallAvailable
     {
         get => _installAvailable;
         set => this.RaiseAndSetIfChanged(ref _installAvailable, value);
     }
 
-    private bool _installAvailable;
+    private bool _hasParams;
+    public bool HasParams
+    {
+        get => _hasParams;
+        private set => this.RaiseAndSetIfChanged(ref _hasParams, value);
+    }
 
     public ScriptConfig? SelectedAction
     {
@@ -116,12 +115,14 @@ public class MainWindowViewModel : ReactiveObject
                 InstallAvailable = string.IsNullOrWhiteSpace(value.InstallCommand) == false;
                 SelectedActionInstalled = InstallAvailable ? IsActionInstalled(value.Name): true;
                 IsActionSelected = true;
+                HasParams = value.Params.Any();
             }
             else
             {
                 SelectedArgumentSet = null;
                 SelectedActionInstalled = false;
                 IsActionSelected = false;
+                HasParams = false;
             }
         }
     }
