@@ -1,40 +1,38 @@
 {
-    "dependencies":[
+  "dependencies": [
+    {
+      "name": "",
+      "install": "",
+      "exists": ""
+    }
+  ],
+  "actions": [
+    {
+      "name": "",
+      "categories": [""],
+      "description": "",
+      "dependencies": [
         {
-            "name":"",
-            "install":"",
-            "exists":""
+          "name": "",
+          "version": ""
         }
-    ],    
-    "actions":[
+      ],
+      "command": "sample.ps1 -p1 {parameter1}",
+      "params": [
         {
-            "name":"",
-            "category":"",
-            "description":"",
-            "dependencies":[
-                {
-                    "name":"",
-                    "version":""
-                }
-            ],
-            "command":"sample.ps1 -p1 {parameter1}",
-            "params":[
-                {
-                    "name":"parameter1",
-                    "description":"",
-                    "type":"",
-                    "default":"",
-                    "prompt":"text|password|dropdown|multiselect|datepicker|checkbox|multilinetext|filepicker|directorypicker",
-                    "mandatory":"true",
-                    "promptSettings":
-                    {
-                        "p1":"v1",
-                        "p2":"v2",
-                        "p3":"v3"
-                    }
-                }
-            ]
+          "name": "parameter1",
+          "description": "",
+          "type": "",
+          "default": "",
+          "prompt": "text|password|dropdown|multiselect|datepicker|checkbox|multilinetext|filepicker|directorypicker",
+          "mandatory": "true",
+          "promptSettings": {
+            "p1": "v1",
+            "p2": "v2",
+            "p3": "v3"
+          }
         }
-    ]
+      ]
+    }
+  ]
 }
-
