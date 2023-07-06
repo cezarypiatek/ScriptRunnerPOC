@@ -5,7 +5,9 @@ VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScriptRunner.GUI", "ScriptRunner.GUI\ScriptRunner.GUI.csproj", "{87EF4861-1CB6-4F46-97E0-6925A59626EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppInstaller", "AppInstaller\AppInstaller.csproj", "{A272ED16-5B61-455F-8222-37584D370FA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppInstaller", "AppInstaller\AppInstaller.csproj", "{A272ED16-5B61-455F-8222-37584D370FA7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GUIConsole.ConPTY", "GUIConsole.ConPTY\GUIConsole.ConPTY.csproj", "{825F710A-60EE-4BDF-AA1B-75FE80C0007E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{A272ED16-5B61-455F-8222-37584D370FA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A272ED16-5B61-455F-8222-37584D370FA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A272ED16-5B61-455F-8222-37584D370FA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{825F710A-60EE-4BDF-AA1B-75FE80C0007E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{825F710A-60EE-4BDF-AA1B-75FE80C0007E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{825F710A-60EE-4BDF-AA1B-75FE80C0007E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{825F710A-60EE-4BDF-AA1B-75FE80C0007E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

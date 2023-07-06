@@ -52,12 +52,14 @@
     <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="14.4.1" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="6.0.0" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
+    <PackageReference Include="VtNetCore" Version="1.0.9" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AppInstaller\AppInstaller.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\GUIConsole.ConPTY\GUIConsole.ConPTY.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Scripts\TextInputScript.json">

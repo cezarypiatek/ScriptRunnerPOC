@@ -17,6 +17,8 @@ using Avalonia.Controls.Documents;
 using Avalonia.Media;
 using DynamicData;
 using ScriptRunner.GUI.ScriptConfigs;
+using GUIConsole.ConPTY;
+using VtNetCore.XTermParser;
 
 namespace ScriptRunner.GUI.ViewModels;
 
@@ -28,7 +30,6 @@ public enum RunningJobStatus
     Failed,
     Finished
 }
-
 
 public class RunningJobViewModel : ViewModelBase
 {
@@ -62,20 +63,50 @@ public class RunningJobViewModel : ViewModelBase
             stopWatch.Start();
             try
             {
-                await using var inputStream = new MultiplexerStream();
-                inputWriter = new StreamWriter(inputStream);
-                ExecutionCancellation = new CancellationTokenSource();
-                ChangeStatus(RunningJobStatus.Running);
-                await Cli.Wrap(commandPath)
-                    .WithArguments(args)
-                    //TODO: Working dir should be read from the config with the fallback set to the config file dir
-                    .WithWorkingDirectory(workingDirectory ?? "Scripts/")
-                    .WithStandardInputPipe(PipeSource.FromStream(inputStream,autoFlush:true))
-                    .WithStandardOutputPipe(PipeTarget.ToDelegate(s => AppendToOutput(s, ConsoleOutputLevel.Normal)))
-                    .WithStandardErrorPipe(PipeTarget.ToDelegate(s => AppendToOutput(s, ConsoleOutputLevel.Error)))
-                    .WithValidation(CommandResultValidation.None)
-                    .WithEnvironmentVariables(EnvironmentVariables)
-                    .ExecuteAsync(ExecutionCancellation.Token);
+                var terminal = new Terminal();
+                var console = new GuiTerminal();
+                RichOutput = console.RichOutput;
+                var consumer = new DataConsumer(console);
+                terminal.OutputReady += (sender, eventArgs) =>
+                {
+                    Task.Factory.StartNew(() =>
+                    {
+                        using (StreamReader reader = new StreamReader(terminal.ConsoleOutStream))
+                        {
+                            // Read the console's output 1 character at a time
+                            //int bytesRead;
+                            //char[] buf = new char[1];
+                            //while ((bytesRead = reader.ReadBlock(buf, 0, 1)) != 0)
+                            //{
+                            //    AppendToOutput(new string(buf.Take(bytesRead).ToArray()), ConsoleOutputLevel.Normal);
+                            //}
+
+
+                            while (reader.ReadLine() is { } line) 
+                            {
+                                consumer.Push(Encoding.UTF8.GetBytes(line+Environment.NewLine));
+                                //AppendToOutput(line, ConsoleOutputLevel.Normal);
+                            }
+                        }
+                    }, TaskCreationOptions.LongRunning);
+
+                };
+
+                //await using var inputStream = new MultiplexerStream();
+                //inputWriter = new StreamWriter(inputStream);
+                //ExecutionCancellation = new CancellationTokenSource();
+                //ChangeStatus(RunningJobStatus.Running);
+                //await Cli.Wrap(commandPath)
+                //    .WithArguments(args)
+                //    //TODO: Working dir should be read from the config with the fallback set to the config file dir
+                //    .WithWorkingDirectory(workingDirectory ?? "Scripts/")
+                //    .WithStandardInputPipe(PipeSource.FromStream(inputStream,autoFlush:true))
+                //    .WithStandardOutputPipe(PipeTarget.ToDelegate(s => AppendToOutput(s, ConsoleOutputLevel.Normal)))
+                //    .WithStandardErrorPipe(PipeTarget.ToDelegate(s => AppendToOutput(s, ConsoleOutputLevel.Error)))
+                //    .WithValidation(CommandResultValidation.None)
+                //    .WithEnvironmentVariables(EnvironmentVariables)
+                //    .ExecuteAsync(ExecutionCancellation.Token);
+                await Task.Run(() => terminal.Start(commandPath, args));
                 ChangeStatus(RunningJobStatus.Finished);
                 Dispatcher.UIThread.Post(RaiseExecutionCompleted);
             }
@@ -240,7 +271,7 @@ public class RunningJobViewModel : ViewModelBase
           CurrentInteractiveInputs.Clear();
         }
     }
-    private async Task AppendToOutput(string? s, ConsoleOutputLevel level)
+    private void AppendToOutput(string? s, ConsoleOutputLevel level)
     {
         
         if (s != null)
@@ -365,7 +396,7 @@ public class RunningJobViewModel : ViewModelBase
                     }
 
                     var inline = new Run(subPart);
-
+                    
                     // if (level == ConsoleOutputLevel.Error)
                     // {
                     //     inline.Foreground = Brushes.Red;
@@ -503,6 +534,17 @@ public class RunningJobViewModel : ViewModelBase
     public CancellationTokenSource ExecutionCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }
 
-    public InlineCollection RichOutput { get; set; } = new();
+//    public InlineCollection RichOutput { get; set; } = new();
+
+    public InlineCollection RichOutput
+    {
+        get => _richOutput;
+        set => this.RaiseAndSetIfChanged(ref _richOutput, value);
+    }
+
+    private InlineCollection _richOutput;
+
+
+
    
 }
