@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Threading;
 using DynamicData;
 using MessageBox.Avalonia.Enums;
@@ -124,6 +125,20 @@ public class MainWindowViewModel : ReactiveObject
                 IsActionSelected = false;
                 HasParams = false;
             }
+        }
+    }
+    
+    public KeyGesture SearchBoxHotKey
+    {
+        get
+        {
+            if (OperatingSystem.IsMacOS())
+            {
+                // Cmd+P
+                return new KeyGesture(Key.P, KeyModifiers.Meta);
+            }
+            // Ctrl+P
+            return new KeyGesture(Key.P, KeyModifiers.Control);
         }
     }
 
