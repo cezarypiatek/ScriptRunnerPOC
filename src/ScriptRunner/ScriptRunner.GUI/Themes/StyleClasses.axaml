@@ -109,16 +109,12 @@
         <Setter Property="MinWidth" Value="300" />
     </Style>
 
-    <Style Selector="DockPanel.actionsMenu">
-        <Setter Property="Background" Value="#2b2b2b" />
-    </Style>
-
     <Style Selector="ProgressBar.executionProgressBar">
         <Setter Property="Height" Value="30" />
         <Setter Property="Margin" Value="20 ,0" />
 	</Style>
 
-    <Style Selector="RichTextBlock.consoleOutput">
+    <Style Selector="SelectableTextBlock.consoleOutput">
         <Setter Property="Margin" Value="0, 10, 10, 0" />
         <Setter Property="FontFamily" Value="Consolas" />
         <Setter Property="Background" Value="Black"></Setter>

@@ -7,12 +7,13 @@ using System.Reactive.Linq;
 using System.Security.Principal;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using DynamicData;
-using MessageBox.Avalonia.Enums;
+using MsBox.Avalonia;
 using ReactiveUI;
 using ScriptRunner.GUI.BackgroundTasks;
 using ScriptRunner.GUI.Infrastructure;
@@ -34,8 +35,8 @@ public class MainWindowViewModel : ReactiveObject
     /// <summary>
     /// Contains panels with generated controls for every defined action
     /// </summary>
-    private ObservableCollection<IPanel> _actionParametersPanel;
-    public ObservableCollection<IPanel> ActionParametersPanel
+    private ObservableCollection<Panel> _actionParametersPanel;
+    public ObservableCollection<Panel> ActionParametersPanel
     {
         get => _actionParametersPanel;
         private set => this.RaiseAndSetIfChanged(ref _actionParametersPanel, value);
@@ -232,7 +233,7 @@ public class MainWindowViewModel : ReactiveObject
         _outdatedRepoCheckingScheduler.Run();
 
 
-        ActionParametersPanel = new ObservableCollection<IPanel>();
+        ActionParametersPanel = new ObservableCollection<Panel>();
         BuildUi();
     }
 
@@ -393,8 +394,8 @@ public class MainWindowViewModel : ReactiveObject
 
     private static void NotifyAboutMissingAdminRights()
     {
-        var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow("Missing permissions", "This scripts requires administrator rights.\r\n\r\nPlease restart the app as administrator. ", icon: Icon.Forbidden);
-        messageBoxStandardWindow.Show();
+        var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandard("Missing permissions", "This scripts requires administrator rights.\r\n\r\nPlease restart the app as administrator. ", icon: MsBox.Avalonia.Enums.Icon.Forbidden);
+        messageBoxStandardWindow.ShowAsync();
     }
 
     public static bool IsAdministrator()
@@ -481,12 +482,24 @@ public class MainWindowViewModel : ReactiveObject
         {
             WriteIndented = true
         });
-        await Application.Current!.Clipboard!.SetTextAsync(serialized);
+
+        GetClipboard()!.SetTextAsync(serialized);
+
+    }
+
+    private IClipboard? GetClipboard()
+    {
+        if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            return desktop.MainWindow.Clipboard;
+        }
+
+        return null;
     }
     
     public async void PasteParametersSetup()
     {
-        var payload = await Application.Current!.Clipboard!.GetTextAsync();
+        var payload = await GetClipboard()!.GetTextAsync();
         if (payload.IndexOf('{') is { } first && payload.LastIndexOf('}') is { } last && first > -1 && last > -1 && last > first)
         {
             try
@@ -509,14 +522,14 @@ public class MainWindowViewModel : ReactiveObject
             }
             catch
             {
-                var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow("Incorrect data", "Clipboard content is not valid JSON with parameter set", icon: Icon.Error);
-                await messageBoxStandardWindow.Show();
+                var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandard("Incorrect data", "Clipboard content is not valid JSON with parameter set", icon: MsBox.Avalonia.Enums.Icon.Error);
+                await messageBoxStandardWindow.ShowAsync();
             }
         }
         else
         {
-            var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow("Incorrect data", "Clipboard content is not JSON", icon: Icon.Error);
-            await messageBoxStandardWindow.Show();
+            var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandard("Incorrect data", "Clipboard content is not JSON", icon:  MsBox.Avalonia.Enums.Icon.Error);
+            await messageBoxStandardWindow.ShowAsync();
         }
     }
 

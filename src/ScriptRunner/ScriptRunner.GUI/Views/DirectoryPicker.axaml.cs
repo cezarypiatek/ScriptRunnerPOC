@@ -37,7 +37,7 @@ namespace ScriptRunner.GUI.Views
         {
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var sourceWindow = (sender as IControl)?.GetVisualRoot() as Window ?? desktop.MainWindow;
+                var sourceWindow = (sender as Control)?.GetVisualRoot() as Window ?? desktop.MainWindow;
 
                 var dialog = new OpenFolderDialog();
                 if (string.IsNullOrWhiteSpace(DirPath) == false && Directory.Exists(DirPath))

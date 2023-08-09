@@ -23,22 +23,25 @@ internal class Program
         .StartWithClassicDesktopLifetime(args);
 
     // Avalonia configuration, don't remove; also used by visual designer.
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
-        .UseReactiveUI()
-        .UsePlatformDetect()
-        .WithIcons(container => container
-            .Register<FontAwesomeIconProvider>())
-        .UseMicrosoftDependencyInjection(ConfigureServices)
-        .LogToTrace();
-
-    private static void ConfigureServices(IServiceCollection services, IRuntimePlatform runtimePlatform)
+    public static AppBuilder BuildAvaloniaApp()
     {
-        var runtimeInfo = runtimePlatform.GetRuntimeInfo();
-        if (runtimeInfo.OperatingSystem == OperatingSystemType.WinNT)
+        IconProvider.Current
+            .Register<FontAwesomeIconProvider>();
+        return AppBuilder.Configure<App>()
+            .UseReactiveUI()
+            .UsePlatformDetect()
+            .UseMicrosoftDependencyInjection(ConfigureServices)
+            .LogToTrace();
+    }
+
+    private static void ConfigureServices(IServiceCollection services)
+    {
+        
+        if (OperatingSystem.IsWindows())
         {
             services.AddSingleton<IDataProtector, WindowsDataProtector>();
         }
-        else if (runtimeInfo.OperatingSystem == OperatingSystemType.OSX)
+        else if (OperatingSystem.IsMacOS())
         {
             services.AddDataProtectionConfigured();
             services.AddSingleton<IDataProtector, MacDataProtector>();
