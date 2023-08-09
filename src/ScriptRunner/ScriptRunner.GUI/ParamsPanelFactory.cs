@@ -284,7 +284,8 @@ public class ParamsPanelFactory
                         Value = decimal.TryParse(value, out var valueDouble)? valueDouble: 0,
                         Minimum = p.GetPromptSettings("min", out var minValue) && decimal.TryParse(minValue, out var mindDouble)? mindDouble : decimal.MinValue,
                         Maximum = p.GetPromptSettings("max", out var maxValue) && decimal.TryParse(maxValue, out var maxDouble)? maxDouble: decimal.MaxValue,
-                        Increment = p.GetPromptSettings("step", out var stepValue) && decimal.TryParse(stepValue, out var stepDouble)? stepDouble: 1.0m,
+                        Increment = p.GetPromptSettings("step", out var stepValue) && decimal.TryParse(stepValue, out var stepDouble)? (int)stepDouble: 1,
+                        ParsingNumberStyle = NumberStyles.Integer,
                         TabIndex = index,
                         IsTabStop = true
                     }
