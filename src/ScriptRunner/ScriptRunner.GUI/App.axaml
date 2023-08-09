@@ -1,13 +1,13 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:ScriptRunner.GUI"
-             x:Class="ScriptRunner.GUI.App">
+             x:Class="ScriptRunner.GUI.App"  RequestedThemeVariant="Dark">
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
 
     <Application.Styles>
-        <FluentTheme Mode="Dark"/>
+        <FluentTheme  />
         <StyleInclude Source="/Themes/DarkTheme.xaml" />
         <StyleInclude Source="/Themes/StyleClasses.axaml" />
 

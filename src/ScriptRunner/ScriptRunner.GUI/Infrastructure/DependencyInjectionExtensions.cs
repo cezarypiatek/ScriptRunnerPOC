@@ -1,4 +1,5 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,11 +9,10 @@ namespace ScriptRunner.GUI.Infrastructure;
 
 public static class DependencyInjectionExtensions
 {
-    public static TAppBuilder UseMicrosoftDependencyInjection<TAppBuilder>(this TAppBuilder builder, Action<IServiceCollection, IRuntimePlatform> configure)
-        where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
+    public static AppBuilder UseMicrosoftDependencyInjection(this AppBuilder builder, Action<IServiceCollection> configure)
     {
         var serviceCollection = new ServiceCollection();
-        configure(serviceCollection, builder.RuntimePlatform);
+        configure(serviceCollection);
         serviceCollection.UseMicrosoftDependencyResolver();
         return builder;
     }

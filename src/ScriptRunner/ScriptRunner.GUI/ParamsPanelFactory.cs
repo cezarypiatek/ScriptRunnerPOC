@@ -31,7 +31,10 @@ public class ParamsPanelFactory
     {
         var paramsPanel = new StackPanel
         {
-            Classes = new Classes("paramsPanel")
+            Classes =
+            {
+                "paramsPanel"
+            }
         };
 
         var controlRecords = new List<IControlRecord>();
@@ -60,7 +63,10 @@ public class ParamsPanelFactory
                     label,
                     controlRecord.Control
                 },
-                Classes = new Classes("paramRow")
+                Classes =
+                {
+                    "paramRow"
+                }
             };
             
             paramsPanel.Children.Add(actionPanel);
@@ -139,7 +145,7 @@ public class ParamsPanelFactory
                 {
                     Control = new ComboBox
                     { 
-                        Items = p.GetPromptSettings("options", out var options) ? options.Split(","):Array.Empty<string>(),
+                        ItemsSource = p.GetPromptSettings("options", out var options) ? options.Split(","):Array.Empty<string>(),
                         SelectedItem = value,
                         TabIndex = index,
                         IsTabStop = true
@@ -152,7 +158,7 @@ public class ParamsPanelFactory
                     Control = new ListBox
                     {
                         SelectionMode = SelectionMode.Multiple,
-                        Items = p.GetPromptSettings("options", out var multiSelectOptions) ? multiSelectOptions.Split(delimiter) : Array.Empty<string>(),
+                        ItemsSource = p.GetPromptSettings("options", out var multiSelectOptions) ? multiSelectOptions.Split(delimiter) : Array.Empty<string>(),
                         SelectedItems = new AvaloniaList<string>((value ?? string.Empty).Split(delimiter)),
                         TabIndex = index,
                         IsTabStop = true
@@ -299,14 +305,14 @@ public class ParamsPanelFactory
 
 public class ParamsPanel
 {
-    public IPanel Panel { get; set; }
+    public Panel Panel { get; set; }
 
     public IEnumerable<IControlRecord> ControlRecords { get; set; }
 }
 
 public class CheckboxControl : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
     public string CheckedValue { get; set; } = "true";
     public string UncheckedValue { get; set; } = "false";
     public string GetFormattedValue()
@@ -320,7 +326,7 @@ public class CheckboxControl : IControlRecord
 
 public class DatePickerControl : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
 
     public string GetFormattedValue()
     {
@@ -346,7 +352,7 @@ public class DatePickerControl : IControlRecord
 
 public class TimePickerControl : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
 
     public string GetFormattedValue()
     {
@@ -366,7 +372,7 @@ public class TimePickerControl : IControlRecord
 
 public class DropdownControl : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
 
     public string GetFormattedValue()
     {
@@ -379,7 +385,7 @@ public class DropdownControl : IControlRecord
 
 public class TextControl : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
 
     public string GetFormattedValue()
     {
@@ -391,7 +397,7 @@ public class TextControl : IControlRecord
 }
 public class PasswordControl : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
 
     public string GetFormattedValue()
     {
@@ -403,7 +409,7 @@ public class PasswordControl : IControlRecord
 }
 public class FileContent : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
     public string FileName { get; set; }
 
     public FileContent(string extension)
@@ -424,7 +430,7 @@ public class FileContent : IControlRecord
 
 public class MultiSelectControl : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
 
     public string GetFormattedValue()
     {
@@ -448,7 +454,7 @@ public class MultiSelectControl : IControlRecord
 }
 public class FilePickerControl : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
 
     public string GetFormattedValue()
     {
@@ -461,7 +467,7 @@ public class FilePickerControl : IControlRecord
 
 public class DirectoryPickerControl : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
 
     public string GetFormattedValue()
     {
@@ -474,7 +480,7 @@ public class DirectoryPickerControl : IControlRecord
 
 public class NumericControl : IControlRecord
 {
-    public IControl Control { get; set; }
+    public Control Control { get; set; }
 
     public string GetFormattedValue()
     {
@@ -487,7 +493,7 @@ public class NumericControl : IControlRecord
 
 public interface IControlRecord
 {
-    IControl Control { get; set; }
+    Control Control { get; set; }
 
     string GetFormattedValue();
 

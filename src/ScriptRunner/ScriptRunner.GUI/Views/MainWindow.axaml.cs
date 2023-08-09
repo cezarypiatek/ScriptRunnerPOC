@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -29,7 +30,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         ViewModel = Locator.Current.GetService<MainWindowViewModel>();
         this.WhenActivated((disposableRegistration) =>
         {
-            this.OneWayBind(ViewModel, vm => vm.FilteredActionList, v=>v.ActionTree.Items).DisposeWith(disposableRegistration);
+            this.OneWayBind(ViewModel, vm => vm.FilteredActionList, v=>v.ActionTree.ItemsSource).DisposeWith(disposableRegistration);
         });
         Title = $"ScriptRunner {this.GetType().Assembly.GetName().Version}";
         if (AppSettingsService.Load().Layout is { } layoutSettings)
@@ -99,7 +100,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         };
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var sourceWindow = (sender as IControl)?.GetVisualRoot() as Window ?? desktop.MainWindow;
+            var sourceWindow = (sender as Control)?.GetVisualRoot() as Window ?? desktop.MainWindow;
             if (await popup.ShowDialog<string>(sourceWindow) is { } setName && string.IsNullOrWhiteSpace(setName) == false)
             {
                 if (setName == MainWindowViewModel.DefaultParameterSetName)
@@ -122,7 +123,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var sourceWindow = (sender as IControl)?.GetVisualRoot() as Window ?? desktop.MainWindow;
+            var sourceWindow = (sender as Control)?.GetVisualRoot() as Window ?? desktop.MainWindow;
             popup.KeyUp += (o, args) =>
             {
                 if (args.Key == Key.Escape)

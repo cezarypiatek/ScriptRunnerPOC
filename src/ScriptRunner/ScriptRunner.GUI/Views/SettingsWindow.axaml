@@ -29,7 +29,7 @@
                 <avalonia:Icon Value="fa fa-file" Margin="4, 0, 10, 0"/>
                 <TextBlock Classes="h2" Text="Config source files:" Margin="0, 5"/>
             </StackPanel>
-            <ItemsControl Items="{Binding ConfigScriptFiles}">
+            <ItemsControl ItemsSource="{Binding ConfigScriptFiles}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Grid Margin="0,0,0,10">

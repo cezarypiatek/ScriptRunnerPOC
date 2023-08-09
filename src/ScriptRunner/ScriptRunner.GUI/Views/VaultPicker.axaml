@@ -13,7 +13,7 @@
     </Design.DataContext>
     <Border BorderBrush="#A1A1A1" BorderThickness="1">
         <StackPanel Margin="40, 40, 40, 20" >
-            <ComboBox Name="SecretsCombo" Items="{Binding Entries}" SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"  HorizontalAlignment="Center" Margin="10,0,0,20" Width="300">
+            <ComboBox Name="SecretsCombo" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"  HorizontalAlignment="Center" Margin="10,0,0,20" Width="300">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Name}"  />
