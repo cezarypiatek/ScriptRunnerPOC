@@ -228,6 +228,10 @@ public class ParamsPanelFactory
                     }
                 };
             case PromptType.FileContent:
+                if (Path.IsPathRooted(value) == false)
+                {
+                    value = Path.GetFullPath(value, scriptConfig.WorkingDirectory);
+                }
                 return new FileContent(p.GetPromptSettings("extension", out var extension)?extension:"dat")
                 {
                     Control = new TextBox
@@ -242,6 +246,12 @@ public class ParamsPanelFactory
                     }
                 };
             case PromptType.FilePicker:
+
+                if (Path.IsPathRooted(value) == false)
+                {
+                    value = Path.GetFullPath(value, scriptConfig.WorkingDirectory);
+                }
+                
                 return new FilePickerControl
                 {
                     Control = new FilePicker
@@ -253,6 +263,10 @@ public class ParamsPanelFactory
                     }
                 };
             case PromptType.DirectoryPicker:
+                if (Path.IsPathRooted(value) == false)
+                {
+                    value = Path.GetFullPath(value, scriptConfig.WorkingDirectory);
+                }
                 return new DirectoryPickerControl
                 {
                     Control = new DirectoryPicker
