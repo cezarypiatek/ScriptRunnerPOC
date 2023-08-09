@@ -228,7 +228,7 @@ public class ParamsPanelFactory
                     }
                 };
             case PromptType.FileContent:
-                if (Path.IsPathRooted(value) == false)
+                if (string.IsNullOrWhiteSpace(value) == false && Path.IsPathRooted(value) == false)
                 {
                     value = Path.GetFullPath(value, scriptConfig.WorkingDirectory);
                 }
@@ -247,7 +247,7 @@ public class ParamsPanelFactory
                 };
             case PromptType.FilePicker:
 
-                if (Path.IsPathRooted(value) == false)
+                if (string.IsNullOrWhiteSpace(value)== false && Path.IsPathRooted(value) == false)
                 {
                     value = Path.GetFullPath(value, scriptConfig.WorkingDirectory);
                 }
@@ -263,7 +263,7 @@ public class ParamsPanelFactory
                     }
                 };
             case PromptType.DirectoryPicker:
-                if (Path.IsPathRooted(value) == false)
+                if (string.IsNullOrWhiteSpace(value)== false && Path.IsPathRooted(value) == false)
                 {
                     value = Path.GetFullPath(value, scriptConfig.WorkingDirectory);
                 }
