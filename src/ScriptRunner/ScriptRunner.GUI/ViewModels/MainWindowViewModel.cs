@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Security.Principal;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
@@ -27,6 +28,18 @@ namespace ScriptRunner.GUI.ViewModels;
 
 public class MainWindowViewModel : ReactiveObject
 {
+
+    public bool IsScriptListVisible
+    {
+        get => _isScriptListVisible;
+        set => this.RaiseAndSetIfChanged(ref _isScriptListVisible, value);
+    }
+
+    private bool _isScriptListVisible;
+
+
+
+    public IReactiveCommand SaveAsPredefinedCommand { get; set; }
 
 
     private readonly ParamsPanelFactory _paramsPanelFactory;
@@ -172,6 +185,8 @@ public class MainWindowViewModel : ReactiveObject
 
     public MainWindowViewModel(ParamsPanelFactory paramsPanelFactory, VaultProvider vaultProvider)
     {
+        IsScriptListVisible = true;
+        SaveAsPredefinedCommand = ReactiveCommand.Create(() => { });
         _paramsPanelFactory = paramsPanelFactory;
         _vaultProvider = vaultProvider;
         this.appUpdater = new GithubUpdater();

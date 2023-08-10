@@ -1,0 +1,69 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
+             xmlns:gui="clr-namespace:ScriptRunner.GUI"
+             xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
+             xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ScriptRunner.GUI.Views.RunningJobsSection"
+             x:DataType="viewModels:MainWindowViewModel"
+             >
+    <TabControl x:Name="RunningJobsPanel" ItemsSource="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
+      <TabControl.ItemTemplate>
+        <DataTemplate x:DataType="viewModels:RunningJobViewModel">
+          <StackPanel Orientation="Horizontal">
+              <StackPanel >
+                  <StackPanel Orientation="Horizontal">
+                      <TextBlock FontSize="16" Text="{Binding Tile}" Margin="0,0,5,0" />
+                      <TextBlock FontSize="16" Text="{Binding CommandName}" />
+                  </StackPanel>
+                  <TextBlock FontSize="12" Text="{Binding Status, StringFormat='({0})'}" Foreground="{Binding Status, Converter={x:Static gui:JobStatusToColorConverter.Instance}}"></TextBlock>
+              </StackPanel>
+              <Button avalonia:Attached.Icon="fas fa-times"  Height="20" Width="30" Background="Transparent" VerticalContentAlignment="Top" VerticalAlignment="Top" FontSize="8"  ToolTip.Tip="Close tab" CommandParameter="{Binding}" Command="{Binding $parent[TabControl].DataContext.CloseJob}" />
+          </StackPanel>
+        </DataTemplate>
+      </TabControl.ItemTemplate>
+      <TabControl.ContentTemplate>
+        <DataTemplate DataType="viewModels:RunningJobViewModel">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            
+            <TextBox  Text="{Binding ExecutedCommand}"  Background="#474747" CornerRadius="0" BorderBrush="#6e6e6e" Padding="5"  Margin="10" BorderThickness="1" IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Stretch"></TextBox>
+              <ScrollViewer Grid.Row="1" ScrollChanged="ScrollChangedHandler">
+                  <SelectableTextBlock   Classes="consoleOutput" Text="{Binding CurrentRunOutputBuffered, Mode=OneWay}"   Inlines="{Binding RichOutput}" ></SelectableTextBlock>
+              </ScrollViewer>
+              <StackPanel Grid.Row="2" IsVisible="{Binding ExecutionPending, Mode=OneWay}" >
+                  <ItemsRepeater ItemsSource="{Binding CurrentInteractiveInputs}" Margin="0, 10, 0,0">
+                      <ItemsRepeater.Layout>
+                          <StackLayout Spacing="10"
+                                       Orientation="Horizontal" />
+                      </ItemsRepeater.Layout>
+                      <ItemsRepeater.ItemTemplate>
+                          <DataTemplate x:DataType="scriptConfigs:InteractiveInputItem">
+                              <Button Content="{Binding Label}" Command="{Binding $parent[ItemsRepeater].DataContext.ExecuteInteractiveInput}" CommandParameter="{Binding Value}"></Button>
+                          </DataTemplate>
+                      </ItemsRepeater.ItemTemplate>
+                      
+                  </ItemsRepeater>
+                  <TextBox  Text="{Binding InputCommand, Mode=TwoWay}" KeyUp="AcceptCommand"  Margin="0,10,10,0" FontFamily="Consolas"></TextBox>
+              </StackPanel>
+            
+            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,10,0,10">
+              <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0"
+                       Command="{Binding CancelExecution}" IsEnabled="{Binding ExecutionPending}">Cancel</Button>
+              <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
+            </StackPanel>
+          </Grid>
+
+        </DataTemplate>
+      </TabControl.ContentTemplate>
+
+    </TabControl>
+</UserControl>

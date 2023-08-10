@@ -1,0 +1,46 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:backgroundTasks="clr-namespace:ScriptRunner.GUI.BackgroundTasks"
+             xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
+             xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
+             xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="viewModels:MainWindowViewModel"
+             x:Class="ScriptRunner.GUI.Views.NotificationSection">
+    <UserControl.Resources>
+        <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+    </UserControl.Resources>
+    <StackPanel Orientation="Vertical">
+        <StackPanel IsVisible="{Binding ShowNewVersionAvailable}" Height="75">
+            <Border BorderBrush="#FF0000" BorderThickness="1"  >
+                <StackPanel  Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center" Text="A newer version is available"></TextBlock>
+                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding CheckForUpdates}">Check release log</Button>
+                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding InstallUpdate}">Install update</Button>
+                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding DismissNewVersionAvailable}">Dismiss</Button>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+        <StackPanel IsVisible="{Binding OutOfDateConfigRepositories.Count, Converter={StaticResource CountToVisibilityConverter}}">
+            <Border BorderBrush="#FF0000" BorderThickness="1"  >
+                <StackPanel  Orientation="Vertical" Margin="20" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center" Text="You have some outdated repositories with script configuration files:"></TextBlock>
+                    <ItemsControl ItemsSource="{Binding OutOfDateConfigRepositories}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="backgroundTasks:OutdatedRepositoryModel">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Path}"></TextBlock>
+                                    <Button Margin="20,0,0,0" VerticalAlignment="Center" 
+                                            Command="{Binding DataContext.PullRepoChanges, RelativeSource={RelativeSource AncestorType={x:Type views:MainWindow}}}"
+                                            CommandParameter="{Binding}">Pull</Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

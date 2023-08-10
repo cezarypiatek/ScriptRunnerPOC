@@ -1,0 +1,32 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="viewModels:MainWindowViewModel"
+             x:Class="ScriptRunner.GUI.Views.SideMenu">
+<Border BorderThickness="0,0,2,0" BorderBrush="#252526">
+    <StackPanel Orientation="Vertical"  >
+        <StackPanel.Styles>
+            <Style Selector=":is(Button)">
+                <Setter Property="Margin" Value="5"></Setter>
+                <Setter Property="Width" Value="50"></Setter>
+                <Setter Property="Height" Value="35"></Setter>
+                <Setter Property="FontSize" Value="18"></Setter>
+                <Setter Property="Background" Value="Transparent"></Setter>
+                <Setter Property="Foreground" Value="#858585"></Setter>
+            </Style>
+            <Style Selector="Button:hover">
+                <Setter Property="Foreground" Value="#FFFFFF"></Setter>
+            </Style>
+        </StackPanel.Styles>
+        <ToggleButton i:Attached.Icon="fas fa-scroll" IsChecked="{Binding IsScriptListVisible}"  ToolTip.Tip="Script list"/>
+        <Button i:Attached.Icon="fas fa-cog" Command="{Binding OpenSettingsWindow}"   ToolTip.Tip="Configure actions sources"/>
+        <Button i:Attached.Icon="fas fa-sync" Command="{Binding RefreshSettings}"   ToolTip.Tip="Refresh actions" />
+        <Button i:Attached.Icon="fas fa-lock" Command="{Binding OpenVaultWindow}"   ToolTip.Tip="Open Vault" />
+        <Button i:Attached.Icon="fas fa-search" Click="OpenSearchBox" HotKey="{Binding SearchBoxHotKey}"  ToolTip.Tip="Open Search Box (Ctrl+P)" />
+    </StackPanel>
+</Border>
+</UserControl>

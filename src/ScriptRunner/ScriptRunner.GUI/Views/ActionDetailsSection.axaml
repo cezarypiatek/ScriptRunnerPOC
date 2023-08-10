@@ -1,0 +1,88 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
+             xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
+             xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
+             xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
+             xmlns:mdxaml="https://github.com/whistyun/Markdown.Avalonia.Tight"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="viewModels:MainWindowViewModel"
+             x:Class="ScriptRunner.GUI.Views.ActionDetailsSection">
+  <views:ContentWithSidebar  IsSidebarOpen="{Binding SelectedAction.HasDocs}" SidebarPosition="Right" SidebarWidth="300">
+    <views:ContentWithSidebar.Main>
+         <ScrollViewer HorizontalAlignment="Stretch">
+           <StackPanel Margin="20, 10" IsVisible="{Binding IsActionSelected, Mode=OneWay}">
+             <StackPanel Orientation="Vertical">
+
+               <StackPanel Orientation="Horizontal" Margin="7,0" >
+                 <Label VerticalAlignment="Center">From: </Label>
+
+                 <TextBlock Margin="10, 0" TextWrapping="Wrap" VerticalAlignment="Center">
+                   <TextBlock.Text>
+                     <MultiBinding StringFormat="{}{0} [{1}]">
+                       <Binding Path="SelectedAction.SourceName" />
+                       <Binding Path="SelectedAction.Source" />
+                     </MultiBinding>
+                   </TextBlock.Text>
+                 </TextBlock>
+
+               </StackPanel>
+               <StackPanel Orientation="Horizontal">
+                 <TextBlock Classes="h1" Margin="10" Text="{Binding SelectedAction.Name}" />
+                 <SplitButton avalonia:Attached.Icon="fas fa-cog" >
+
+                   <SplitButton.Flyout>
+                     <MenuFlyout Placement="Bottom">
+                       <MenuItem Header="Save as defaults" Command="{Binding SaveAsDefault}"  />
+                       <MenuItem Header="Save as predefined"  Click="SaveAsPredefined" />
+                       <MenuItem Header="Copy current parameter setup" Command="{Binding CopyParametersSetup}" />
+                       <MenuItem Header="Paste parameter setup" Command="{Binding PasteParametersSetup}" />
+
+                       <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
+                     </MenuFlyout>
+                   </SplitButton.Flyout>
+
+                 </SplitButton>
+               </StackPanel>
+               <TextBlock IsVisible="{Binding SelectedAction.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="10, 0" Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
+               <SelectableTextBlock  TextWrapping="Wrap"  Classes="consoleOutput" Text="{Binding CurrentRunOutputBuffered, Mode=OneWay}"   Inlines="{Binding SelectedAction.CommandFormatted}" ></SelectableTextBlock>
+               <Button Margin="5,5,5,15" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
+             </StackPanel>
+             <StackPanel IsEnabled="{Binding SelectedActionInstalled}">
+               <StackPanel IsVisible="{Binding HasParams}">
+                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                   <TextBlock Classes="h2" Text="Parameters: "></TextBlock>
+                   <ComboBox Margin="20,0,0,5" ItemsSource="{Binding SelectedAction.PredefinedArgumentSets}" SelectedItem="{Binding SelectedArgumentSet, Mode=TwoWay}" MinWidth="200">
+                     <ComboBox.DataTemplates>
+                       <DataTemplate x:DataType="scriptConfigs:ArgumentSet">
+                         <TextBlock Text="{Binding Description}"></TextBlock>
+                       </DataTemplate>
+                     </ComboBox.DataTemplates>
+                   </ComboBox>
+                 </StackPanel>
+                 <ItemsControl ItemsSource="{Binding ActionParametersPanel}">
+                   <ItemsControl.Styles>
+                     <Style Selector="ItemsPresenter">
+                       <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
+                     </Style>
+                   </ItemsControl.Styles>
+                 </ItemsControl>
+               </StackPanel>
+               <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch" >
+                 <Button DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="100" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
+               </DockPanel>
+             </StackPanel>
+           </StackPanel>
+         </ScrollViewer>
+    </views:ContentWithSidebar.Main>
+    <views:ContentWithSidebar.Sidebar>
+      <Border Grid.Column="1" BorderThickness="2" BorderBrush="{StaticResource SystemChromeWhiteColor}" IsVisible="{Binding SelectedAction.HasDocs}" >
+        <mdxaml:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}"/>
+      </Border>
+    </views:ContentWithSidebar.Sidebar>
+  </views:ContentWithSidebar>
+  
+  
+</UserControl>
