@@ -43,7 +43,8 @@ namespace ScriptRunner.GUI.ViewModels
                     if (intial)
                     {
                         intial = false;
-                        return GetRecentActions(_allActions, recent);
+                        var selectedRecent = GetRecentActions(_allActions, recent);
+                        return selectedRecent;
 
                     }
 

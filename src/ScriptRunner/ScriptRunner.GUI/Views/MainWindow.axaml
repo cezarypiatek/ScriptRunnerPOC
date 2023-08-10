@@ -3,234 +3,66 @@
                            xmlns:vm="using:ScriptRunner.GUI.ViewModels"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                           xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
-                           xmlns:gui="clr-namespace:ScriptRunner.GUI"
                            xmlns:reactiveUi="http://reactiveui.net"
                            xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
-                           xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
-                           xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
-                           xmlns:backgroundTasks="clr-namespace:ScriptRunner.GUI.BackgroundTasks"
-                           xmlns:avalonia="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+                           xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
                            mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="900"
                            x:Class="ScriptRunner.GUI.Views.MainWindow"
                            Icon="/Assets/avalonia-logo.ico"
                            Title="ScriptRunner.GUI"
-                           Background="#202020"
+                           Background="Transparent"
+                           Name="MW"
+                           ExtendClientAreaToDecorationsHint="True"
+                           TransparencyLevelHint="AcrylicBlur"
                            x:DataType="vm:MainWindowViewModel"
                            FontFamily="Segoe UI Variable">
    
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
-  <Grid x:Name="MainGrid">
-      <Grid.Resources>
-          <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
-      </Grid.Resources>
-      <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="200" ></ColumnDefinition>
-      <ColumnDefinition Width="4"></ColumnDefinition>
-      <ColumnDefinition Width="*"></ColumnDefinition>
-    </Grid.ColumnDefinitions>
+    <Border  BorderThickness="1,1,1,1"
+             BorderBrush="#3baced">
+        <Panel>
+            <ExperimentalAcrylicBorder IsHitTestVisible="False">
+                <ExperimentalAcrylicBorder.Material>
+                    <ExperimentalAcrylicMaterial
+                        BackgroundSource="Digger"
+                        TintColor="Black"
+                        TintOpacity="1"
+                        MaterialOpacity="0.65" />
+                </ExperimentalAcrylicBorder.Material>
+            </ExperimentalAcrylicBorder>
+            
+    <Grid x:Name="MainGrid" Margin="0,0,0,0">
+     
     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="30" ></RowDefinition>
+        <RowDefinition Height="Auto"></RowDefinition>
       <RowDefinition Height="*" MinHeight="40"></RowDefinition>
       <RowDefinition Height="3" MaxHeight="3"></RowDefinition>
       <RowDefinition Height="300" ></RowDefinition>
     </Grid.RowDefinitions>
-    <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Vertical">
-        <StackPanel IsVisible="{Binding ShowNewVersionAvailable}" Height="75">
-            <Border BorderBrush="#FF0000" BorderThickness="1"  >
-                <StackPanel  Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center" Text="A newer version is available"></TextBlock>
-                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding CheckForUpdates}">Check release log</Button>
-                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding InstallUpdate}">Install update</Button>
-                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding DismissNewVersionAvailable}">Dismiss</Button>
-                </StackPanel>
-            </Border>
-        </StackPanel>
-        <StackPanel IsVisible="{Binding OutOfDateConfigRepositories.Count, Converter={StaticResource CountToVisibilityConverter}}">
-            <Border BorderBrush="#FF0000" BorderThickness="1"  >
-                <StackPanel  Orientation="Vertical" Margin="20" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center" Text="You have some outdated repositories with script configuration files:"></TextBlock>
-                    <ItemsControl ItemsSource="{Binding OutOfDateConfigRepositories}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="backgroundTasks:OutdatedRepositoryModel">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Path}"></TextBlock>
-                                    <Button Margin="20,0,0,0" VerticalAlignment="Center" 
-                                            Command="{Binding DataContext.PullRepoChanges, RelativeSource={RelativeSource AncestorType={x:Type views:MainWindow}}}"
-                                            CommandParameter="{Binding}">Pull</Button>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-        </StackPanel>
-    </StackPanel>
-      <Grid Grid.Row="1" Grid.Column="0">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="*"></RowDefinition>
-        <RowDefinition Height="Auto"></RowDefinition>
-      </Grid.RowDefinitions>
-      <!-- List of available actions, selectable -->
-      <TreeView x:Name="ActionTree" Classes="actionsMenu" Grid.Row="0" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
-          <TreeView.DataTemplates>
-              <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:ScriptConfigGroupWrapper">
-                  <TextBlock Text="{Binding Name}"></TextBlock>
-              </TreeDataTemplate>
-              <DataTemplate x:DataType="scriptConfigs:ScriptConfig">
-                  <TextBlock Text="{Binding FullName}" />
-              </DataTemplate>
-          </TreeView.DataTemplates>
-      </TreeView>
-      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" VerticalAlignment="Bottom" Grid.Row="2">
-        <Button i:Attached.Icon="fas fa-cog" Margin="5" Height="35" Width="50" FontSize="18" Command="{Binding OpenSettingsWindow}"   ToolTip.Tip="Configure actions sources"/>
-        <Button i:Attached.Icon="fas fa-sync" Margin="0,0,5,0" Height="35" Width="50" FontSize="18" Command="{Binding RefreshSettings}"   ToolTip.Tip="Refresh actions" />
-        <Button i:Attached.Icon="fas fa-lock" Margin="0,0,5,0"  Height="35" Width="50" FontSize="18" Command="{Binding OpenVaultWindow}"   ToolTip.Tip="Open Vault" />
-        <Button i:Attached.Icon="fas fa-search" Height="35" Width="50" FontSize="18" Click="OpenSearchBox" HotKey="{Binding SearchBoxHotKey}"  ToolTip.Tip="Open Search Box (Ctrl+P)" />
-      </StackPanel>
+        <Panel>
+            <TextBlock VerticalAlignment="Center" Margin="0" HorizontalAlignment="Center" IsHitTestVisible="False" Padding="0" Text="{Binding Path=#MW.Title}"></TextBlock>
+        </Panel>
+      <views:NotificationSection Grid.Row="1" ></views:NotificationSection>
+
+      <Grid Grid.Row="2"  ColumnDefinitions="Auto,*">
+          
+          <views:SideMenu ></views:SideMenu>
+          <views:ContentWithSidebar Grid.Column="1" IsSidebarOpen="{Binding IsScriptListVisible}" SidebarPosition="Left" SidebarWidth="300">
+              <views:ContentWithSidebar.Sidebar>
+                  <views:ActionsList Name="ActionsList" Grid.Column="1" ></views:ActionsList>
+              </views:ContentWithSidebar.Sidebar>
+              <views:ContentWithSidebar.Main>
+                  <views:ActionDetailsSection ></views:ActionDetailsSection>
+              </views:ContentWithSidebar.Main>
+          </views:ContentWithSidebar>
     </Grid>
-    <GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns" IsTabStop="False"></GridSplitter>
-    <!-- Below instead of stack panel will be Reactive UI View Host displaying current action props-->
-   <views:ContentWithSidebar Grid.Column="2" Grid.Row="1" IsSidebarOpen="{Binding SelectedAction.HasDocs}">
-       <views:ContentWithSidebar.Main>
-         <ScrollViewer HorizontalAlignment="Stretch">
-           <StackPanel Margin="20, 10" IsVisible="{Binding IsActionSelected, Mode=OneWay}">
-             <StackPanel Orientation="Vertical">
-
-               <StackPanel Orientation="Horizontal" Margin="7,0" >
-                 <Label VerticalAlignment="Center">From: </Label>
-
-                 <TextBlock Margin="10, 0" TextWrapping="Wrap" VerticalAlignment="Center">
-                   <TextBlock.Text>
-                     <MultiBinding StringFormat="{}{0} [{1}]">
-                       <Binding Path="SelectedAction.SourceName" />
-                       <Binding Path="SelectedAction.Source" />
-                     </MultiBinding>
-                   </TextBlock.Text>
-                 </TextBlock>
-
-               </StackPanel>
-               <StackPanel Orientation="Horizontal">
-                 <TextBlock Classes="h1" Margin="10" Text="{Binding SelectedAction.Name}" />
-                 <SplitButton i:Attached.Icon="fas fa-cog" >
-
-                   <SplitButton.Flyout>
-                     <MenuFlyout Placement="Bottom">
-                       <MenuItem Header="Save as defaults" Command="{Binding SaveAsDefault}"  />
-                       <MenuItem Header="Save as predefined"  Click="SaveAsPredefined" />
-                       <MenuItem Header="Copy current parameter setup" Command="{Binding CopyParametersSetup}" />
-                       <MenuItem Header="Paste parameter setup" Command="{Binding PasteParametersSetup}" />
-
-                       <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
-                     </MenuFlyout>
-                   </SplitButton.Flyout>
-
-                 </SplitButton>
-               </StackPanel>
-
-
-
-               <TextBlock IsVisible="{Binding SelectedAction.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="10, 0" Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
-               <SelectableTextBlock  TextWrapping="Wrap"  Classes="consoleOutput" Text="{Binding CurrentRunOutputBuffered, Mode=OneWay}"   Inlines="{Binding SelectedAction.CommandFormatted}" ></SelectableTextBlock>
-               <Button Margin="5,5,5,15" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
-             </StackPanel>
-             <StackPanel IsEnabled="{Binding SelectedActionInstalled}">
-               <StackPanel IsVisible="{Binding HasParams}">
-                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                   <TextBlock Classes="h2" Text="Parameters: "></TextBlock>
-                   <ComboBox Margin="20,0,0,5" ItemsSource="{Binding SelectedAction.PredefinedArgumentSets}" SelectedItem="{Binding SelectedArgumentSet, Mode=TwoWay}" MinWidth="200">
-                     <ComboBox.DataTemplates>
-                       <DataTemplate x:DataType="scriptConfigs:ArgumentSet">
-                         <TextBlock Text="{Binding Description}"></TextBlock>
-                       </DataTemplate>
-                     </ComboBox.DataTemplates>
-                   </ComboBox>
-                 </StackPanel>
-                 <ItemsControl ItemsSource="{Binding ActionParametersPanel}">
-                   <ItemsControl.Styles>
-                     <Style Selector="ItemsPresenter">
-                       <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
-                     </Style>
-                   </ItemsControl.Styles>
-                 </ItemsControl>
-               </StackPanel>
-
-
-               <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch" >
-                 <Button DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="100" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
-
-
-               </DockPanel>
-             </StackPanel>
-
-           </StackPanel>
-         </ScrollViewer>
-       </views:ContentWithSidebar.Main>
-       <views:ContentWithSidebar.Sidebar>
-           <Border Grid.Column="1" BorderThickness="2" BorderBrush="{StaticResource SystemChromeWhiteColor}" IsVisible="{Binding SelectedAction.HasDocs}" >
-               <avalonia:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}"/>
-           </Border>
-       </views:ContentWithSidebar.Sidebar>
-   </views:ContentWithSidebar>
-    <GridSplitter IsTabStop="False" Grid.Row="2" Grid.Column="0"  ResizeDirection="Rows" Grid.ColumnSpan="3" BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
-    <TabControl x:Name="RunningJobsPanel" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" ItemsSource="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
-      <TabControl.ItemTemplate>
-        <DataTemplate x:DataType="vm:RunningJobViewModel">
-          <StackPanel Orientation="Horizontal">
-              <StackPanel >
-                  <StackPanel Orientation="Horizontal">
-                      <TextBlock FontSize="16" Text="{Binding Tile}" Margin="0,0,5,0" />
-                      <TextBlock FontSize="16" Text="{Binding CommandName}" />
-                  </StackPanel>
-                  <TextBlock FontSize="12" Text="{Binding Status, StringFormat='({0})'}" Foreground="{Binding Status, Converter={x:Static gui:JobStatusToColorConverter.Instance}}"></TextBlock>
-              </StackPanel>
-              <Button i:Attached.Icon="fas fa-times"  Height="20" Width="30" Background="Transparent" VerticalContentAlignment="Top" VerticalAlignment="Top" FontSize="8"  ToolTip.Tip="Close tab" CommandParameter="{Binding}" Command="{Binding $parent[TabControl].DataContext.CloseJob}" />
-          </StackPanel>
-        </DataTemplate>
-      </TabControl.ItemTemplate>
-      <TabControl.ContentTemplate>
-        <DataTemplate DataType="vm:RunningJobViewModel">
-          <Grid>
-            <Grid.RowDefinitions>
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="*"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-            </Grid.RowDefinitions>
-            
-            <TextBox  Text="{Binding ExecutedCommand}"  Background="#474747" CornerRadius="0" BorderBrush="#6e6e6e" Padding="5"  Margin="10" BorderThickness="1" IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Stretch"></TextBox>
-              <ScrollViewer Grid.Row="1" ScrollChanged="ScrollChangedHandler">
-                  <SelectableTextBlock   Classes="consoleOutput" Text="{Binding CurrentRunOutputBuffered, Mode=OneWay}"   Inlines="{Binding RichOutput}" ></SelectableTextBlock>
-              </ScrollViewer>
-              <StackPanel Grid.Row="2" IsVisible="{Binding ExecutionPending, Mode=OneWay}" >
-                  <ItemsRepeater ItemsSource="{Binding CurrentInteractiveInputs}" Margin="0, 10, 0,0">
-                      <ItemsRepeater.Layout>
-                          <StackLayout Spacing="10"
-                                       Orientation="Horizontal" />
-                      </ItemsRepeater.Layout>
-                      <ItemsRepeater.ItemTemplate>
-                          <DataTemplate x:DataType="scriptConfigs:InteractiveInputItem">
-                              <Button Content="{Binding Label}" Command="{Binding $parent[ItemsRepeater].DataContext.ExecuteInteractiveInput}" CommandParameter="{Binding Value}"></Button>
-                          </DataTemplate>
-                      </ItemsRepeater.ItemTemplate>
-                      
-                  </ItemsRepeater>
-                  <TextBox  Text="{Binding InputCommand, Mode=TwoWay}" KeyUp="AcceptCommand"  Margin="0,10,10,0" FontFamily="Consolas"></TextBox>
-              </StackPanel>
-            
-            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,10,0,10">
-              <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0"
-                       Command="{Binding CancelExecution}" IsEnabled="{Binding ExecutionPending}">Cancel</Button>
-              <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
-            </StackPanel>
-          </Grid>
-
-        </DataTemplate>
-      </TabControl.ContentTemplate>
-
-    </TabControl>
+    
+    <GridSplitter IsTabStop="False" Grid.Row="3"   ResizeDirection="Rows"  BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
+    <views:RunningJobsSection Grid.Row="4" ></views:RunningJobsSection>
   </Grid>
-
+        </Panel>
+</Border>
 </reactiveUi:ReactiveWindow>

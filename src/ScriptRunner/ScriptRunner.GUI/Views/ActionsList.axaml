@@ -1,0 +1,28 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
+             xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="viewModels:MainWindowViewModel"
+             x:Class="ScriptRunner.GUI.Views.ActionsList">
+    <TreeView x:Name="ActionTree" Background="#252526" Classes="actionsMenu" Grid.Row="0" ItemsSource="{Binding FilteredActionList }" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
+        <TreeView.Styles>
+            <Style Selector="TreeViewItem:empty Panel#PART_ExpandCollapseChevronContainer">
+                <Setter Property="IsVisible" Value="False"></Setter>
+            </Style>
+            <Style Selector="TreeViewItem:empty Grid#PART_Header">
+                <Setter Property="Margin" Value="25,0,0,0"></Setter>
+            </Style>
+        </TreeView.Styles>
+        <TreeView.DataTemplates>
+            <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="viewModels:ScriptConfigGroupWrapper">
+                <TextBlock Text="{Binding Name}"></TextBlock>
+            </TreeDataTemplate>
+            <DataTemplate x:DataType="scriptConfigs:ScriptConfig">
+                <TextBlock Text="{Binding FullName}" />
+            </DataTemplate>
+        </TreeView.DataTemplates>
+    </TreeView>
+</UserControl>
