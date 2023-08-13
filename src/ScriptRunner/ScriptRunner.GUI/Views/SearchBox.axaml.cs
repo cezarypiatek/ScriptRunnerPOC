@@ -29,11 +29,14 @@ namespace ScriptRunner.GUI.Views
                 {
                     if (FilteredItems.ItemCount > 0)
                     {
-                        FilteredItems.SelectedIndex = FilteredItems.ItemCount -1;
 
-                        if (FilteredItems.ItemContainerGenerator.ContainerFromIndex(FilteredItems.SelectedIndex) is { } item)
+                        if (FilteredItems.SelectedIndex == 0)
                         {
-                            item.Focus();
+                            FilteredItems.SelectedIndex = FilteredItems.ItemCount -1;    
+                        }
+                        else
+                        {
+                            FilteredItems.SelectedIndex--;
                         }
                     }
                 }
@@ -42,11 +45,13 @@ namespace ScriptRunner.GUI.Views
                     if (FilteredItems.ItemCount > 0)
                     {
 
-                        this.FilteredItems.Focus();
-                        if (FilteredItems.ItemContainerGenerator.ContainerFromIndex(0) is { } item)
+                        if (FilteredItems.SelectedIndex == FilteredItems.ItemCount-1)
                         {
-                            FilteredItems.Selection.Select(0);
-                            item.Focus();
+                            FilteredItems.SelectedIndex = 0;    
+                        }
+                        else
+                        {
+                            FilteredItems.SelectedIndex++;
                         }
                     }
                 }else if (args.Key == Key.Enter)
@@ -55,29 +60,7 @@ namespace ScriptRunner.GUI.Views
                 }
             };
 
-            this.FilteredItems.KeyDown += (sender, args) =>
-            {
-                if (args.Key == Key.Up)
-                {
-                    if (FilteredItems.SelectedIndex == 0)
-                    {
-                        this.SearchBoxInput.Focus();
-
-
-                    }
-                }
-
-                else if (args.Key == Key.Down)
-                {
-                    if (FilteredItems.SelectedIndex == FilteredItems.ItemCount - 1)
-                    {
-                        this.SearchBoxInput.Focus();
-                    }
-                }
-                
-
-
-            };
+           
             this.FilteredItems.KeyUp += (sender, args) =>
             {
                 if (args.Key == Key.Enter)
@@ -98,17 +81,6 @@ namespace ScriptRunner.GUI.Views
                     }
                 }
             };
-
-
-
-            //this.FilteredItems.KeyDown  += (sender, args) =>
-            //{
-            //    if (args.Key is not Key.Escape or Key.Down or Key.Up or Key.Enter)
-            //    {
-            //        SearchBoxInput.Focus();
-            //    }
-            //};
-
         }
 
         private void ChoseSelected()
