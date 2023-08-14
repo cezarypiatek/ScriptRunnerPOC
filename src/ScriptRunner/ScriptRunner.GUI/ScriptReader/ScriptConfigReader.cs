@@ -36,6 +36,20 @@ public static class ScriptConfigReader
             foreach (var scriptConfig in LoadFileSource(source.Path, appSettings))
             {
                 scriptConfig.SourceName = source.Name;
+                scriptConfig.Categories ??= new List<string>();
+
+                var mainCategory = string.IsNullOrWhiteSpace(scriptConfig.SourceName) == false
+                    ? scriptConfig.SourceName
+                    : Path.GetFileName(source.Path);
+                if (string.IsNullOrWhiteSpace(mainCategory) == false)
+                {
+                    scriptConfig.Categories.Add(mainCategory);
+
+                    if (mainCategory != source.Name)
+                    {
+                        source.Name = mainCategory;
+                    }
+                }
                 yield return scriptConfig;
             }
             yield break;
@@ -53,6 +67,20 @@ public static class ScriptConfigReader
                 foreach (var scriptConfig in LoadFileSource(file, appSettings))
                 {
                     scriptConfig.SourceName = source.Name;
+                    scriptConfig.Categories ??= new List<string>();
+
+                    var mainCategory = string.IsNullOrWhiteSpace(scriptConfig.SourceName) == false
+                        ? scriptConfig.SourceName
+                        :   Path.GetFileName(source.Path);
+                    if (string.IsNullOrWhiteSpace(mainCategory) == false)
+                    {
+                        scriptConfig.Categories.Add(mainCategory);
+
+                        if (mainCategory != source.Name)
+                        {
+                            source.Name = mainCategory;
+                        }
+                    }
                     yield return scriptConfig;
                 }
             }
