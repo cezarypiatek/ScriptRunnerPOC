@@ -11,9 +11,9 @@
                            x:Class="ScriptRunner.GUI.Views.SearchBox"
                            x:DataType="viewModels:SearchBoxViewModel">
     <StackPanel Width="400" >
-      <Border BorderThickness="1"   BorderBrush="#3baced"  Background="#212121" >
-          <StackPanel Orientation="Vertical"  Margin="10">
-              <TextBox TabIndex="1" Name="SearchBoxInput" Text="{Binding SearchFilter }" >
+      <Border BorderThickness="1"   BorderBrush="#3baced"  Background="#212121" CornerRadius="5" >
+          <StackPanel Orientation="Vertical"  Margin="15,10">
+              <TextBox TabIndex="1" Name="SearchBoxInput" Text="{Binding SearchFilter }" CornerRadius="5">
                   <TextBox.InnerLeftContent>
                       <avalonia:Icon Value="fas fa-search" Margin="10,0,0,0" />
                   </TextBox.InnerLeftContent>
@@ -24,7 +24,7 @@
                           <StackPanel Orientation="Horizontal">
                               <avalonia:Icon Value="fas fa-scroll" Margin="0,0,10,0" VerticalAlignment="Center" />
                               <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" ></TextBlock>
-                          </StackPanel>
+                          </StackPanel> 
                           
                       </DataTemplate>
                   </ListBox.ItemTemplate>
