@@ -38,6 +38,22 @@ public class MainWindowViewModel : ReactiveObject
     private bool _isScriptListVisible;
 
 
+    public bool IsRecentListVisible
+    {
+        get => _isRecentListVisible;
+        set => this.RaiseAndSetIfChanged(ref _isRecentListVisible, value);
+    }
+
+    private bool _isRecentListVisible;
+
+
+    public bool IsSideBoxVisible => _isSideBoxVisible.Value;
+
+
+    private readonly ObservableAsPropertyHelper<bool> _isSideBoxVisible; 
+
+
+    
 
     public IReactiveCommand SaveAsPredefinedCommand { get; set; }
 
@@ -191,6 +207,33 @@ public class MainWindowViewModel : ReactiveObject
         _vaultProvider = vaultProvider;
         this.appUpdater = new GithubUpdater();
 
+        this.WhenAnyValue(x=>x.SelectedRecentExecution)
+            .Where(x=>x is not null)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(b =>
+            {
+                if (Actions.FirstOrDefault(x => x.Name == b.Name && x.SourceName == b.Source) is { } selected)
+                {
+                    SelectedAction = selected;
+                    RenderParameterForm(selected, b.Parameters);
+                }
+            });
+        
+        this.WhenAnyValue(x => x.IsScriptListVisible, x => x.IsRecentListVisible)
+            .Select((t1, t2) => (t1.Item1 || t1.Item2))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.IsSideBoxVisible, out _isSideBoxVisible);
+        
+        this.WhenAnyValue(x => x.IsScriptListVisible)
+            .Where(x => x)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(b => IsRecentListVisible = false);
+        
+        this.WhenAnyValue(x => x.IsRecentListVisible)
+            .Where(x => x)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(b => IsScriptListVisible = false);
+        
         this.WhenAnyValue(x => x.ActionFilter, x => x.Actions)
             .Throttle(TimeSpan.FromMilliseconds(200))
             .DistinctUntilChanged()
@@ -310,6 +353,8 @@ public class MainWindowViewModel : ReactiveObject
         {
             SelectedAction = firstAction;
         }
+        ExecutionLog.Clear();
+        ExecutionLog.AddRange(AppSettingsService.LoadExecutionLog());
     }
 
     private static List<ConfigScriptEntry> SampleScripts => new()
@@ -673,9 +718,27 @@ public class MainWindowViewModel : ReactiveObject
             this.RunningJobs.Add(job);
             SelectedRunningJob = job;
             job.RunJob(commandPath, args, selectedAction.WorkingDirectory, selectedAction.InteractiveInputs);
+
+            var usedParams = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{selectedAction.Name}_{Guid.NewGuid():N}");
+            ExecutionLog.Insert(0, new ExecutionLogAction(DateTime.Now,  selectedAction.SourceName, selectedAction.Name, usedParams));
+            AppSettingsService.UpdateExecutionLog(ExecutionLog.ToList());
         }
         
     }
+
+    public ObservableCollection<ExecutionLogAction> ExecutionLog { get; set; } = new ();
+
+
+    public ExecutionLogAction SelectedRecentExecution
+    {
+        get => _selectedRecentExecution;
+        set => this.RaiseAndSetIfChanged(ref _selectedRecentExecution, value);
+    }
+
+    private ExecutionLogAction _selectedRecentExecution;
+
+
+
     
     private void RegisterExecution(ScriptConfig selectedAction)
     {
@@ -718,6 +781,8 @@ public class MainWindowViewModel : ReactiveObject
         return command.Split(' ', 2);
     }
 }
+
+public record ExecutionLogAction(DateTime Timestamp, string Source, string Name, Dictionary<string,string> Parameters);
 
 public record RecentAction(ActionId ActionId, DateTime Timestamp);
 

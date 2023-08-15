@@ -23,6 +23,7 @@
             </Style>
         </StackPanel.Styles>
         <ToggleButton i:Attached.Icon="fas fa-scroll" IsChecked="{Binding IsScriptListVisible}"  ToolTip.Tip="Script list"/>
+        <ToggleButton i:Attached.Icon="fas fa-clock" IsChecked="{Binding IsRecentListVisible}"  ToolTip.Tip="Recently executed"/>
         <Button i:Attached.Icon="fas fa-cog" Command="{Binding OpenSettingsWindow}"   ToolTip.Tip="Configure actions sources"/>
         <Button i:Attached.Icon="fas fa-sync" Command="{Binding RefreshSettings}"   ToolTip.Tip="Refresh actions" />
         <Button i:Attached.Icon="fas fa-lock" Command="{Binding OpenVaultWindow}"   ToolTip.Tip="Open Vault" />

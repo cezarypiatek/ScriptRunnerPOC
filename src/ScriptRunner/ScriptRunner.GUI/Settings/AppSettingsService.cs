@@ -13,15 +13,28 @@ namespace ScriptRunner.GUI.Settings;
 
 public class AppSettingsService
 {
+    private static string ExecutionLogFileName = "ExecutionLog.json";
+
     public static ScriptRunnerAppSettings Load()
+    {
+        return Load<ScriptRunnerAppSettings>();
+    }
+    
+    
+    public static List<ExecutionLogAction> LoadExecutionLog()
+    {
+        return Load<List<ExecutionLogAction>>(ExecutionLogFileName);
+    }
+    
+    private static T Load<T>(string? fileName = null) where T : new()
     {
         try
         {
-            var settingsPath = GetSettingsPath();
+            var settingsPath = GetSettingsPath(fileName);
             if (File.Exists(settingsPath))
             {
                 var payload = File.ReadAllText(settingsPath, Encoding.UTF8);
-                if (string.IsNullOrWhiteSpace(payload) == false && JsonSerializer.Deserialize<ScriptRunnerAppSettings>(payload) is { } settings)
+                if (string.IsNullOrWhiteSpace(payload) == false && JsonSerializer.Deserialize<T>(payload) is { } settings)
                 {
                     return settings;
                 }
@@ -31,15 +44,15 @@ public class AppSettingsService
         {
             
         }
-        return new ScriptRunnerAppSettings();
+        return new T();
     }
 
-    private static void Save(ScriptRunnerAppSettings settings)
+    private static void Save<T>(T settings, string? fileName = null)
     {
         try
         {
             var payload = JsonSerializer.Serialize(settings);
-            var settingsPath = GetSettingsPath();
+            var settingsPath = GetSettingsPath(fileName);
             File.WriteAllText(settingsPath, payload, Encoding.UTF8);
         }
         catch
@@ -67,6 +80,11 @@ public class AppSettingsService
         updateSettings(allSettings.Layout);
         Save(allSettings);
         Debug.WriteLine($"Width: {allSettings.Layout.Width}, Height: {allSettings.Layout.Height}, L: {allSettings.Layout.ActionsPanelWidth}, M: {allSettings.Layout.RunningJobsPanelHeight}");
+    }
+    
+    public static void UpdateExecutionLog(List<ExecutionLogAction> executionLog)
+    {
+        Save(executionLog, ExecutionLogFileName);
     }
     
     public static void UpdateRecent(Action<Dictionary<string, RecentAction>> updateSettings)
@@ -147,9 +165,9 @@ public class AppSettingsService
         Save(allSettings);
     }
 
-    private static string GetSettingsPath()
+    private static string GetSettingsPath(string? fileName = null)
     {
-        return GetSettingsPathFor("settings.json");
+        return GetSettingsPathFor(fileName ?? "settings.json");
     }
 
     public static string GetSettingsPathFor(string settingsFile)
