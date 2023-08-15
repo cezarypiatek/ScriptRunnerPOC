@@ -1,4 +1,4 @@
-<reactiveUi:ReactiveWindow x:TypeArguments="viewModels:SearchBoxViewModel" xmlns="https://github.com/avaloniaui"
+<reactiveUi:ReactiveUserControl x:TypeArguments="viewModels:SearchBoxViewModel" xmlns="https://github.com/avaloniaui"
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,32 +6,19 @@
                            xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
                            xmlns:avalonia="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
                            mc:Ignorable="d" 
-                           SizeToContent="WidthAndHeight"
                            BorderThickness="0"
-                           CanResize="False"
-                           ExtendClientAreaToDecorationsHint="True"
-                           ExtendClientAreaChromeHints="NoChrome"
-                           ExtendClientAreaTitleBarHeightHint="0"
-                           WindowStartupLocation="CenterOwner"
+                          
                            x:Class="ScriptRunner.GUI.Views.SearchBox"
-                           x:DataType="viewModels:SearchBoxViewModel"
-                           Title="SearchBox">
+                           x:DataType="viewModels:SearchBoxViewModel">
     <StackPanel Width="400" >
       <Border BorderThickness="1"   BorderBrush="#3baced"  Background="#212121" >
-          <StackPanel Orientation="Vertical" Margin="10" >
-
-              <DockPanel>
-                  
-                  <Button avalonia:Attached.Icon="fa fa-circle-xmark" FontSize="12" Click="CloseWindow" 
-                          Margin="0,-10,-8, 0" HorizontalAlignment="Right"
-                          Background="Transparent"/>
-              </DockPanel>
+          <StackPanel Orientation="Vertical"  Margin="10">
               <TextBox TabIndex="1" Name="SearchBoxInput" Text="{Binding SearchFilter }" >
                   <TextBox.InnerLeftContent>
                       <avalonia:Icon Value="fas fa-search" Margin="10,0,0,0" />
                   </TextBox.InnerLeftContent>
               </TextBox>
-              <ListBox Background="Transparent" ItemsSource="{Binding FilteredActionList}" Name="FilteredItems" Margin="0,5,0,0" MaxHeight="400" PointerReleased="ClickOnItem">
+              <ListBox Margin="0,10,0,0" Background="Transparent" ItemsSource="{Binding FilteredActionList}" Name="FilteredItems"  MaxHeight="400" PointerReleased="ClickOnItem">
                   <ListBox.ItemTemplate>
                       <DataTemplate>
                           <StackPanel Orientation="Horizontal">
@@ -42,15 +29,7 @@
                       </DataTemplate>
                   </ListBox.ItemTemplate>
               </ListBox>
-              <!--<ItemsControl Items="{Binding FilteredActionList}">
-                  <ItemsControl.ItemTemplate>
-                      <DataTemplate>
-                          <TextBlock Text="{Binding FullName}"></TextBlock>
-                      </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-
-              </ItemsControl>-->
           </StackPanel>
       </Border>
   </StackPanel>
-</reactiveUi:ReactiveWindow>
+</reactiveUi:ReactiveUserControl>
