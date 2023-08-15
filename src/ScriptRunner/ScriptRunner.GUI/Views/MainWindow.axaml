@@ -51,9 +51,22 @@
       <Grid Grid.Row="2"  ColumnDefinitions="Auto,*">
           
           <views:SideMenu ></views:SideMenu>
-          <views:ContentWithSidebar Grid.Column="1" IsSidebarOpen="{Binding IsScriptListVisible}" SidebarPosition="Left" SidebarWidth="300">
+          <views:ContentWithSidebar Grid.Column="1" IsSidebarOpen="{Binding IsSideBoxVisible}" SidebarPosition="Left" SidebarWidth="300">
               <views:ContentWithSidebar.Sidebar>
-                  <views:ActionsList Name="ActionsList" Grid.Column="1" ></views:ActionsList>
+                  <Panel>
+                      <views:ActionsList Name="ActionsList"  IsVisible="{Binding IsScriptListVisible}" ></views:ActionsList>
+                      <ListBox SelectedItem="{Binding SelectedRecentExecution}" ItemsSource="{Binding ExecutionLog}" IsVisible="{Binding IsRecentListVisible}">
+                          <ListBox.ItemTemplate>
+                              <DataTemplate x:DataType="vm:ExecutionLogAction">
+                                  <StackPanel Orientation="Horizontal">
+                                      <avalonia:Icon Value="fas fa-clock"  />
+                                      <TextBlock  Margin="10,0" Text="{Binding Timestamp, StringFormat={}{0:s}}"></TextBlock>
+                                      <TextBlock Text="{Binding Name}"></TextBlock>
+                                  </StackPanel>
+                              </DataTemplate>
+                          </ListBox.ItemTemplate>
+                      </ListBox>
+                  </Panel>
               </views:ContentWithSidebar.Sidebar>
               <views:ContentWithSidebar.Main>
                   <views:ActionDetailsSection ></views:ActionDetailsSection>
