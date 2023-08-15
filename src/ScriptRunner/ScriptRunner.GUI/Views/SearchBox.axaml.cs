@@ -1,7 +1,6 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
@@ -9,9 +8,9 @@ using ScriptRunner.GUI.ViewModels;
 
 namespace ScriptRunner.GUI.Views
 {
-    public partial class SearchBox :   ReactiveWindow<SearchBoxViewModel>
+    public partial class SearchBox :  ReactiveUserControl<SearchBoxViewModel>
     {
-        public SearchBox()
+        public SearchBox():this(Array.Empty<ScriptConfig>(), Array.Empty<RecentAction>())
         {
         }
 
@@ -19,10 +18,12 @@ namespace ScriptRunner.GUI.Views
         {
             InitializeComponent();
             ViewModel = new SearchBoxViewModel(viewModelActions, recentActions);
-            this.Activated += (sender, args) =>
+            
+            this.WhenActivated(disposables => 
             {
                 this.SearchBoxInput.Focus();
-            };
+            });
+
             this.SearchBoxInput.KeyDown += (sender, args) =>
             { 
                 if (args.Key == Key.Up)
@@ -87,7 +88,7 @@ namespace ScriptRunner.GUI.Views
         {
             if (FilteredItems.SelectedItem is ScriptConfigWithArgumentSet selectedConfig)
             {
-                Close(selectedConfig);
+                OnResultSelected(selectedConfig);
             }
         }
 
@@ -95,10 +96,20 @@ namespace ScriptRunner.GUI.Views
         {
             if (FilteredItems.SelectedItem is ScriptConfigWithArgumentSet selectedConfig)
             {
-                Close(selectedConfig);
+                OnResultSelected(selectedConfig);
             }
         }
 
-        private void CloseWindow(object? sender, RoutedEventArgs e) => Close();
+        public event EventHandler<ResultSelectedEventArgs> ResultSelected;
+
+        public class ResultSelectedEventArgs : EventArgs
+        {
+            public ScriptConfigWithArgumentSet? Result { get; set; }
+            public ResultSelectedEventArgs()
+            {
+            }
+        }
+
+        private void OnResultSelected(ScriptConfigWithArgumentSet? v) => ResultSelected?.Invoke(this, new ResultSelectedEventArgs(){Result = v});
     }
 }
