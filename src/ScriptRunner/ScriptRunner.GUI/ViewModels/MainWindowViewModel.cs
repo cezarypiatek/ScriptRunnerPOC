@@ -511,7 +511,7 @@ public class MainWindowViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _selectedActionInstalled, value);
     }
 
-    private static (string commandPath, string args) SplitCommandAndArgs(string command)
+    public static (string commandPath, string args) SplitCommandAndArgs(string command)
     {
         var parts = SplitCommand(command);
         return (parts.Length > 0 ? parts[0] : "", parts.Length > 1 ? parts[1] : "");
