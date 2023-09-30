@@ -78,7 +78,7 @@
          </ScrollViewer>
     </views:ContentWithSidebar.Main>
     <views:ContentWithSidebar.Sidebar>
-      <Border Grid.Column="1" BorderThickness="2" BorderBrush="{StaticResource SystemChromeWhiteColor}" IsVisible="{Binding SelectedAction.HasDocs}" >
+      <Border Grid.Column="1" Background="#1e1e1e" BorderThickness="2" BorderBrush="{StaticResource SystemChromeWhiteColor}" IsVisible="{Binding SelectedAction.HasDocs}" >
         <mdxaml:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}"/>
       </Border>
     </views:ContentWithSidebar.Sidebar>
