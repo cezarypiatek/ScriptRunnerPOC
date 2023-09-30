@@ -41,6 +41,7 @@
                        <MenuItem Header="Paste parameter setup" Command="{Binding PasteParametersSetup}" />
 
                        <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
+                       <MenuItem Header="Reset default settings"  Command="{Binding ResetDefaults}" />
                      </MenuFlyout>
                    </SplitButton.Flyout>
 

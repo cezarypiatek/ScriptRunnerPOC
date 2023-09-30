@@ -423,6 +423,18 @@ public class MainWindowViewModel : ReactiveObject
     private readonly RealTimeScheduler _outdatedRepoCheckingScheduler;
     private List<ScriptConfig> _actions = new ();
 
+    public void ResetDefaults()
+    {
+        if (SelectedAction is not null)
+        {
+            AppSettingsService.UpdateDefaultOverrides(new ActionDefaultOverrides
+            {
+                ActionName = SelectedAction.Name,
+                Defaults = new Dictionary<string, string>()
+            });
+            BuildUi();
+        }
+    }
     public void InstallScript()
     {
         if (SelectedAction is { InstallCommand: {} installCommand } selectedAction )
@@ -533,6 +545,7 @@ public class MainWindowViewModel : ReactiveObject
             ActionName = SelectedAction.Name,
             Defaults = defaultOverrides
         });
+        BuildUi();
     }
 
     public async void CopyParametersSetup()
@@ -671,6 +684,9 @@ public class MainWindowViewModel : ReactiveObject
             this.RaisePropertyChanged("SelectedAction.PredefinedArgumentSets");
             SelectedArgumentSet = newSet;
         }
+        BuildUi();
+
+    }
 
     }
 
