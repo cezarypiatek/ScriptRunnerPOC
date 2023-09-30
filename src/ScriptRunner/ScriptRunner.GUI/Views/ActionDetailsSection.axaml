@@ -39,9 +39,10 @@
                        <MenuItem Header="Save as predefined"  Click="SaveAsPredefined" />
                        <MenuItem Header="Copy current parameter setup" Command="{Binding CopyParametersSetup}" />
                        <MenuItem Header="Paste parameter setup" Command="{Binding PasteParametersSetup}" />
-
                        <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
                        <MenuItem Header="Reset default settings"  Command="{Binding ResetDefaults}" />
+                       <MenuItem Header="Open containing dir in VSCode"  Command="{Binding OpenDirInVsCode}" />
+                       <MenuItem Header="Open definition in VSCode"  Command="{Binding OpenDefinitionInVsCode}" />
                      </MenuFlyout>
                    </SplitButton.Flyout>
 
