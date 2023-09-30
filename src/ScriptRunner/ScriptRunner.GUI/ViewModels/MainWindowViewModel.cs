@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -13,6 +14,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
+using CliWrap;
 using DynamicData;
 using MsBox.Avalonia;
 using ReactiveUI;
@@ -688,6 +690,21 @@ public class MainWindowViewModel : ReactiveObject
 
     }
 
+    public void OpenDirInVsCode()
+    {
+        if (SelectedAction is {} action)
+        {
+            var dirName = Path.GetDirectoryName(action.Source);
+            Cli.Wrap("code").WithArguments(dirName).ExecuteAsync();
+        }
+    }
+    
+    public void OpenDefinitionInVsCode()
+    {
+        if (SelectedAction is {} action)
+        {
+            Cli.Wrap("code").WithArguments(action.Source).ExecuteAsync();
+        }
     }
 
 
