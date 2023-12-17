@@ -266,6 +266,16 @@ public class MainWindowViewModel : ReactiveObject
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
 
+
+        this.WhenAnyValue(x => x.SelectedAction, x => x.ExecutionLog)
+            .Where(x=>x is {Item1: not null, Item2: not null})
+            .Select(x =>
+            {
+                return x.Item2.Where(y => y.Source == x.Item1.SourceName && y.Name == x.Item1.Name);
+            }).ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.ExecutionLogForCurrent, out _executionLogForCurrent);
+            
+        
         _appUpdateScheduler = new RealTimeScheduler(TimeSpan.FromDays(1), TimeSpan.FromHours(1), async () =>
         {
             var isNewerVersion = await appUpdater.CheckIsNewerVersionAvailable();
@@ -760,6 +770,11 @@ public class MainWindowViewModel : ReactiveObject
     }
 
     public ObservableCollection<ExecutionLogAction> ExecutionLog { get; set; } = new ();
+    
+    
+    private readonly ObservableAsPropertyHelper<IEnumerable<ExecutionLogAction>>  _executionLogForCurrent;
+    public IEnumerable<ExecutionLogAction>  ExecutionLogForCurrent => _executionLogForCurrent.Value;
+    
 
 
     public ExecutionLogAction SelectedRecentExecution

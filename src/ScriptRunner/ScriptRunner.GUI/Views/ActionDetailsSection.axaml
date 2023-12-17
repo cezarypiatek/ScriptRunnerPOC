@@ -10,7 +10,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="viewModels:MainWindowViewModel"
              x:Class="ScriptRunner.GUI.Views.ActionDetailsSection">
-  <views:ContentWithSidebar  IsSidebarOpen="{Binding SelectedAction.HasDocs}" SidebarPosition="Right" SidebarWidth="300">
+  <views:ContentWithSidebar  IsSidebarOpen="True" SidebarPosition="Right" SidebarWidth="300">
     <views:ContentWithSidebar.Main>
          <ScrollViewer HorizontalAlignment="Stretch">
            <StackPanel Margin="20, 10" IsVisible="{Binding IsActionSelected, Mode=OneWay}">
@@ -80,9 +80,26 @@
          </ScrollViewer>
     </views:ContentWithSidebar.Main>
     <views:ContentWithSidebar.Sidebar>
-      <Border Grid.Column="1" Background="#1e1e1e" BorderThickness="2" BorderBrush="{StaticResource SystemChromeWhiteColor}" IsVisible="{Binding SelectedAction.HasDocs}" >
-        <mdxaml:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}"/>
-      </Border>
+      <TabControl>
+        <TabItem Header="History">
+          <ListBox SelectedItem="{Binding SelectedRecentExecution}" ItemsSource="{Binding ExecutionLogForCurrent}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="viewModels:ExecutionLogAction">
+                <StackPanel Orientation="Horizontal">
+                  <avalonia:Icon Value="fas fa-clock"  />
+                  <TextBlock  Margin="10,0" Text="{Binding Timestamp, StringFormat={}{0:s}}"></TextBlock>
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </TabItem>
+        <TabItem IsVisible="{Binding SelectedAction.HasDocs}" Header="Documentation">
+          <Border Grid.Column="1" Background="#1e1e1e" BorderThickness="2" BorderBrush="{StaticResource SystemChromeWhiteColor}" IsVisible="{Binding SelectedAction.HasDocs}" >
+            <mdxaml:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}"/>
+          </Border>    
+        </TabItem>
+      </TabControl>
+      
     </views:ContentWithSidebar.Sidebar>
   </views:ContentWithSidebar>
   
