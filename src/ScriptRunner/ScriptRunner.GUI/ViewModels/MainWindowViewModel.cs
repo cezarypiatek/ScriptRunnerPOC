@@ -249,7 +249,7 @@ public class MainWindowViewModel : ReactiveObject
                     {
                         if (c.Categories is {Count: > 0})
                         {
-                            return c.Categories.Select((cat) => (category: cat, script: c));
+                            return c.Categories.DistinctBy(x=>x).Select((cat) => (category: cat, script: c));
                         }
 
                         return new[] {(category: "(No Category)", script: c)};
