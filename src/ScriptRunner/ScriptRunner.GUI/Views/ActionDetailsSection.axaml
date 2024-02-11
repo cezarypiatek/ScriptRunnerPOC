@@ -81,6 +81,11 @@
     </views:ContentWithSidebar.Main>
     <views:ContentWithSidebar.Sidebar>
       <TabControl>
+        <TabItem IsVisible="{Binding SelectedAction.HasDocs}" Header="Documentation">
+          <Border Grid.Column="1" Background="#1e1e1e" BorderThickness="2" BorderBrush="{StaticResource SystemChromeWhiteColor}" IsVisible="{Binding SelectedAction.HasDocs}" >
+            <mdxaml:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}"/>
+          </Border>    
+        </TabItem>
         <TabItem Header="History">
           <ListBox SelectedItem="{Binding SelectedRecentExecution}" ItemsSource="{Binding ExecutionLogForCurrent}">
             <ListBox.ItemTemplate>
@@ -92,11 +97,6 @@
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-        </TabItem>
-        <TabItem IsVisible="{Binding SelectedAction.HasDocs}" Header="Documentation">
-          <Border Grid.Column="1" Background="#1e1e1e" BorderThickness="2" BorderBrush="{StaticResource SystemChromeWhiteColor}" IsVisible="{Binding SelectedAction.HasDocs}" >
-            <mdxaml:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}"/>
-          </Border>    
         </TabItem>
       </TabControl>
       
