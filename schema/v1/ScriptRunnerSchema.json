@@ -297,8 +297,36 @@
                                 }
                             }
                         }
+                    },
+                    "troubleshooting":{
+                        "type":"array",
+                        "items": {
+                            "type":"object",
+                            "properties": {
+                                "whenMatched":{
+                                    "type":"string"
+                                },
+                                "alertMessage":{
+                                    "type":"string"
+                                }
+                            }
+                        }
+                    },
+                    "installTroubleshooting":{
+                        "type":"array",
+                        "items": {
+                            "type":"object",
+                            "properties": {
+                                "whenMatched":{
+                                    "type":"string"
+                                },
+                                "alertMessage":{
+                                    "type":"string"
+                                }
+                            }
+                        }
                     }
-                }                
+                }
             }
         }
     }
