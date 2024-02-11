@@ -15,6 +15,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using DynamicData;
 using ScriptRunner.GUI.ScriptConfigs;
 
@@ -215,11 +216,7 @@ public class RunningJobViewModel : ViewModelBase
             {
                 AppendToUiOutput(list.Select(x=>x.EventArgs).ToArray());
             });
-
-        
     }
-
-
 
     public event EventHandler<string> OnAddOutput; 
 
@@ -229,6 +226,7 @@ public class RunningJobViewModel : ViewModelBase
 
     private bool underline = false;
     private bool bold = false;
+    private bool italic = false;
 
     public ObservableCollection<InteractiveInputItem> CurrentInteractiveInputs { get; set; } = new();
 
@@ -240,7 +238,7 @@ public class RunningJobViewModel : ViewModelBase
           CurrentInteractiveInputs.Clear();
         }
     }
-    private async Task AppendToOutput(string? s, ConsoleOutputLevel level)
+    private void AppendToOutput(string? s, ConsoleOutputLevel level)
     {
         
         if (s != null)
@@ -261,15 +259,7 @@ public class RunningJobViewModel : ViewModelBase
                     }
                 }
             }
-            
-            // var newContent = ConsoleSpecialCharsPattern.Replace(s, "");
-            // if (string.IsNullOrEmpty(newContent))
-            // {
-            //     return;
-            // }
-
-            //AppendToUiOutput(s);
-            //await ch.Writer.WriteAsync((this, newContent));
+          
             OnAddOutput?.Invoke(this, s);
         }
     }
@@ -282,8 +272,15 @@ public class RunningJobViewModel : ViewModelBase
             foreach (var part in s.SelectMany(x=>x.Split("\r\n")))
             {
                 var subParts = ConsoleSpecialCharsPattern.Split(part);
-                foreach (var subPart in subParts)
+                foreach (var chunk in subParts)
                 {
+                    var subPart = chunk;
+                    if (subPart.EndsWith(";3m"))
+                    {
+                        italic = true;
+                        subPart = subPart.Replace(";3m", "m");
+                    }
+                    
                     if (subPart.StartsWith("\u001b["))
                     {
                         var foreground = subPart switch
@@ -296,6 +293,14 @@ public class RunningJobViewModel : ViewModelBase
                             "\u001b[35m," => Brushes.DarkMagenta,
                             "\u001b[36m" => Brushes.DarkCyan,
                             "\u001b[37m" => Brushes.White,
+                            "\u001b[90m" => ConsoleColors.BrightBlack,
+                            "\u001b[91m" => ConsoleColors.BrightRed,
+                            "\u001b[92m" => ConsoleColors.BrightGreen,
+                            "\u001b[93m" => ConsoleColors.BrightYellow,
+                            "\u001b[94m" => ConsoleColors.BrightBlue,
+                            "\u001b[95m," =>ConsoleColors.BrightMagenta,
+                            "\u001b[96m" => ConsoleColors.BrightCyan,
+                            "\u001b[97m" => ConsoleColors.BrightWhite,
                             "\u001b[30;1m" => Brushes.Gray,
                             "\u001b[31;1m" => Brushes.Red,
                             "\u001b[32;1m" => Brushes.LightGreen,
@@ -323,6 +328,14 @@ public class RunningJobViewModel : ViewModelBase
                             "\u001b[45m," => Brushes.DarkMagenta,
                             "\u001b[46m" => Brushes.DarkCyan,
                             "\u001b[47m" => Brushes.White,
+                            "\u001b[100m" => ConsoleColors.BrightBlack,
+                            "\u001b[101m" => ConsoleColors.BrightRed,
+                            "\u001b[102m" => ConsoleColors.BrightGreen,
+                            "\u001b[103m" => ConsoleColors.BrightYellow,
+                            "\u001b[104m" => ConsoleColors.BrightBlue,
+                            "\u001b[105m," =>ConsoleColors.BrightMagenta,
+                            "\u001b[106m" => ConsoleColors.BrightCyan,
+                            "\u001b[107m" => ConsoleColors.BrightWhite,
                             "\u001b[40;1m" => Brushes.Gray,
                             "\u001b[41;1m" => Brushes.Red,
                             "\u001b[42;1m" => Brushes.Green,
@@ -350,6 +363,10 @@ public class RunningJobViewModel : ViewModelBase
                         {
                             bold = true;
                         }
+                        else if (subPart == "\u003b[1m")
+                        {
+                            italic = true;
+                        }
                         else if (subPart == "\u001b[4m")
                         {
                             underline = true;
@@ -358,40 +375,34 @@ public class RunningJobViewModel : ViewModelBase
                         {
                             bold = false;
                             underline = false;
+                            italic = false;
                         }
 
 
                         continue;
                     }
 
-                    var inline = new Run(subPart);
-
-                    // if (level == ConsoleOutputLevel.Error)
-                    // {
-                    //     inline.Foreground = Brushes.Red;
-                    // }
-                    // else
-                    // if (level == ConsoleOutputLevel.Warn)
-                    // {
-                    //     inline.Foreground = Brushes.Yellow;
-                    // }
-                    // else
+                    var inline = new Run(subPart)
                     {
-                        inline.Foreground = currentConsoleTextColor;
-                        inline.Background = currentConsoleBackgroundColor;
+                        Foreground = currentConsoleTextColor,
+                        Background = currentConsoleBackgroundColor
+                    };
 
-                        if (bold)
-                        {
-                            inline.FontStyle = FontStyle.Oblique;
-                        }
+                    if (bold)
+                    {
+                        inline.FontStyle = FontStyle.Oblique;
+                    }else if (italic)
+                    {
+                        inline.FontStyle = FontStyle.Italic;
+                    }
 
-                        if (underline)
+                    if (underline)
+                    {
+                        inline.TextDecorations ??= new TextDecorationCollection();
+                        inline.TextDecorations.Add(new TextDecoration()
                         {
-                            inline.TextDecorations.Add(new TextDecoration()
-                            {
-                                Location = TextDecorationLocation.Underline,
-                            });
-                        }
+                            Location = TextDecorationLocation.Underline,
+                        });
                     }
                     tmp.Add(inline);
                 }
