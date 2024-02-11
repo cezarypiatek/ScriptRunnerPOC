@@ -32,7 +32,15 @@ public class ScriptConfig
     public string? AutoParameterBuilderPattern { get; set; }
     public string? AutoParameterBuilderStyle { get; set; }
     public List<InteractiveInputDescription> InteractiveInputs { get; set; } = new();
+    public List<TroubleshootingItem> Troubleshooting { get; set; } = new();
+    public List<TroubleshootingItem> InstallTroubleshooting { get; set; } = new();
     public InlineCollection CommandFormatted { get; set; } = new();
+}
+
+public class TroubleshootingItem
+{
+    public string WhenMatched { get; set; }
+    public string AlertMessage { get; set; }
 }
 
 public class ArgumentSet

@@ -48,13 +48,17 @@ public class RunningJobViewModel : ViewModelBase
     public string CommandName { get; set; }
     public string ExecutedCommand { get; set; }
     public void CancelExecution() => ExecutionCancellation.Cancel();
+    public void DismissTroubleshootingMessage() => CurrentTroubleshootingMessage = null;
+    
 
     public event EventHandler ExecutionCompleted;
     public void RaiseExecutionCompleted() => ExecutionCompleted?.Invoke(this, EventArgs.Empty);
-    private List<InteractiveInputDescription> _inputs = new List<InteractiveInputDescription>();
-    public void RunJob(string commandPath, string args, string? workingDirectory, List<InteractiveInputDescription> interactiveInputs)
+    private IReadOnlyList<InteractiveInputDescription> _inputs = new List<InteractiveInputDescription>();
+    public void RunJob(string commandPath, string args, string? workingDirectory,
+        IReadOnlyList<InteractiveInputDescription> interactiveInputs, IReadOnlyList<TroubleshootingItem> troubleshooting)
     {
         _inputs = interactiveInputs;
+        _troubleshooting = troubleshooting;
         CurrentRunOutput = "";
         ExecutionPending = true;
         Task.Run(async () =>
@@ -194,6 +198,15 @@ public class RunningJobViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _inputCommand, value);
     }
 
+
+    private string? _currentTroubleshootingMessage;
+    
+    public string? CurrentTroubleshootingMessage
+    {
+        get => _currentTroubleshootingMessage;
+        set => this.RaiseAndSetIfChanged(ref _currentTroubleshootingMessage, value);
+    }
+
     private void ChangeStatus(RunningJobStatus status)
     {
         Dispatcher.UIThread.Post(() =>
@@ -238,6 +251,9 @@ public class RunningJobViewModel : ViewModelBase
           CurrentInteractiveInputs.Clear();
         }
     }
+    
+    
+    
     private void AppendToOutput(string? s, ConsoleOutputLevel level)
     {
         
@@ -254,6 +270,22 @@ public class RunningJobViewModel : ViewModelBase
                        {
                            CurrentInteractiveInputs.Clear();
                            CurrentInteractiveInputs.AddRange(input.Inputs);
+                       });
+                        break;
+                    }
+                }
+            }
+            
+            if (_troubleshooting.Count > 0)
+            {
+                foreach (var input in _troubleshooting)
+                {
+                    var regex = Regex.Match(s, input.WhenMatched);
+                    if (regex.Success)
+                    {
+                       Dispatcher.UIThread.Post(() =>
+                       {
+                           CurrentTroubleshootingMessage = "\u00af\\_(ツ)_/\u00af\r\n"+ input.AlertMessage;
                        });
                         break;
                     }
@@ -511,6 +543,7 @@ public class RunningJobViewModel : ViewModelBase
     private string _inputCommand;
     private int _numberOfLines;
     private readonly IDisposable outputSub;
+    private IReadOnlyList<TroubleshootingItem> _troubleshooting = Array.Empty<TroubleshootingItem>();
 
     public CancellationTokenSource ExecutionCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }

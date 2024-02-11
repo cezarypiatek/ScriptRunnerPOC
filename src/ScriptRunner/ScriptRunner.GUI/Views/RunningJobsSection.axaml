@@ -36,6 +36,13 @@
             </Grid.RowDefinitions>
             
             <TextBox  Text="{Binding ExecutedCommand}"  Background="#474747" CornerRadius="0" BorderBrush="#6e6e6e" Padding="5"  Margin="10" BorderThickness="1" IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Stretch"></TextBox>
+              <Panel Grid.Row="1" IsVisible="{Binding CurrentTroubleshootingMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="Red" Opacity="0.5" ZIndex="10"></Panel>
+              <ScrollViewer Grid.Row="1" IsVisible="{Binding CurrentTroubleshootingMessage, Converter={x:Static ObjectConverters.IsNotNull}}" ZIndex="11">
+                  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                      <SelectableTextBlock HorizontalAlignment="Center" TextAlignment="Center"  Text="{Binding CurrentTroubleshootingMessage}" Foreground="White" FontSize="26"></SelectableTextBlock>
+                      <Button Margin="20" Padding="10" HorizontalAlignment="Center" FontSize="26" Command="{Binding DismissTroubleshootingMessage}">Dismiss</Button>
+                  </StackPanel>
+              </ScrollViewer>
               <ScrollViewer Grid.Row="1" ScrollChanged="ScrollChangedHandler">
                   <SelectableTextBlock   Classes="consoleOutput" Text="{Binding CurrentRunOutputBuffered, Mode=OneWay}"   Inlines="{Binding RichOutput}" ></SelectableTextBlock>
               </ScrollViewer>

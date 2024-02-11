@@ -472,7 +472,7 @@ public class MainWindowViewModel : ReactiveObject
             };
             this.RunningJobs.Add(job);
             SelectedRunningJob = job;
-            job.RunJob(commandPath, args, selectedAction.InstallCommandWorkingDirectory, new ());
+            job.RunJob(commandPath, args, selectedAction.InstallCommandWorkingDirectory, Array.Empty<InteractiveInputDescription>(), selectedAction.InstallTroubleshooting);
         }
     }
 
@@ -760,7 +760,7 @@ public class MainWindowViewModel : ReactiveObject
             };
             this.RunningJobs.Add(job);
             SelectedRunningJob = job;
-            job.RunJob(commandPath, args, selectedAction.WorkingDirectory, selectedAction.InteractiveInputs);
+            job.RunJob(commandPath, args, selectedAction.WorkingDirectory, selectedAction.InteractiveInputs, selectedAction.Troubleshooting);
 
             var usedParams = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{selectedAction.Name}_{Guid.NewGuid():N}");
             ExecutionLog.Insert(0, new ExecutionLogAction(DateTime.Now,  selectedAction.SourceName, selectedAction.Name, usedParams));
