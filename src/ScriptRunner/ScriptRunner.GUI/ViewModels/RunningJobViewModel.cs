@@ -263,16 +263,17 @@ public class RunningJobViewModel : ViewModelBase
             OnAddOutput?.Invoke(this, s);
         }
     }
-
+    
+    List<Inline> tmpInlinesForNewEntry = new List<Inline>();
     private void AppendToUiOutput(IReadOnlyList<string> s)
     {
         Dispatcher.UIThread.Post(() =>
         {
-            var tmp = new List<Inline>();
+            tmpInlinesForNewEntry.Clear();
             foreach (var part in s.SelectMany(x=>x.Split("\r\n")))
             {
                 var subParts = ConsoleSpecialCharsPattern.Split(part);
-                foreach (var chunk in subParts)
+                foreach (var chunk in subParts.Where(x=> x != string.Empty))
                 {
                     var subPart = chunk;
                     if (subPart.EndsWith(";3m"))
@@ -404,13 +405,13 @@ public class RunningJobViewModel : ViewModelBase
                             Location = TextDecorationLocation.Underline,
                         });
                     }
-                    tmp.Add(inline);
+                    tmpInlinesForNewEntry.Add(inline);
                 }
 
-                tmp.Add(new LineBreak());
+                tmpInlinesForNewEntry.Add(new LineBreak());
             }
 
-            RichOutput.AddRange(tmp);
+            RichOutput.AddRange(tmpInlinesForNewEntry);
         });
     }
 
