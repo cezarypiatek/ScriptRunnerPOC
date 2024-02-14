@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using ScriptRunner.GUI.ViewModels;
 
 
 namespace ScriptRunner.GUI.ScriptConfigs;
@@ -41,6 +42,7 @@ public class TroubleshootingItem
 {
     public string WhenMatched { get; set; }
     public string AlertMessage { get; set; }
+    public TroubleShootingSeverity Severity { get; set; }
 }
 
 public class ArgumentSet

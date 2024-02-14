@@ -308,8 +308,18 @@
                                 },
                                 "alertMessage":{
                                     "type":"string"
+                                },
+                                "severity": {
+                                    "type":"string",
+                                    "enum": [
+                                        "error",
+                                        "warning",
+                                        "info",
+                                        "success"
+                                    ]
                                 }
-                            }
+                            },
+                            "required": ["whenMatched", "alertMessage"]
                         }
                     },
                     "installTroubleshooting":{
@@ -322,8 +332,18 @@
                                 },
                                 "alertMessage":{
                                     "type":"string"
+                                },
+                                "severity": {
+                                    "type":"string",
+                                    "enum": [
+                                        "error",
+                                        "warning",
+                                        "info",
+                                        "success"
+                                    ]
                                 }
-                            }
+                            },
+                            "required": ["whenMatched", "alertMessage"]
                         }
                     }
                 }
