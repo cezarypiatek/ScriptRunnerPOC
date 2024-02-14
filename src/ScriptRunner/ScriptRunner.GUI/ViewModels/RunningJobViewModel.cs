@@ -4,6 +4,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -48,8 +49,12 @@ public class RunningJobViewModel : ViewModelBase
     public string CommandName { get; set; }
     public string ExecutedCommand { get; set; }
     public void CancelExecution() => ExecutionCancellation.Cancel();
-    public void DismissTroubleshootingMessage() => CurrentTroubleshootingMessage = null;
-    
+    public void DismissTroubleshootingMessage()
+    {
+        CurrentTroubleshootingMessage = null;
+        TryPopNextAlert();
+    }
+
 
     public event EventHandler ExecutionCompleted;
     public void RaiseExecutionCompleted() => ExecutionCompleted?.Invoke(this, EventArgs.Empty);
@@ -199,12 +204,22 @@ public class RunningJobViewModel : ViewModelBase
     }
 
 
-    private string? _currentTroubleshootingMessage;
+    public ObservableCollection<TroubleshootingItem> Alerts { get; } = new ObservableCollection<TroubleshootingItem>();
     
+    private string? _currentTroubleshootingMessage;
+
     public string? CurrentTroubleshootingMessage
     {
         get => _currentTroubleshootingMessage;
         set => this.RaiseAndSetIfChanged(ref _currentTroubleshootingMessage, value);
+    }
+    
+    private TroubleShootingSeverity? _currentTroubleShootingSeverity;
+
+    public TroubleShootingSeverity? CurrentTroubleShootingSeverity
+    {
+        get => _currentTroubleShootingSeverity;
+        set => this.RaiseAndSetIfChanged(ref _currentTroubleShootingSeverity, value);
     }
 
     private void ChangeStatus(RunningJobStatus status)
@@ -229,6 +244,33 @@ public class RunningJobViewModel : ViewModelBase
             {
                 AppendToUiOutput(list.Select(x=>x.EventArgs).ToArray());
             });
+       
+       
+       Observable.FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
+               handler => Alerts.CollectionChanged += handler,
+               handler => Alerts.CollectionChanged -= handler)
+           .Where(x => x.EventArgs.Action == NotifyCollectionChangedAction.Add)
+           .ObserveOn(RxApp.MainThreadScheduler)
+           .Subscribe(x =>
+           {
+               TryPopNextAlert();
+           });
+    }
+
+    private void TryPopNextAlert()
+    {
+        if (string.IsNullOrWhiteSpace(CurrentTroubleshootingMessage))
+        {
+            if (Alerts.Count > 0)
+            {
+                var troubleshootingItem = Alerts.First();
+                CurrentTroubleshootingMessage = troubleshootingItem.AlertMessage;
+                CurrentTroubleShootingSeverity = troubleshootingItem.Severity;
+                Alerts.RemoveAt(0);    
+            }
+            
+            
+        }
     }
 
     public event EventHandler<string> OnAddOutput; 
@@ -278,15 +320,27 @@ public class RunningJobViewModel : ViewModelBase
             
             if (_troubleshooting.Count > 0)
             {
+                var clean = ConsoleSpecialCharsPattern.Replace(s, "");
                 foreach (var input in _troubleshooting)
                 {
-                    var regex = Regex.Match(s, input.WhenMatched);
+                    
+                    var regex = Regex.Match(clean, input.WhenMatched);
                     if (regex.Success)
                     {
-                       Dispatcher.UIThread.Post(() =>
-                       {
-                           CurrentTroubleshootingMessage = "\u00af\\_(ツ)_/\u00af\r\n"+ input.AlertMessage;
-                       });
+                        var res = input.AlertMessage;
+                        foreach (Group group in regex.Groups)
+                        {
+                            res = res.Replace($"${{{group.Name}}}", group.Value);
+                        }
+
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            Alerts.Add(new TroubleshootingItem()
+                            {
+                                Severity = input.Severity,
+                                AlertMessage = res
+                            });
+                        });
                         break;
                     }
                 }
@@ -550,4 +604,18 @@ public class RunningJobViewModel : ViewModelBase
 
     public InlineCollection RichOutput { get; set; } = new();
    
+}
+
+public enum TroubleShootingSeverity
+{
+    Error,
+    Warning,
+    Info,
+    Success
+}
+
+class TroubleShootingElement
+{
+    public TroubleShootingSeverity Severity { get; set; }
+    public string Message { get; set; }
 }
