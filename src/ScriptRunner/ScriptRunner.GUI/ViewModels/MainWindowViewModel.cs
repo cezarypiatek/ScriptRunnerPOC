@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Security.Principal;
 using System.Text.Json;
@@ -265,16 +267,22 @@ public class MainWindowViewModel : ReactiveObject
             })
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
-
-
-        this.WhenAnyValue(x => x.SelectedAction, x => x.ExecutionLog)
-            .Where(x=>x is {Item1: not null, Item2: not null})
-            .Select(x =>
-            {
-                return x.Item2.Where(y => y.Source == x.Item1.SourceName && y.Name == x.Item1.Name);
-            }).ObserveOn(RxApp.MainThreadScheduler)
-            .ToProperty(this, x => x.ExecutionLogForCurrent, out _executionLogForCurrent);
             
+        Observable
+            .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
+                h => this.ExecutionLog.CollectionChanged += h,
+                h => this.ExecutionLog.CollectionChanged -= h)
+            .Select(_ => Unit.Default) // We don't care about the event args; we just want to know something changed.
+            .StartWith(Unit.Default) // To ensure initial population.
+            .CombineLatest(this.WhenAnyValue(x => x.SelectedAction).Where(x => x != null),
+                (_, selectedAction) => selectedAction)
+            .Select(selectedAction =>
+            {
+                return this.ExecutionLog
+                    .Where(y => y.Source == selectedAction.SourceName && y.Name == selectedAction.Name);
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.ExecutionLogForCurrent, out _executionLogForCurrent);
         
         _appUpdateScheduler = new RealTimeScheduler(TimeSpan.FromDays(1), TimeSpan.FromHours(1), async () =>
         {
