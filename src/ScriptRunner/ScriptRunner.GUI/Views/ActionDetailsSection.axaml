@@ -7,6 +7,7 @@
              xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
              xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
              xmlns:mdxaml="https://github.com/whistyun/Markdown.Avalonia.Tight"
+             xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="viewModels:MainWindowViewModel"
              x:Class="ScriptRunner.GUI.Views.ActionDetailsSection">
@@ -82,8 +83,40 @@
     <views:ContentWithSidebar.Sidebar>
       <TabControl>
         <TabItem IsVisible="{Binding SelectedAction.HasDocs}" Header="Documentation">
-          <Border Grid.Column="1" Background="#1e1e1e" BorderThickness="2" BorderBrush="{StaticResource SystemChromeWhiteColor}" IsVisible="{Binding SelectedAction.HasDocs}" >
-            <mdxaml:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}"/>
+          <Border Grid.Column="1" Background="#1f1f1f" IsVisible="{Binding SelectedAction.HasDocs}" >
+            <mdxaml:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}">
+              <mdxaml:MarkdownScrollViewer.Styles>
+                <Style Selector="ctxt|CTextBlock">
+                  <Setter Property="Foreground" Value="#C3C3C3"/>
+                </Style>
+                <Style Selector="ctxt|CTextBlock.Heading1">
+                  <Setter Property="Foreground" Value="#C3C3C3"/>
+                  <Setter Property="FontWeight" Value="Bold"/>
+                </Style>
+                <Style Selector="ctxt|CTextBlock.Heading2">
+                  <Setter Property="Foreground" Value="#C3C3C3"/>
+                  <Setter Property="FontWeight" Value="Bold"/>
+                </Style>
+                <Style Selector="ctxt|CTextBlock.Heading3">
+                  <Setter Property="Foreground" Value="#C3C3C3"/>
+                  <Setter Property="FontWeight" Value="Bold"/>
+                </Style>
+                <Style Selector="ctxt|CTextBlock.Heading4">
+                  <Setter Property="Foreground" Value="#C3C3C3"/>
+                  <Setter Property="FontWeight" Value="Bold"/>
+                </Style>
+                <Style Selector="ctxt|CCode">
+                  <Style.Setters>
+                    <Setter Property="BorderThickness"     Value="0"/>
+                    <Setter Property="Padding"             Value="5,2"/>
+                    <Setter Property="MonospaceFontFamily" Value="Meiryo" />
+                    <Setter Property="Foreground"          Value="#D0D0D0" />
+                    <Setter Property="Background"          Value="#3C3C3C" />
+                  </Style.Setters>
+                </Style>
+
+              </mdxaml:MarkdownScrollViewer.Styles>
+            </mdxaml:MarkdownScrollViewer>
           </Border>    
         </TabItem>
         <TabItem Header="History">
