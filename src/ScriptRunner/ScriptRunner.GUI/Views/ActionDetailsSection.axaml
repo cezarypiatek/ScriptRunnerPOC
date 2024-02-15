@@ -81,7 +81,7 @@
          </ScrollViewer>
     </views:ContentWithSidebar.Main>
     <views:ContentWithSidebar.Sidebar>
-      <TabControl>
+      <TabControl SelectedIndex="{}">
         <TabItem IsVisible="{Binding SelectedAction.HasDocs}" Header="Documentation">
           <Border Grid.Column="1" Background="#1f1f1f" IsVisible="{Binding SelectedAction.HasDocs}" >
             <mdxaml:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}">
@@ -119,7 +119,7 @@
             </mdxaml:MarkdownScrollViewer>
           </Border>    
         </TabItem>
-        <TabItem Header="History">
+        <TabItem Header="History" IsSelected="{Binding !SelectedAction.HasDocs}">
           <ListBox SelectedItem="{Binding SelectedRecentExecution}" ItemsSource="{Binding ExecutionLogForCurrent}">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="viewModels:ExecutionLogAction">
