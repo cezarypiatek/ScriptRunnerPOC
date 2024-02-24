@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Security.Principal;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
@@ -97,6 +96,7 @@ public class MainWindowViewModel : ReactiveObject
     public IEnumerable<ScriptConfigGroupWrapper> FilteredActionList => _filteredActionList.Value;
 
 
+    
     public ObservableCollection<RunningJobViewModel> RunningJobs { get; set; } = new();
 
     public RunningJobViewModel SelectedRunningJob
@@ -104,7 +104,7 @@ public class MainWindowViewModel : ReactiveObject
         get => _selectedRunningJob;
         set => this.RaiseAndSetIfChanged(ref _selectedRunningJob, value);
     }
-
+  
     private bool _isActionSelected;
     public bool IsActionSelected
     {
@@ -283,6 +283,7 @@ public class MainWindowViewModel : ReactiveObject
             })
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.ExecutionLogForCurrent, out _executionLogForCurrent);
+            
         
         _appUpdateScheduler = new RealTimeScheduler(TimeSpan.FromDays(1), TimeSpan.FromHours(1), async () =>
         {
@@ -306,6 +307,8 @@ public class MainWindowViewModel : ReactiveObject
                 OutOfDateConfigRepositories.Clear();
                 OutOfDateConfigRepositories.AddRange(outOfDateRepos);
             });
+
+            
         });
 
         _outdatedRepoCheckingScheduler.Run();
@@ -840,7 +843,11 @@ public class MainWindowViewModel : ReactiveObject
     }
 }
 
-public record ExecutionLogAction(DateTime Timestamp, string Source, string Name, Dictionary<string,string> Parameters);
+public record ExecutionLogAction(DateTime Timestamp, string Source, string Name, Dictionary<string, string> Parameters)
+{
+    [JsonIgnore]
+    public string Description => $"{Timestamp:s} - [{string.Join(", ", Parameters.Select(x => $"{x.Key} = {x.Value}"))}]";
+};
 
 public record RecentAction(ActionId ActionId, DateTime Timestamp);
 
