@@ -11,9 +11,9 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="viewModels:MainWindowViewModel"
              x:Class="ScriptRunner.GUI.Views.ActionDetailsSection">
-  <views:ContentWithSidebar  IsSidebarOpen="True" SidebarPosition="Right" SidebarWidth="300">
+  <views:ContentWithSidebar  IsSidebarOpen="True" SidebarPosition="Right" SidebarWidth="300" MainMinWidth="855">
     <views:ContentWithSidebar.Main>
-         <ScrollViewer HorizontalAlignment="Stretch">
+         <ScrollViewer HorizontalAlignment="Stretch" >
            <StackPanel Margin="20, 10" IsVisible="{Binding IsActionSelected, Mode=OneWay}">
              <StackPanel Orientation="Vertical">
 

@@ -72,6 +72,10 @@ namespace ScriptRunner.GUI.Views
                 {
                     control.GridPart.ColumnDefinitions[2].Width = control.SidebarWidth.HasValue ? new GridLength(control.SidebarWidth.Value): GridLength.Auto;
                     control.GridPart.ColumnDefinitions[0].Width = GridLength.Star;
+                    if (control.MainMinWidth is {} mainMinWidth)
+                    {
+                        control.GridPart.ColumnDefinitions[0].MinWidth = mainMinWidth;
+                    }
                     
                 }
             }
@@ -82,6 +86,10 @@ namespace ScriptRunner.GUI.Views
                 {
                     control.GridPart.ColumnDefinitions[0].Width =  control.SidebarWidth.HasValue ? new GridLength(control.SidebarWidth.Value): GridLength.Auto;
                     control.GridPart.ColumnDefinitions[2].Width = GridLength.Star;
+                    if (control.MainMinWidth is {} mainMinWidth)
+                    {
+                        control.GridPart.ColumnDefinitions[2].MinWidth = mainMinWidth;
+                    }
                 }
             }
         }
@@ -144,6 +152,14 @@ namespace ScriptRunner.GUI.Views
         }
 
         public static readonly StyledProperty<double?> SidebarWidthProperty = AvaloniaProperty.Register<ContentControl, double?>(nameof(SidebarWidth));
+        
+        public double? MainMinWidth
+        {
+            get { return GetValue(MainMinWidthProperty); }
+            set { SetValue(MainMinWidthProperty, value); }
+        }
+
+        public static readonly StyledProperty<double?> MainMinWidthProperty = AvaloniaProperty.Register<ContentControl, double?>(nameof(MainMinWidth));
     }
 
     public enum SideBarPositions
