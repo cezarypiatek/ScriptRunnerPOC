@@ -771,7 +771,9 @@ public class MainWindowViewModel : ReactiveObject
             job.RunJob(commandPath, args, selectedAction.WorkingDirectory, selectedAction.InteractiveInputs, selectedAction.Troubleshooting);
 
             var usedParams = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{selectedAction.Name}_{Guid.NewGuid():N}");
-            ExecutionLog.Insert(0, new ExecutionLogAction(DateTime.Now,  selectedAction.SourceName, selectedAction.Name, usedParams));
+            var executionLogAction = new ExecutionLogAction(DateTime.Now,  selectedAction.SourceName, selectedAction.Name, usedParams);
+            ExecutionLog.Insert(0, executionLogAction);
+            SelectedRecentExecution = executionLogAction;
             AppSettingsService.UpdateExecutionLog(ExecutionLog.ToList());
         }
         
