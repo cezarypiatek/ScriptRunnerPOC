@@ -14,7 +14,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using DynamicData;
@@ -362,6 +365,7 @@ public class RunningJobViewModel : ViewModelBase
     }
     
     List<Inline> tmpInlinesForNewEntry = new List<Inline>();
+    private Regex urlPattern = new Regex(@"(https?://[^\s]+)", RegexOptions.Compiled);
     private void AppendToUiOutput(IReadOnlyList<string> s)
     {
         _lineBreak ??= new();
@@ -369,8 +373,33 @@ public class RunningJobViewModel : ViewModelBase
         foreach (var part in s.SelectMany(x=>x.Split("\r\n")))
         {
             var subParts = ConsoleSpecialCharsPattern.Split(part);
+            if (part.Contains("http://") || part.Contains("https://"))
+            {
+                subParts = subParts.SelectMany(x => urlPattern.Split(x)).ToArray();
+            }
             foreach (var chunk in subParts.Where(x=> x != string.Empty))
             {
+                if (chunk.StartsWith("http://") || chunk.StartsWith("https://"))
+                {
+                    var link = new TextBlock()
+                    {
+                        Text  = chunk,
+                        Cursor = new Cursor(StandardCursorType.Hand),
+                        Foreground = Brushes.LightBlue,
+                        TextDecorations = new TextDecorationCollection { TextDecorations.Underline }
+                    };
+                    link.PointerPressed += (sender, args) =>
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = chunk,
+                            UseShellExecute = true
+                        });
+                    };
+                    tmpInlinesForNewEntry.Add(new InlineUIContainer(link));
+                    continue;
+                }
+                
                 var subPart = chunk;
                 if (subPart.EndsWith(";3m"))
                 {
