@@ -66,7 +66,7 @@ public class RunningJobViewModel : ViewModelBase
         _troubleshooting = troubleshooting;
         CurrentRunOutput = "";
         ExecutionPending = true;
-        Task.Run(async () =>
+        Task.Factory.StartNew(async () =>
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -114,7 +114,7 @@ public class RunningJobViewModel : ViewModelBase
                 await Task.Delay(1000);
                 outputSub?.Dispose();
             }
-        });
+        }, TaskCreationOptions.LongRunning);
     }
 
     private sealed class MultiplexerStream: Stream
@@ -234,17 +234,18 @@ public class RunningJobViewModel : ViewModelBase
    
     public RunningJobViewModel()
     {
-        
        this.outputSub =  Observable.FromEventPattern<EventHandler<string>, string>(
                 h => this.OnAddOutput += h,
                 h => this.OnAddOutput -= h
             )
             .Buffer(TimeSpan.FromMilliseconds(200))
+            .Where(x=>x.Count > 0)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(list =>
             {
-                AppendToUiOutput(list.Select(x=>x.EventArgs).ToArray());
+                var lines = list.Select(x=>x.EventArgs).ToArray();
+                AppendToUiOutput(lines);
             });
-       
        
        Observable.FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
                handler => Alerts.CollectionChanged += handler,
@@ -293,8 +294,9 @@ public class RunningJobViewModel : ViewModelBase
           CurrentInteractiveInputs.Clear();
         }
     }
-    
-    
+
+    private Dictionary<string, Regex> troubleShootingPatternCache = new();
+    private Dictionary<string, Regex> inputPatternCache = new();
     
     private void AppendToOutput(string? s, ConsoleOutputLevel level)
     {
@@ -305,7 +307,11 @@ public class RunningJobViewModel : ViewModelBase
             {
                 foreach (var input in _inputs)
                 {
-                    var regex = Regex.Match(s, input.WhenMatched);
+                    if (inputPatternCache.TryGetValue(input.WhenMatched, out var pattern) == false)
+                    {
+                        inputPatternCache[input.WhenMatched] = pattern = new Regex(input.WhenMatched, RegexOptions.Compiled);
+                    }
+                    var regex = pattern.Match(s);
                     if (regex.Success)
                     {
                        Dispatcher.UIThread.Post(() =>
@@ -323,8 +329,13 @@ public class RunningJobViewModel : ViewModelBase
                 var clean = ConsoleSpecialCharsPattern.Replace(s, "");
                 foreach (var input in _troubleshooting)
                 {
+                    if (troubleShootingPatternCache.TryGetValue(input.WhenMatched, out var pattern) == false)
+                    {
+                        troubleShootingPatternCache[input.WhenMatched] = pattern = new Regex(input.WhenMatched, RegexOptions.Compiled);
+                    }
                     
-                    var regex = Regex.Match(clean, input.WhenMatched);
+                    
+                    var regex = pattern.Match(clean);
                     if (regex.Success)
                     {
                         var res = input.AlertMessage;
@@ -353,152 +364,150 @@ public class RunningJobViewModel : ViewModelBase
     List<Inline> tmpInlinesForNewEntry = new List<Inline>();
     private void AppendToUiOutput(IReadOnlyList<string> s)
     {
-        Dispatcher.UIThread.Post(() =>
+        _lineBreak ??= new();
+        tmpInlinesForNewEntry.Clear();
+        foreach (var part in s.SelectMany(x=>x.Split("\r\n")))
         {
-            tmpInlinesForNewEntry.Clear();
-            foreach (var part in s.SelectMany(x=>x.Split("\r\n")))
+            var subParts = ConsoleSpecialCharsPattern.Split(part);
+            foreach (var chunk in subParts.Where(x=> x != string.Empty))
             {
-                var subParts = ConsoleSpecialCharsPattern.Split(part);
-                foreach (var chunk in subParts.Where(x=> x != string.Empty))
+                var subPart = chunk;
+                if (subPart.EndsWith(";3m"))
                 {
-                    var subPart = chunk;
-                    if (subPart.EndsWith(";3m"))
+                    italic = true;
+                    subPart = subPart.Replace(";3m", "m");
+                }
+                
+                if (subPart.StartsWith("\u001b["))
+                {
+                    var foreground = subPart switch
                     {
-                        italic = true;
-                        subPart = subPart.Replace(";3m", "m");
-                    }
-                    
-                    if (subPart.StartsWith("\u001b["))
-                    {
-                        var foreground = subPart switch
-                        {
-                            "\u001b[30m" => Brushes.Black,
-                            "\u001b[31m" => Brushes.DarkRed,
-                            "\u001b[32m" => Brushes.Green,
-                            "\u001b[33m" => Brushes.Yellow,
-                            "\u001b[34m" => Brushes.Blue,
-                            "\u001b[35m," => Brushes.DarkMagenta,
-                            "\u001b[36m" => Brushes.DarkCyan,
-                            "\u001b[37m" => Brushes.White,
-                            "\u001b[90m" => ConsoleColors.BrightBlack,
-                            "\u001b[91m" => ConsoleColors.BrightRed,
-                            "\u001b[92m" => ConsoleColors.BrightGreen,
-                            "\u001b[93m" => ConsoleColors.BrightYellow,
-                            "\u001b[94m" => ConsoleColors.BrightBlue,
-                            "\u001b[95m," =>ConsoleColors.BrightMagenta,
-                            "\u001b[96m" => ConsoleColors.BrightCyan,
-                            "\u001b[97m" => ConsoleColors.BrightWhite,
-                            "\u001b[30;1m" => Brushes.Gray,
-                            "\u001b[31;1m" => Brushes.Red,
-                            "\u001b[32;1m" => Brushes.LightGreen,
-                            "\u001b[33;1m" => Brushes.LightYellow,
-                            "\u001b[34;1m" => Brushes.LightBlue,
-                            "\u001b[35;1m," => Brushes.Magenta,
-                            "\u001b[36;1m" => Brushes.Cyan,
-                            "\u001b[37;1m" => Brushes.White,
-                            "\u001b[0m" => Brushes.White,
-                            _ => null
-                        };
-
-                        if (foreground != null)
-                        {
-                            currentConsoleTextColor = foreground;
-                        }
-
-                        var background = subPart switch
-                        {
-                            "\u001b[40m" => Brushes.Black,
-                            "\u001b[41m" => Brushes.DarkRed,
-                            "\u001b[42m" => Brushes.DarkGreen,
-                            "\u001b[43m" => Brushes.Yellow,
-                            "\u001b[44m" => Brushes.DarkBlue,
-                            "\u001b[45m," => Brushes.DarkMagenta,
-                            "\u001b[46m" => Brushes.DarkCyan,
-                            "\u001b[47m" => Brushes.White,
-                            "\u001b[100m" => ConsoleColors.BrightBlack,
-                            "\u001b[101m" => ConsoleColors.BrightRed,
-                            "\u001b[102m" => ConsoleColors.BrightGreen,
-                            "\u001b[103m" => ConsoleColors.BrightYellow,
-                            "\u001b[104m" => ConsoleColors.BrightBlue,
-                            "\u001b[105m," =>ConsoleColors.BrightMagenta,
-                            "\u001b[106m" => ConsoleColors.BrightCyan,
-                            "\u001b[107m" => ConsoleColors.BrightWhite,
-                            "\u001b[40;1m" => Brushes.Gray,
-                            "\u001b[41;1m" => Brushes.Red,
-                            "\u001b[42;1m" => Brushes.Green,
-                            "\u001b[43;1m" => Brushes.LightYellow,
-                            "\u001b[44;1m" => Brushes.Blue,
-                            "\u001b[45;1m," => Brushes.Magenta,
-                            "\u001b[46;1m" => Brushes.Cyan,
-                            "\u001b[47;1m" => Brushes.White,
-                            "\u001b[0m" => Brushes.Transparent,
-                            _ => null
-                        };
-
-                        if (background != null)
-                        {
-                            currentConsoleBackgroundColor = background;
-                        }
-
-                        if (subPart == "\u001b[7m")
-                        {
-                            (currentConsoleTextColor, currentConsoleBackgroundColor) =
-                                (currentConsoleBackgroundColor, currentConsoleTextColor);
-                        }
-
-                        if (subPart == "\u001b[1m")
-                        {
-                            bold = true;
-                        }
-                        else if (subPart == "\u003b[1m")
-                        {
-                            italic = true;
-                        }
-                        else if (subPart == "\u001b[4m")
-                        {
-                            underline = true;
-                        }
-                        else if (subPart == "\u001b[0m")
-                        {
-                            bold = false;
-                            underline = false;
-                            italic = false;
-                        }
-
-
-                        continue;
-                    }
-
-                    var inline = new Run(subPart)
-                    {
-                        Foreground = currentConsoleTextColor,
-                        Background = currentConsoleBackgroundColor
+                        "\u001b[30m" => Brushes.Black,
+                        "\u001b[31m" => Brushes.DarkRed,
+                        "\u001b[32m" => Brushes.Green,
+                        "\u001b[33m" => Brushes.Yellow,
+                        "\u001b[34m" => Brushes.Blue,
+                        "\u001b[35m," => Brushes.DarkMagenta,
+                        "\u001b[36m" => Brushes.DarkCyan,
+                        "\u001b[37m" => Brushes.White,
+                        "\u001b[90m" => ConsoleColors.BrightBlack,
+                        "\u001b[91m" => ConsoleColors.BrightRed,
+                        "\u001b[92m" => ConsoleColors.BrightGreen,
+                        "\u001b[93m" => ConsoleColors.BrightYellow,
+                        "\u001b[94m" => ConsoleColors.BrightBlue,
+                        "\u001b[95m," =>ConsoleColors.BrightMagenta,
+                        "\u001b[96m" => ConsoleColors.BrightCyan,
+                        "\u001b[97m" => ConsoleColors.BrightWhite,
+                        "\u001b[30;1m" => Brushes.Gray,
+                        "\u001b[31;1m" => Brushes.Red,
+                        "\u001b[32;1m" => Brushes.LightGreen,
+                        "\u001b[33;1m" => Brushes.LightYellow,
+                        "\u001b[34;1m" => Brushes.LightBlue,
+                        "\u001b[35;1m," => Brushes.Magenta,
+                        "\u001b[36;1m" => Brushes.Cyan,
+                        "\u001b[37;1m" => Brushes.White,
+                        "\u001b[0m" => Brushes.White,
+                        _ => null
                     };
 
-                    if (bold)
+                    if (foreground != null)
                     {
-                        inline.FontStyle = FontStyle.Oblique;
-                    }else if (italic)
-                    {
-                        inline.FontStyle = FontStyle.Italic;
+                        currentConsoleTextColor = foreground;
                     }
 
-                    if (underline)
+                    var background = subPart switch
                     {
-                        inline.TextDecorations ??= new TextDecorationCollection();
-                        inline.TextDecorations.Add(new TextDecoration()
-                        {
-                            Location = TextDecorationLocation.Underline,
-                        });
+                        "\u001b[40m" => Brushes.Black,
+                        "\u001b[41m" => Brushes.DarkRed,
+                        "\u001b[42m" => Brushes.DarkGreen,
+                        "\u001b[43m" => Brushes.Yellow,
+                        "\u001b[44m" => Brushes.DarkBlue,
+                        "\u001b[45m," => Brushes.DarkMagenta,
+                        "\u001b[46m" => Brushes.DarkCyan,
+                        "\u001b[47m" => Brushes.White,
+                        "\u001b[100m" => ConsoleColors.BrightBlack,
+                        "\u001b[101m" => ConsoleColors.BrightRed,
+                        "\u001b[102m" => ConsoleColors.BrightGreen,
+                        "\u001b[103m" => ConsoleColors.BrightYellow,
+                        "\u001b[104m" => ConsoleColors.BrightBlue,
+                        "\u001b[105m," =>ConsoleColors.BrightMagenta,
+                        "\u001b[106m" => ConsoleColors.BrightCyan,
+                        "\u001b[107m" => ConsoleColors.BrightWhite,
+                        "\u001b[40;1m" => Brushes.Gray,
+                        "\u001b[41;1m" => Brushes.Red,
+                        "\u001b[42;1m" => Brushes.Green,
+                        "\u001b[43;1m" => Brushes.LightYellow,
+                        "\u001b[44;1m" => Brushes.Blue,
+                        "\u001b[45;1m," => Brushes.Magenta,
+                        "\u001b[46;1m" => Brushes.Cyan,
+                        "\u001b[47;1m" => Brushes.White,
+                        "\u001b[0m" => Brushes.Transparent,
+                        _ => null
+                    };
+
+                    if (background != null)
+                    {
+                        currentConsoleBackgroundColor = background;
                     }
-                    tmpInlinesForNewEntry.Add(inline);
+
+                    if (subPart == "\u001b[7m")
+                    {
+                        (currentConsoleTextColor, currentConsoleBackgroundColor) =
+                            (currentConsoleBackgroundColor, currentConsoleTextColor);
+                    }
+
+                    if (subPart == "\u001b[1m")
+                    {
+                        bold = true;
+                    }
+                    else if (subPart == "\u003b[1m")
+                    {
+                        italic = true;
+                    }
+                    else if (subPart == "\u001b[4m")
+                    {
+                        underline = true;
+                    }
+                    else if (subPart == "\u001b[0m")
+                    {
+                        bold = false;
+                        underline = false;
+                        italic = false;
+                    }
+
+
+                    continue;
                 }
 
-                tmpInlinesForNewEntry.Add(new LineBreak());
+                var inline = new Run(subPart)
+                {
+                    Foreground = currentConsoleTextColor,
+                    Background = currentConsoleBackgroundColor
+                };
+
+                if (bold)
+                {
+                    inline.FontStyle = FontStyle.Oblique;
+                }else if (italic)
+                {
+                    inline.FontStyle = FontStyle.Italic;
+                }
+
+                if (underline)
+                {
+                    inline.TextDecorations ??= new TextDecorationCollection();
+                    inline.TextDecorations.Add(new TextDecoration()
+                    {
+                        Location = TextDecorationLocation.Underline,
+                    });
+                }
+                tmpInlinesForNewEntry.Add(inline);
             }
 
-            RichOutput.AddRange(tmpInlinesForNewEntry);
-        });
+            tmpInlinesForNewEntry.Add(_lineBreak);
+        }
+        
+        RichOutput.AddRange(tmpInlinesForNewEntry);
     }
 
     public void AcceptCommand()
@@ -532,30 +541,6 @@ public class RunningJobViewModel : ViewModelBase
         Normal,
         Warn,
         Error
-    }
-    
-    public void AppendOutput(string s, ConsoleOutputLevel level)
-    {
-       
-        Dispatcher.UIThread.Post(() =>
-        {
-            foreach (var part in s.Split("\r\n"))
-            {
-                var inline = new Run(part);
-                
-                if (level == ConsoleOutputLevel.Error)
-                {
-                    inline.Foreground = Brushes.Red;
-                }else
-                if (level == ConsoleOutputLevel.Warn)
-                {
-                    inline.Foreground = Brushes.Yellow;
-                }
-                RichOutput.Add( inline);
-                RichOutput.Add(new  LineBreak());    
-            }
-            
-        });
     }
     
     public string CurrentRunOutput
@@ -598,6 +583,7 @@ public class RunningJobViewModel : ViewModelBase
     private int _numberOfLines;
     private readonly IDisposable outputSub;
     private IReadOnlyList<TroubleshootingItem> _troubleshooting = Array.Empty<TroubleshootingItem>();
+    private LineBreak? _lineBreak;
 
     public CancellationTokenSource ExecutionCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }

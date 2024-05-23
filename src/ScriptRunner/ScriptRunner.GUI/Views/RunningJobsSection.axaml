@@ -45,7 +45,7 @@
                   </StackPanel>
               </ScrollViewer>
               <ScrollViewer Grid.Row="1" ScrollChanged="ScrollChangedHandler">
-                  <SelectableTextBlock   Classes="consoleOutput" Text="{Binding CurrentRunOutputBuffered, Mode=OneWay}"   Inlines="{Binding RichOutput}" ></SelectableTextBlock>
+                  <SelectableTextBlock   Classes="consoleOutput"  Inlines="{Binding RichOutput}" ></SelectableTextBlock>
               </ScrollViewer>
               <StackPanel Grid.Row="2" IsVisible="{Binding ExecutionPending, Mode=OneWay}" >
                   <ItemsRepeater ItemsSource="{Binding CurrentInteractiveInputs}" Margin="0, 10, 0,0">
