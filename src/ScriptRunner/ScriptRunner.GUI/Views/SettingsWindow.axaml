@@ -113,7 +113,7 @@
         </StackPanel>
       </StackPanel>
         <StackPanel Grid.Row="1" HorizontalAlignment="Right">
-            <Button Margin="10" Click="CloseConfigSourceDialog"> Close</Button>
+            <Button Margin="10" Click="CloseConfigSourceDialog">Save</Button>
         </StackPanel>
     </Grid>
 
