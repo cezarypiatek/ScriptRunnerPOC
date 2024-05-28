@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,6 +22,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using DynamicData;
+using Microsoft.Extensions.ObjectPool;
 using ScriptRunner.GUI.ScriptConfigs;
 
 namespace ScriptRunner.GUI.ViewModels;
@@ -37,6 +39,7 @@ public enum RunningJobStatus
 
 public class RunningJobViewModel : ViewModelBase
 {
+    private const int OutputBufferSize = 5_000;
     public string Tile { get; set; }
 
     
@@ -58,6 +61,24 @@ public class RunningJobViewModel : ViewModelBase
         TryPopNextAlert();
     }
 
+    class LogForwarder:IObservable<string>, IDisposable
+    {
+        private IObserver<string> observer;
+
+        public IDisposable Subscribe(IObserver<string> observer)
+        {
+            this.observer = observer;
+            return this;
+        }
+
+        public void Write(string s) => observer.OnNext(s);
+        public void Finish() => observer.OnCompleted();
+
+        public void Dispose()
+        {
+            // TODO release managed resources here
+        }
+    }
 
     public event EventHandler ExecutionCompleted;
     public void RaiseExecutionCompleted() => ExecutionCompleted?.Invoke(this, EventArgs.Empty);
@@ -65,6 +86,7 @@ public class RunningJobViewModel : ViewModelBase
     public void RunJob(string commandPath, string args, string? workingDirectory,
         IReadOnlyList<InteractiveInputDescription> interactiveInputs, IReadOnlyList<TroubleshootingItem> troubleshooting)
     {
+
         _inputs = interactiveInputs;
         _troubleshooting = troubleshooting;
         CurrentRunOutput = "";
@@ -114,8 +136,7 @@ public class RunningJobViewModel : ViewModelBase
                 AppendToOutput("---------------------------------------------", ConsoleOutputLevel.Normal);
                 AppendToOutput($"Execution finished after {stopWatch.Elapsed}", ConsoleOutputLevel.Normal);
                 Dispatcher.UIThread.Post(() => { ExecutionPending = false; });
-                await Task.Delay(1000);
-                outputSub?.Dispose();
+               _logForwarder.Finish();
             }
         }, TaskCreationOptions.LongRunning);
     }
@@ -237,18 +258,13 @@ public class RunningJobViewModel : ViewModelBase
    
     public RunningJobViewModel()
     {
-       this.outputSub =  Observable.FromEventPattern<EventHandler<string>, string>(
-                h => this.OnAddOutput += h,
-                h => this.OnAddOutput -= h
-            )
+        _logForwarder = new LogForwarder();
+
+       this.outputSub =  _logForwarder
             .Buffer(TimeSpan.FromMilliseconds(200))
             .Where(x=>x.Count > 0)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(list =>
-            {
-                var lines = list.Select(x=>x.EventArgs).ToArray();
-                AppendToUiOutput(lines);
-            });
+            .ObserveOn(RxApp.TaskpoolScheduler)
+            .Subscribe(AppendToUiOutput);
        
        Observable.FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
                handler => Alerts.CollectionChanged += handler,
@@ -277,7 +293,6 @@ public class RunningJobViewModel : ViewModelBase
         }
     }
 
-    public event EventHandler<string> OnAddOutput; 
 
 
     private IBrush currentConsoleTextColor = Brushes.White;
@@ -359,18 +374,24 @@ public class RunningJobViewModel : ViewModelBase
                     }
                 }
             }
-          
-            OnAddOutput?.Invoke(this, s);
+
+            _logForwarder.Write(s);
         }
     }
     
     List<Inline> tmpInlinesForNewEntry = new List<Inline>();
-    private Regex urlPattern = new Regex(@"(https?://[^\s]+)", RegexOptions.Compiled);
-    private void AppendToUiOutput(IReadOnlyList<string> s)
+
+
+    private Regex urlPattern = new Regex(@"(https?://[^\s<>\""']+)", RegexOptions.Compiled);
+
+    private DefaultObjectPool<List<OutputElement>> _outputElementListPool = new DefaultObjectPool<List<OutputElement>>(new DefaultPooledObjectPolicy<List<OutputElement>>()
     {
-        _lineBreak ??= new();
-        tmpInlinesForNewEntry.Clear();
-        foreach (var part in s.SelectMany(x=>x.Split("\r\n")))
+
+    });
+    private void AppendToUiOutput(IList<string> s)
+    {
+        List<OutputElement> _outputElements = _outputElementListPool.Get();
+        foreach (var part in s.SelectMany(x=>x.Split("\r\n")).TakeLast(OutputBufferSize))
         {
             var subParts = ConsoleSpecialCharsPattern.Split(part);
             if (part.Contains("http://") || part.Contains("https://"))
@@ -381,22 +402,7 @@ public class RunningJobViewModel : ViewModelBase
             {
                 if (chunk.StartsWith("http://") || chunk.StartsWith("https://"))
                 {
-                    var link = new TextBlock()
-                    {
-                        Text  = chunk,
-                        Cursor = new Cursor(StandardCursorType.Hand),
-                        Foreground = Brushes.LightBlue,
-                        TextDecorations = new TextDecorationCollection { TextDecorations.Underline }
-                    };
-                    link.PointerPressed += (sender, args) =>
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = chunk,
-                            UseShellExecute = true
-                        });
-                    };
-                    tmpInlinesForNewEntry.Add(new InlineUIContainer(link));
+                    _outputElements.Add(new Link(chunk));
                     continue;
                 }
                 
@@ -508,35 +514,91 @@ public class RunningJobViewModel : ViewModelBase
                     continue;
                 }
 
-                var inline = new Run(subPart)
-                {
-                    Foreground = currentConsoleTextColor,
-                    Background = currentConsoleBackgroundColor
-                };
+                _outputElements.Add(new TextSpan(
+                    Text: subPart,
+                    IsBold: bold,
+                    IsItalic: bold == false && italic,
+                    IsUnderline: underline,
+                    Foreground:currentConsoleTextColor,
+                    BackGround: currentConsoleBackgroundColor
+                    ));
 
-                if (bold)
-                {
-                    inline.FontStyle = FontStyle.Oblique;
-                }else if (italic)
-                {
-                    inline.FontStyle = FontStyle.Italic;
-                }
-
-                if (underline)
-                {
-                    inline.TextDecorations ??= new TextDecorationCollection();
-                    inline.TextDecorations.Add(new TextDecoration()
-                    {
-                        Location = TextDecorationLocation.Underline,
-                    });
-                }
-                tmpInlinesForNewEntry.Add(inline);
             }
 
-            tmpInlinesForNewEntry.Add(_lineBreak);
+            _outputElements.Add(LineEnding.Instance);
         }
-        
-        RichOutput.AddRange(tmpInlinesForNewEntry);
+
+        AppendToUiOutputFinal(_outputElements);
+    }
+    private void AppendToUiOutputFinal(List<OutputElement> s)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            _lineBreak ??= new();
+            _underlineDecoration ??= new TextDecorationCollection()
+            {
+                new()
+                {
+                    Location = TextDecorationLocation.Underline,
+                }
+            };
+            tmpInlinesForNewEntry.Clear();
+            foreach (var part in s)
+            {
+                Inline transformed = part switch
+                {
+                    LineEnding => _lineBreak,
+                    Link link => CreateLink(link.Text),
+                    TextSpan textSpan => new Run(textSpan.Text)
+                    {
+                        Foreground = textSpan.Foreground,
+                        Background = textSpan.BackGround,
+                        FontStyle = textSpan switch
+                        {
+                            { IsBold: true } => FontStyle.Oblique,
+                            { IsItalic: true } => FontStyle.Italic,
+                            _ => FontStyle.Normal
+                        },
+                        TextDecorations = textSpan.IsUnderline ? _underlineDecoration : null
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(part))
+                };
+                tmpInlinesForNewEntry.Add(transformed);
+
+            }
+
+            if (RichOutput.Count + tmpInlinesForNewEntry.Count > OutputBufferSize)
+            {
+                var tmpNewLines = RichOutput.Concat(tmpInlinesForNewEntry).TakeLast(OutputBufferSize).ToArray();
+                RichOutput.Clear();
+                RichOutput.AddRange(tmpNewLines);
+            }
+            else RichOutput.AddRange(tmpInlinesForNewEntry);
+
+            s.Clear();
+            _outputElementListPool.Return(s);
+        } );
+    }
+
+    private InlineUIContainer CreateLink(string chunk)
+    {
+        var link = new TextBlock
+        {
+            Text  = chunk,
+            Cursor = _linkCursor??= new Cursor(StandardCursorType.Hand),
+            Foreground = Brushes.LightBlue,
+            TextDecorations = _underlineDecoration
+        };
+        link.PointerPressed += OnLinkOnPointerPressed;
+        return new InlineUIContainer(link);
+    }
+
+    private static void OnLinkOnPointerPressed(object? sender, PointerPressedEventArgs args)
+    {
+        if (sender is TextBlock { Text: { } url })
+        {
+            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+        }
     }
 
     public void AcceptCommand()
@@ -613,6 +675,9 @@ public class RunningJobViewModel : ViewModelBase
     private readonly IDisposable outputSub;
     private IReadOnlyList<TroubleshootingItem> _troubleshooting = Array.Empty<TroubleshootingItem>();
     private LineBreak? _lineBreak;
+    private readonly LogForwarder _logForwarder;
+    private TextDecorationCollection? _underlineDecoration;
+    private Cursor? _linkCursor;
 
     public CancellationTokenSource ExecutionCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }

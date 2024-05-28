@@ -48,6 +48,7 @@
     <PackageReference Include="Markdown.Avalonia" Version="11.0.1" />
     <PackageReference Include="MessageBox.Avalonia" Version="3.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="6.0.10" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.5" />
     <PackageReference Include="Projektanker.Icons.Avalonia" Version="8.2.0" />
     <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="8.2.0" />
     <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="14.4.1" />
