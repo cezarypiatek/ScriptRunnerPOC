@@ -10,7 +10,7 @@
              x:Class="ScriptRunner.GUI.Views.RunningJobsSection"
              x:DataType="viewModels:MainWindowViewModel"
              >
-    <TabControl x:Name="RunningJobsPanel" ItemsSource="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
+    <TabControl x:Name="RunningJobsPanel" ItemsSource="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}" >
       <TabControl.ItemTemplate>
         <DataTemplate x:DataType="viewModels:RunningJobViewModel">
           <StackPanel Orientation="Horizontal">
@@ -44,7 +44,7 @@
                       <Button Margin="20" Padding="10" HorizontalAlignment="Center" FontSize="26" Command="{Binding DismissTroubleshootingMessage}">Dismiss</Button>
                   </StackPanel>
               </ScrollViewer>
-              <ScrollViewer Grid.Row="1" ScrollChanged="ScrollChangedHandler">
+              <ScrollViewer Grid.Row="1" ScrollChanged="ScrollChangedHandler" BringIntoViewOnFocusChange="False">
                   <SelectableTextBlock   Classes="consoleOutput"  Inlines="{Binding RichOutput}" ></SelectableTextBlock>
               </ScrollViewer>
               <StackPanel Grid.Row="2" IsVisible="{Binding ExecutionPending, Mode=OneWay}" >
