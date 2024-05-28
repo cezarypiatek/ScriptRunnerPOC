@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -595,9 +596,27 @@ public class RunningJobViewModel : ViewModelBase
 
     private static void OnLinkOnPointerPressed(object? sender, PointerPressedEventArgs args)
     {
+        if(args.GetCurrentPoint(null).Properties.IsLeftButtonPressed == false)
+            return;
+        
         if (sender is TextBlock { Text: { } url })
         {
-            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Process.Start(new ProcessStartInfo(url)
+                {
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Process.Start("xdg-open", url);
+            }
+            else
+            {
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    return;
+                Process.Start("open", url);
+            }
         }
     }
 
