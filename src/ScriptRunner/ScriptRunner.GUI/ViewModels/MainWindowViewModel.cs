@@ -10,6 +10,7 @@ using System.Security.Principal;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
@@ -515,15 +516,18 @@ public class MainWindowViewModel : ReactiveObject
         window.Show();
     }
 
-    public void RefreshSettings()
-    {
-        BuildUi();
-    }
+    public void RefreshSettings() => BuildUi();
 
-    public void OpenVaultWindow()
+    public void OpenVaultWindow() => TryToOpenDialog<Vault>();
+
+    public void TryToOpenDialog<T>(Action? callback = null) where T : Window, new()
     {
-        var window = new Vault();
-        window.Show();
+        var window = new T();
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime {MainWindow: {} mainWindow})
+        {
+            window.ShowDialog(mainWindow);
+            callback?.Invoke();
+        }
     }
 
     public async void PullRepoChanges(object arg)
