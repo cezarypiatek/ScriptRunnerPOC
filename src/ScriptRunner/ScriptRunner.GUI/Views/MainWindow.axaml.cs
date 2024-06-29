@@ -27,6 +27,8 @@ namespace ScriptRunner.GUI.Views;
 
 public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
+    private readonly IDisposable effectiveViewportChangedObservable;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -34,38 +36,37 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         Title = $"ScriptRunner {this.GetType().Assembly.GetName().Version}";
         if (AppSettingsService.Load().Layout is { } layoutSettings)
         {
-            Width = Math.Max(layoutSettings.Width, 600);
-            Height = Math.Max(layoutSettings.Height, 600);
-            // MainGrid.ColumnDefinitions[0].Width = new GridLength(layoutSettings.ActionsPanelWidth);
-            // MainGrid.RowDefinitions[2].Height = new GridLength(layoutSettings.RunningJobsPanelHeight);
+            
+            if (this.Screens.ScreenFromWindow(this) is { Bounds: var currentScreenBounds })
+            {
+                Width = Math.Min(layoutSettings.Width, currentScreenBounds.Width);
+                Height = Math.Min(layoutSettings.Height, currentScreenBounds.Height);
+
+                if (layoutSettings.Left + Width <= currentScreenBounds.Width &&
+                    layoutSettings.Top + Height <= currentScreenBounds.Height)
+                {
+                    Position = new PixelPoint(layoutSettings.Left, layoutSettings.Top);
+                }    
+            }
         }
 
-        EffectiveViewportChanged += (_, _) =>
-        {
-            if (Width is not NaN && Height is not NaN)
+
+        this.effectiveViewportChangedObservable = Observable.FromEventPattern<EffectiveViewportChangedEventArgs>
+            (
+                h => this.EffectiveViewportChanged += h,
+                h => this.EffectiveViewportChanged -= h
+            ).Throttle(TimeSpan.FromMilliseconds(200))
+            .Where(x => x.EventArgs.EffectiveViewport is { Width: not NaN, Height: not NaN, Left: not NaN, Top: not NaN})
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(pattern =>
             {
                 AppSettingsService.UpdateLayoutSettings(settings =>
                 {
-                    settings.Width = (int)Width;
-                    settings.Height = (int)Height;
+                    settings.Width = (int)pattern.EventArgs.EffectiveViewport.Width;
+                    settings.Height = (int)pattern.EventArgs.EffectiveViewport.Height;
+                    settings.Left = (int)pattern.EventArgs.EffectiveViewport.Left;
+                    settings.Top = (int)pattern.EventArgs.EffectiveViewport.Top;
                 });
-            }
-        };
-
-   
-        MainGrid.LayoutUpdated += (sender, args) =>
-        {
-            //AppSettingsService.UpdateLayoutSettings(settings =>
-            // {
-            //     settings.ActionsPanelWidth = (int) MainGrid.ColumnDefinitions[0].ActualWidth;
-            //     settings.RunningJobsPanelHeight = (int) MainGrid.RowDefinitions[2].ActualHeight;
-            // });
-        };
-
+            });
     }
-    
-    
-
-  
-
 }
