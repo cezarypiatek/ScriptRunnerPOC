@@ -48,25 +48,25 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     Position = new PixelPoint(layoutSettings.Left, layoutSettings.Top);
                 }    
             }
-        }
 
-
-        this.effectiveViewportChangedObservable = Observable.FromEventPattern<EffectiveViewportChangedEventArgs>
-            (
-                h => this.EffectiveViewportChanged += h,
-                h => this.EffectiveViewportChanged -= h
-            ).Throttle(TimeSpan.FromMilliseconds(200))
-            .Where(x => x.EventArgs.EffectiveViewport is { Width: not NaN, Height: not NaN, Left: not NaN, Top: not NaN})
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(pattern =>
-            {
-                AppSettingsService.UpdateLayoutSettings(settings =>
+            this.effectiveViewportChangedObservable = Observable.FromEventPattern<EffectiveViewportChangedEventArgs>
+                (
+                    h => this.EffectiveViewportChanged += h,
+                    h => this.EffectiveViewportChanged -= h
+                ).Throttle(TimeSpan.FromMilliseconds(200))
+                .Skip(1)
+                .Where(x => x.EventArgs.EffectiveViewport is { Width: not NaN, Height: not NaN, Left: not NaN, Top: not NaN})
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(pattern =>
                 {
-                    settings.Width = (int)pattern.EventArgs.EffectiveViewport.Width;
-                    settings.Height = (int)pattern.EventArgs.EffectiveViewport.Height;
-                    settings.Left = (int)pattern.EventArgs.EffectiveViewport.Left;
-                    settings.Top = (int)pattern.EventArgs.EffectiveViewport.Top;
+                    AppSettingsService.UpdateLayoutSettings(settings =>
+                    {
+                        settings.Width = (int)pattern.EventArgs.EffectiveViewport.Width;
+                        settings.Height = (int)pattern.EventArgs.EffectiveViewport.Height;
+                        settings.Left = (int)pattern.EventArgs.EffectiveViewport.Left;
+                        settings.Top = (int)pattern.EventArgs.EffectiveViewport.Top;
+                    });
                 });
-            });
+        }
     }
 }
