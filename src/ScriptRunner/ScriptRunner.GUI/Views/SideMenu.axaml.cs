@@ -58,8 +58,15 @@ public partial class SideMenu : UserControl
 
                     if (pattern.EventArgs is SearchBox.ResultSelectedEventArgs {Result: { } selectedCommand})
                     {
-                        viewModel.SelectedAction = selectedCommand.Config;
-                        viewModel.SelectedArgumentSet = selectedCommand.ArgumentSet;
+                        var selectedTagged = viewModel.FilteredActionList.SelectMany(x => x.Children)
+                            .FirstOrDefault(x => x.Config == selectedCommand.Config);
+
+                        if (selectedTagged != null)
+                        {
+                            viewModel.SelectedActionOrGroup = selectedTagged;
+                            viewModel.SelectedArgumentSet = selectedCommand.ArgumentSet;    
+                        }
+                        
                     }
                 });
             }

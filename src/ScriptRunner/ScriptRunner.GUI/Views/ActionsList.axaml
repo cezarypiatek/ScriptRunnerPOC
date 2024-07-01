@@ -7,7 +7,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="viewModels:MainWindowViewModel"
              x:Class="ScriptRunner.GUI.Views.ActionsList">
-    <TreeView x:Name="ActionTree" Background="#252526" Classes="actionsMenu" Grid.Row="0" ItemsSource="{Binding FilteredActionList }" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
+    <TreeView x:Name="ActionTree" Background="#252526" Classes="actionsMenu" Grid.Row="0" ItemsSource="{Binding FilteredActionList }" SelectedItem="{Binding SelectedActionOrGroup, Mode=TwoWay}">
         <TreeView.Styles>
             <Style Selector="TreeViewItem:empty Panel#PART_ExpandCollapseChevronContainer">
                 <Setter Property="IsVisible" Value="False"></Setter>
@@ -20,8 +20,8 @@
             <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="viewModels:ScriptConfigGroupWrapper">
                 <TextBlock Text="{Binding Name}"></TextBlock>
             </TreeDataTemplate>
-            <DataTemplate x:DataType="scriptConfigs:ScriptConfig">
-                <TextBlock Text="{Binding FullName}" />
+            <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
+                <TextBlock Text="{Binding  Name}" />
             </DataTemplate>
         </TreeView.DataTemplates>
     </TreeView>

@@ -127,39 +127,37 @@ public class MainWindowViewModel : ReactiveObject
         private set => this.RaiseAndSetIfChanged(ref _hasParams, value);
     }
 
+    private object? _selectedActionOrGroup;
+    
+    public object? SelectedActionOrGroup
+    {
+        get => _selectedActionOrGroup;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _selectedActionOrGroup, value);
+            if (value is TaggedScriptConfig {Config: var scriptConfig})
+            {
+                SelectedAction = scriptConfig;
+            }
+        }
+    }
+
     public ScriptConfig? SelectedAction
     {
         get => _selectedAction;
         set
         {
-            if (value == null && _selectedAction != null)
+            if (value == null || _selectedAction == value)
             {
-                var prev = _selectedAction;
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (Actions.FirstOrDefault(x => x.Name == prev.Name) is { } old)
-                    {
-                        SelectedAction = old;
-                    }
-                });
+                return;
             }
 
             this.RaiseAndSetIfChanged(ref _selectedAction, value);
-            if (value != null)
-            {
-                SelectedArgumentSet = value.PredefinedArgumentSets.FirstOrDefault();
-                InstallAvailable = string.IsNullOrWhiteSpace(value.InstallCommand) == false;
-                SelectedActionInstalled = InstallAvailable ? IsActionInstalled(value.Name): true;
-                IsActionSelected = true;
-                HasParams = value.Params.Any();
-            }
-            else
-            {
-                SelectedArgumentSet = null;
-                SelectedActionInstalled = false;
-                IsActionSelected = false;
-                HasParams = false;
-            }
+            SelectedArgumentSet = value.PredefinedArgumentSets.FirstOrDefault();
+            InstallAvailable = string.IsNullOrWhiteSpace(value.InstallCommand) == false;
+            SelectedActionInstalled = InstallAvailable == false || IsActionInstalled(value.Name);
+            IsActionSelected = true;
+            HasParams = value.Params.Any();
         }
     }
     
@@ -260,7 +258,7 @@ public class MainWindowViewModel : ReactiveObject
                     .Select(x=> new ScriptConfigGroupWrapper
                     {
                         Name = x.Key,
-                        Children = x.Select(p=>p.script).OrderBy(x=>x.Name)
+                        Children = x.Select(p=> new TaggedScriptConfig(x.Key, p.script.Name, p.script)).OrderBy(x=>x.Name)
                     });
                 return scriptConfigGroupWrappers;
                 
@@ -860,5 +858,7 @@ public record ActionId(string SourceName, string ActionName, string ParameterSet
 public class ScriptConfigGroupWrapper
 {
     public string Name { get; set; }
-    public IEnumerable<ScriptConfig> Children { get; set; }
+    public IEnumerable<TaggedScriptConfig> Children { get; set; }
 }
+
+public record TaggedScriptConfig(string Tag, string Name, ScriptConfig Config);
