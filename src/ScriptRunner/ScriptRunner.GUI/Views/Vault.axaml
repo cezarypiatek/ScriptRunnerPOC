@@ -8,6 +8,7 @@
         Width="800"
         Height="650"
         x:Class="ScriptRunner.GUI.Views.Vault"
+        WindowStartupLocation="CenterOwner"
         Title="Vault">
     <Design.DataContext>
         <viewModels:VaultViewModel />

@@ -13,6 +13,7 @@
         FontFamily="Segoe UI Variable"
         xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
         xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+        WindowStartupLocation="CenterOwner"
         >
     <Design.DataContext>
         <vm:SettingsWindowViewModel />
