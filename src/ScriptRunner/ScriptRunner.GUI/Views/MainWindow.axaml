@@ -22,7 +22,18 @@
     </Design.DataContext>
     <Border  BorderThickness="1,1,1,1"
              BorderBrush="#3baced">
+        
         <Panel>
+            <Popup Name="PopupContainer" 
+                   IsLightDismissEnabled="True" 
+                   Placement="AnchorAndGravity" 
+                   PlacementAnchor="Top" 
+                   Topmost="True" 
+                   PlacementConstraintAdjustment="All" 
+                   PlacementGravity="Bottom"
+                   PlacementTarget="MainGrid"
+            >
+            </Popup>
             <ExperimentalAcrylicBorder IsHitTestVisible="False">
                 <ExperimentalAcrylicBorder.Material>
                     <ExperimentalAcrylicMaterial
@@ -32,10 +43,8 @@
                         MaterialOpacity="0.65" />
                 </ExperimentalAcrylicBorder.Material>
             </ExperimentalAcrylicBorder>
-            <Popup Name="PopupContainer" IsLightDismissEnabled="True" Placement="AnchorAndGravity" PlacementAnchor="Top" PlacementConstraintAdjustment="All" PlacementGravity="Bottom">
-            </Popup>
     <Grid x:Name="MainGrid" Margin="0,0,0,0">
-     
+        
     <Grid.RowDefinitions>
         <RowDefinition Height="30" ></RowDefinition>
         <RowDefinition Height="Auto"></RowDefinition>

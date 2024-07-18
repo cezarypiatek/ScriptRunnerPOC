@@ -506,12 +506,15 @@ public class MainWindowViewModel : ReactiveObject
 
     public void OpenSettingsWindow()
     {
-        var window = new SettingsWindow();
-        window.Closed += (sender, args) =>
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime {MainWindow: {} mainWindow})
         {
-            RefreshSettings();
-        };
-        window.Show();
+            var window = new SettingsWindow();
+            window.Closed += (sender, args) =>
+            {
+                RefreshSettings();
+            };
+            window.Show(mainWindow);
+        }
     }
 
     public void RefreshSettings() => BuildUi();
