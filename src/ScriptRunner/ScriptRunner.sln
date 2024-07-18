@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{C9D349CF-4864-4A8E-A6B4-31AF64A4A04C}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\README.md = ..\..\README.md
+		..\..\schema\v1\ScriptRunnerSchema.json = ..\..\schema\v1\ScriptRunnerSchema.json
 	EndProjectSection
 EndProject
 Global
