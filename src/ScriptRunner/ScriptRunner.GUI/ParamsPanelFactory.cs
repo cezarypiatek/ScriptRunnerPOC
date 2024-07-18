@@ -208,7 +208,7 @@ public class ParamsPanelFactory
                     Format = p.GetPromptSettings("format", out var timeFormat) ? timeFormat : null,
                 };
             case PromptType.Checkbox:
-                var checkedValueText  = p .GetPromptSettings("checkedValue", out var checkedValue)? checkedValue: "true";
+                var checkedValueText  = p.GetPromptSettings("checkedValue", out var checkedValue)? checkedValue: "true";
                 return new CheckboxControl
                 {
                     Control = new CheckBox
@@ -239,6 +239,11 @@ public class ParamsPanelFactory
                 {
                     value = Path.GetFullPath(value, scriptConfig.WorkingDirectory);
                 }
+                
+                
+                var templateText  = p.GetPromptSettings("templateText", out var rawTemplate)? rawTemplate: "";
+                var textForControl = File.Exists(value) ? File.ReadAllText(value) : templateText;
+                
                 return new FileContent(p.GetPromptSettings("extension", out var extension)?extension:"dat")
                 {
                     Control = new TextBox
@@ -246,7 +251,7 @@ public class ParamsPanelFactory
                         TextWrapping = TextWrapping.Wrap,
                         AcceptsReturn = true,
                         Height = 100,
-                        Text = File.Exists(value)? File.ReadAllText(value): string.Empty,
+                        Text = textForControl,
                         TabIndex = index,
                         IsTabStop = true,
                         Width = 500

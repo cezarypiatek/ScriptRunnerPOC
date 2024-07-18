@@ -250,6 +250,9 @@
                                             "properties": {
                                                 "extension": {
                                                     "type": "string"
+                                                },
+                                                "templateText" : {
+                                                    "type": "string"
                                                 }
                                             }
                                         }
