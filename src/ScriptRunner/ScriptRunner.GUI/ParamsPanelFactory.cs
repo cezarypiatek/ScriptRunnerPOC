@@ -180,7 +180,8 @@ public class ParamsPanelFactory
                                 SelectedDate = selectedDate?.Date,
                                 IsTodayHighlighted = true,
                                 TabIndex = index,
-                                IsTabStop = true
+                                IsTabStop = true,
+                                FirstDayOfWeek = DayOfWeek.Monday
                             }
                             : new DatePicker
                             {
