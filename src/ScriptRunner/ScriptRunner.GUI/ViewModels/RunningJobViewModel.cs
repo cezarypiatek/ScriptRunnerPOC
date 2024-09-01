@@ -97,6 +97,7 @@ public class RunningJobViewModel : ViewModelBase
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             var rawOutput = new StringBuilder();
+            var rawErrorOutput = new StringBuilder();
             try
             {
                 await using var inputStream = new MultiplexerStream();
@@ -113,9 +114,13 @@ public class RunningJobViewModel : ViewModelBase
                         rawOutput.Append(s);
                         AppendToOutput(s, ConsoleOutputLevel.Normal);
                     }))
-                    .WithStandardErrorPipe(PipeTarget.ToDelegate(s => AppendToOutput(s, ConsoleOutputLevel.Error)))
+                    .WithStandardErrorPipe(PipeTarget.ToDelegate(s =>
+                    {
+                        rawErrorOutput.Append(s);
+                        AppendToOutput(s, ConsoleOutputLevel.Error);
+                    }))
                     .WithValidation(CommandResultValidation.None)
-                    .WithEnvironmentVariables(EnvironmentVariables)
+                    .WithEnvironmentVariables(EnvironmentVariables ?? new())
                     .ExecuteAsync(ExecutionCancellation.Token);
                 ChangeStatus(RunningJobStatus.Finished);
             }
@@ -146,6 +151,7 @@ public class RunningJobViewModel : ViewModelBase
                 {
                     ExecutionPending = false;
                     RawOutput = rawOutput.ToString();
+                    RawErrorOutput = rawErrorOutput.ToString();
                     RaiseExecutionCompleted();
                 });
                _logForwarder.Finish();
@@ -698,6 +704,7 @@ public class RunningJobViewModel : ViewModelBase
     }
 
     public string RawOutput { get; set; }
+    public string RawErrorOutput { get; set; }
 
     private int _outputIndex;
     private bool _executionPending;
