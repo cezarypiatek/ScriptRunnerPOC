@@ -53,7 +53,6 @@ public class RunningJobViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _status, value);
     }
 
-    public string CommandName { get; set; }
     public string ExecutedCommand { get; set; }
     public void CancelExecution() => ExecutionCancellation.Cancel();
     public void DismissTroubleshootingMessage()
@@ -92,10 +91,12 @@ public class RunningJobViewModel : ViewModelBase
         _troubleshooting = troubleshooting;
         CurrentRunOutput = "";
         ExecutionPending = true;
+        
         Task.Factory.StartNew(async () =>
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
+            var rawOutput = new StringBuilder();
             try
             {
                 await using var inputStream = new MultiplexerStream();
@@ -107,13 +108,16 @@ public class RunningJobViewModel : ViewModelBase
                     //TODO: Working dir should be read from the config with the fallback set to the config file dir
                     .WithWorkingDirectory(workingDirectory ?? "Scripts/")
                     .WithStandardInputPipe(PipeSource.FromStream(inputStream,autoFlush:true))
-                    .WithStandardOutputPipe(PipeTarget.ToDelegate(s => AppendToOutput(s, ConsoleOutputLevel.Normal)))
+                    .WithStandardOutputPipe(PipeTarget.ToDelegate(s =>
+                    {
+                        rawOutput.Append(s);
+                        AppendToOutput(s, ConsoleOutputLevel.Normal);
+                    }))
                     .WithStandardErrorPipe(PipeTarget.ToDelegate(s => AppendToOutput(s, ConsoleOutputLevel.Error)))
                     .WithValidation(CommandResultValidation.None)
                     .WithEnvironmentVariables(EnvironmentVariables)
                     .ExecuteAsync(ExecutionCancellation.Token);
                 ChangeStatus(RunningJobStatus.Finished);
-                Dispatcher.UIThread.Post(RaiseExecutionCompleted);
             }
             catch (Exception e)
             {
@@ -136,7 +140,14 @@ public class RunningJobViewModel : ViewModelBase
                 stopWatch.Stop();
                 AppendToOutput("---------------------------------------------", ConsoleOutputLevel.Normal);
                 AppendToOutput($"Execution finished after {stopWatch.Elapsed}", ConsoleOutputLevel.Normal);
-                Dispatcher.UIThread.Post(() => { ExecutionPending = false; });
+                
+
+                Dispatcher.UIThread.Post(() =>
+                {
+                    ExecutionPending = false;
+                    RawOutput = rawOutput.ToString();
+                    RaiseExecutionCompleted();
+                });
                _logForwarder.Finish();
             }
         }, TaskCreationOptions.LongRunning);
@@ -685,6 +696,8 @@ public class RunningJobViewModel : ViewModelBase
         get => _executionPending;
         set => this.RaiseAndSetIfChanged(ref _executionPending, value);
     }
+
+    public string RawOutput { get; set; }
 
     private int _outputIndex;
     private bool _executionPending;

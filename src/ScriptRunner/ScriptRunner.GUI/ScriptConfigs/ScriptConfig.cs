@@ -66,6 +66,7 @@ public class ScriptParam
     public string Default { get; set; }
     public Dictionary<string, string> PromptSettings { get; set; } = new();
     public string? AutoParameterBuilderPattern { get; set; }
+    public string? ValueGeneratorCommand { get; set; }
 
     public bool GetPromptSettings(string name, [NotNullWhen(true)] out string? value)
     {

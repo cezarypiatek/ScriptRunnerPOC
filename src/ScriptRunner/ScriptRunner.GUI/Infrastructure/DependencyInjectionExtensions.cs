@@ -1,7 +1,5 @@
 using System;
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Platform;
 using Microsoft.Extensions.DependencyInjection;
 using Splat.Microsoft.Extensions.DependencyInjection;
 

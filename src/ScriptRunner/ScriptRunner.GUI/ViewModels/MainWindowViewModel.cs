@@ -425,7 +425,27 @@ public class MainWindowViewModel : ReactiveObject
         //var actionPanel = new StackPanel();
 
         // Create IPanel with controls for all parameters
-        var paramsPanel = _paramsPanelFactory.Create(action, parameterValues);
+        var paramsPanel = _paramsPanelFactory.Create(action, parameterValues,  (title, command) =>
+        {
+            if (SelectedAction != null)
+            {
+                var taskCompletionSource = new TaskCompletionSource<string>();
+                try
+                {
+                    ExecuteCommand(command, this.SelectedAction, title, s =>
+                    {
+                        taskCompletionSource.SetResult(s);
+                    });
+                }
+                catch (Exception e)
+                {
+                    taskCompletionSource.SetException(e);
+                }
+                return taskCompletionSource.Task;
+            }
+
+            return Task.FromResult("");
+        });
 
         // Add panel with param controls to action panel
         //actionPanel.Children.Add(paramsPanel.Panel);
@@ -470,8 +490,7 @@ public class MainWindowViewModel : ReactiveObject
             var (commandPath, args) = SplitCommandAndArgs(installCommand);
             var job = new RunningJobViewModel
             {
-                Tile = "#" + jobCounter++,
-                CommandName = $"Install {selectedAction.Name}",
+                Tile = $"#{jobCounter++} Install {selectedAction.Name}",
                 ExecutedCommand = installCommand,
                 EnvironmentVariables = new Dictionary<string, string?>()
             };
@@ -745,39 +764,13 @@ public class MainWindowViewModel : ReactiveObject
             }
 
 
-            RegisterExecution(selectedAction);
+            AddExecutionAudit(selectedAction);
 
-            var (commandPath, args) = SplitCommandAndArgs(selectedAction.Command);
-            var maskedArgs = args;
+            var selectedActionCommand = selectedAction.Command;
+            
+            ExecuteCommand(selectedActionCommand, selectedAction);
 
-
-            var envVariables = new Dictionary<string, string?>(selectedAction.EnvironmentVariables);
-
-            foreach (var controlRecord in _controlRecords)
-            {
-                // This is definitely not pretty, should be using some ReactiveUI observables to read values?
-                var controlValue = controlRecord.GetFormattedValue();
-                args = args.Replace($"{{{controlRecord.Name}}}", controlValue);
-                maskedArgs = maskedArgs.Replace($"{{{controlRecord.Name}}}", controlRecord.MaskingRequired? "*****": controlValue);
-
-                foreach (var (key, val) in envVariables)
-                {
-                    if(string.IsNullOrWhiteSpace(val) == false)
-                        envVariables[key] = val.Replace($"{{{controlRecord.Name}}}", controlValue);
-                }
-            }
-
-            var job = new RunningJobViewModel
-            {
-                Tile = "#"+jobCounter++,
-                CommandName = selectedAction.Name,
-                ExecutedCommand = $"{commandPath} {maskedArgs}",
-                EnvironmentVariables = envVariables
-            };
-            this.RunningJobs.Add(job);
-            SelectedRunningJob = job;
-            job.RunJob(commandPath, args, selectedAction.WorkingDirectory, selectedAction.InteractiveInputs, selectedAction.Troubleshooting);
-
+            // Some audit staff
             var usedParams = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{selectedAction.Name}_{Guid.NewGuid():N}");
             var executionLogAction = new ExecutionLogAction(DateTime.Now,  selectedAction.SourceName, selectedAction.Name, usedParams);
             ExecutionLog.Insert(0, executionLogAction);
@@ -785,6 +778,41 @@ public class MainWindowViewModel : ReactiveObject
             AppSettingsService.UpdateExecutionLog(ExecutionLog.ToList());
         }
         
+    }
+
+    private void ExecuteCommand(string command, ScriptConfig selectedAction, string? title = null, Action<string>? onComplete = null)
+    {
+        var (commandPath, args) = SplitCommandAndArgs(command);
+        var envVariables = new Dictionary<string, string?>(selectedAction.EnvironmentVariables);
+        var maskedArgs = args;
+        foreach (var controlRecord in _controlRecords)
+        {
+            var controlValue = controlRecord.GetFormattedValue();
+            args = args.Replace($"{{{controlRecord.Name}}}", controlValue);
+            maskedArgs = maskedArgs.Replace($"{{{controlRecord.Name}}}", controlRecord.MaskingRequired? "*****": controlValue);
+
+            foreach (var (key, val) in envVariables)
+            {
+                if(string.IsNullOrWhiteSpace(val) == false)
+                    envVariables[key] = val.Replace($"{{{controlRecord.Name}}}", controlValue);
+            }
+        }
+
+        var job = new RunningJobViewModel
+        {
+            Tile = $"#{jobCounter++} {title ?? selectedAction.Name}",
+            ExecutedCommand = $"{commandPath} {maskedArgs}",
+            EnvironmentVariables = envVariables
+        };
+        this.RunningJobs.Add(job);
+        SelectedRunningJob = job;
+
+        if (onComplete != null)
+        {
+            job.ExecutionCompleted += (sender, args) => onComplete(job.RawOutput);
+        }
+        
+        job.RunJob(commandPath, args, selectedAction.WorkingDirectory, selectedAction.InteractiveInputs, selectedAction.Troubleshooting);
     }
 
     public ObservableCollection<ExecutionLogAction> ExecutionLog { get; set; } = new ();
@@ -806,7 +834,7 @@ public class MainWindowViewModel : ReactiveObject
 
 
     
-    private void RegisterExecution(ScriptConfig selectedAction)
+    private void AddExecutionAudit(ScriptConfig selectedAction)
     {
         AppSettingsService.UpdateRecent(recent =>
         {
