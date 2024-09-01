@@ -4,12 +4,15 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
+using Projektanker.Icons.Avalonia;
 using ScriptRunner.GUI.Infrastructure;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.Settings;
@@ -27,7 +30,7 @@ public class ParamsPanelFactory
         _vaultProvider = vaultProvider;
     }
     
-    public ParamsPanel Create(ScriptConfig action, Dictionary<string, string> values)
+    public ParamsPanel Create(ScriptConfig action, Dictionary<string, string> values, Func<string, string, Task<string?>> commandExecutor)
     {
         var paramsPanel = new StackPanel
         {
@@ -68,7 +71,31 @@ public class ParamsPanelFactory
                     "paramRow"
                 }
             };
-            
+            if (string.IsNullOrWhiteSpace(param.ValueGeneratorCommand) == false)
+            {
+                var generateButton = new Button()
+                {
+                    Margin = new(5,0,5,0),
+                    Width = 50,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    HorizontalContentAlignment = HorizontalAlignment.Center
+                };
+                generateButton.Click += async(sender, args) =>
+                {
+                    var result = await commandExecutor($"Generate parameter for '{param.Name}'", param.ValueGeneratorCommand);
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        //TODO: Handle other controls
+                        if (controlRecord is { Control: TextBox tb })
+                        {
+                            tb.Text = result?.Trim() ?? string.Empty;
+                        }
+                    });
+                };
+                Attached.SetIcon(generateButton, "fas fa-wand-magic-sparkles");
+                ToolTip.SetTip(generateButton, "Auto fill");
+                actionPanel.Children.Add(generateButton);
+            }
             paramsPanel.Children.Add(actionPanel);
             controlRecords.Add(controlRecord);
         }
