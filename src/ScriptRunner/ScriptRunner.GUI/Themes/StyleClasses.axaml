@@ -1,6 +1,7 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:views="clr-namespace:ScriptRunner.GUI.Views">
+        xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
+        xmlns:tanker="https://github.com/projektanker/icons.avalonia">
     <Design.PreviewWith>
         <StackPanel>
             <TextBlock Classes="h1" Text="Heading 1"></TextBlock>
@@ -120,5 +121,18 @@
         <Setter Property="Background" Value="Black"></Setter>
         <Setter Property="Padding" Value="10"></Setter>
 	</Style>
-
+    <Style Selector="Button.spinning tanker|Icon">
+        <Style.Animations>
+            <Animation Duration="0:0:2" IterationCount="INFINITE">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.0"/>
+                    <Setter Property="RotateTransform.Angle" Value="0.0"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%"> 
+                    <Setter Property="Opacity" Value="1.0"/>
+                    <Setter Property="RotateTransform.Angle" Value="360.0"/>
+                </KeyFrame>
+            </Animation> 
+        </Style.Animations>
+    </Style>
 </Styles>
