@@ -82,6 +82,8 @@ public class ParamsPanelFactory
                 };
                 generateButton.Click += async(sender, args) =>
                 {
+                    generateButton.IsEnabled = false;
+                    generateButton.Classes.Add("spinning");
                     var result = await commandExecutor($"Generate parameter for '{param.Name}'", param.ValueGeneratorCommand);
                     Dispatcher.UIThread.Post(() =>
                     {
@@ -89,6 +91,8 @@ public class ParamsPanelFactory
                         if (controlRecord is { Control: TextBox tb })
                         {
                             tb.Text = result?.Trim() ?? string.Empty;
+                            generateButton.Classes.Remove("spinning");
+                            generateButton.IsEnabled = true;
                         }
                     });
                 };
