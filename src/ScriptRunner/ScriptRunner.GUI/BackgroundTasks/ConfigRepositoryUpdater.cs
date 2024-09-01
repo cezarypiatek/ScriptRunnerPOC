@@ -5,8 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CliWrap;
-using LibGit2Sharp;
-using LibGit2Sharp.Handlers;
 using ScriptRunner.GUI.Settings;
 
 namespace ScriptRunner.GUI.BackgroundTasks;
@@ -17,8 +15,20 @@ public interface IRepositoryClient
     Task<bool> PullRepository(string path);
 }
 
+public record CliCommand(string Command, string Parameters, string WorkingDirectory);
+
+public delegate Task<CliCommandOutputs> CliCommandExecutor(CliCommand command);
+
+public record CliCommandOutputs(string StandardOutput, string StandardError);
 class CliRepositoryClient : IRepositoryClient
 {
+    private readonly CliCommandExecutor _cliCommandExecutor;
+
+    public CliRepositoryClient(CliCommandExecutor cliCommandExecutor)
+    {
+        _cliCommandExecutor = cliCommandExecutor;
+    }
+
     public async Task<bool> IsOutdated(string repoPath)
     {
         _ = await ExecuteCommand(repoPath, "git", "fetch --prune origin --verbose");
@@ -28,8 +38,8 @@ class CliRepositoryClient : IRepositoryClient
 
     public async Task<bool> PullRepository(string path)
     {
-        var (success,_) = await ExecuteCommand(path, "git", "pull --rebase=true origin --prune --verbose");
-        return success;
+        var result = await _cliCommandExecutor.Invoke(new CliCommand("git", "pull --rebase=true origin --prune --verbose", path));
+        return result.StandardError.Contains("error", StringComparison.InvariantCultureIgnoreCase) == false;
     }
 
     private static async Task<(bool, string)> ExecuteCommand(string repoPath, string command, string parameters)
@@ -56,11 +66,17 @@ class CliRepositoryClient : IRepositoryClient
 
 
 
-public static class ConfigRepositoryUpdater
+public class ConfigRepositoryUpdater
 {
-    private static readonly IRepositoryClient repositoryClient = new CliRepositoryClient();
+    private readonly IRepositoryClient repositoryClient;
 
-    public static async Task<List<OutdatedRepositoryModel>> CheckAllRepositories()
+
+    public ConfigRepositoryUpdater(IRepositoryClient repositoryClient)
+    {
+        this.repositoryClient = repositoryClient;
+    }
+
+    public async Task<List<OutdatedRepositoryModel>> CheckAllRepositories()
     {
         var outOfDateRepos = new List<OutdatedRepositoryModel>();
         var entries = AppSettingsService.Load().ConfigScripts?.Where(e => e.Type == ConfigScriptType.Directory) ??
@@ -87,10 +103,8 @@ public static class ConfigRepositoryUpdater
 
    
 
-    public static Task<bool> PullRepository(string path)
+    public Task<bool> RefreshRepository(string path)
     {
         return repositoryClient.PullRepository(path);
     }
-
-  
 }

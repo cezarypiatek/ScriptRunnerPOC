@@ -204,6 +204,25 @@ public class MainWindowViewModel : ReactiveObject
 
     public MainWindowViewModel(ParamsPanelFactory paramsPanelFactory, VaultProvider vaultProvider)
     {
+        this._configRepositoryUpdater = new ConfigRepositoryUpdater(new CliRepositoryClient(command =>
+        {
+            var tcs = new TaskCompletionSource<CliCommandOutputs>();
+            
+            var job = new RunningJobViewModel
+            {
+                Tile = $"Update repository",
+                ExecutedCommand = $"{command.Command} {command.Parameters}",
+            };
+            this.RunningJobs.Add(job);
+            SelectedRunningJob = job;
+
+            job.ExecutionCompleted += (sender, args) =>
+            {
+                tcs.SetResult(new(job.RawOutput, job.RawErrorOutput));
+            };        
+            job.RunJob(command.Command, command.Parameters, command.WorkingDirectory, Array.Empty<InteractiveInputDescription>(), Array.Empty<TroubleshootingItem>());
+            return tcs.Task;
+        }));
         IsScriptListVisible = true;
         SaveAsPredefinedCommand = ReactiveCommand.Create(() => { });
         _paramsPanelFactory = paramsPanelFactory;
@@ -300,7 +319,7 @@ public class MainWindowViewModel : ReactiveObject
         _outdatedRepoCheckingScheduler = new RealTimeScheduler(TimeSpan.FromHours(
             4), TimeSpan.FromHours(1), async () =>
         {
-            var outOfDateRepos = await ConfigRepositoryUpdater.CheckAllRepositories();
+            var outOfDateRepos = await _configRepositoryUpdater.CheckAllRepositories();
             Dispatcher.UIThread.Post(() =>
             {
                 OutOfDateConfigRepositories.Clear();
@@ -555,7 +574,7 @@ public class MainWindowViewModel : ReactiveObject
         if (arg is OutdatedRepositoryModel record)
         {
             var result = false;
-            await Task.Run(async () => result = await ConfigRepositoryUpdater.PullRepository(record.Path));
+            await Task.Run(async () => result = await _configRepositoryUpdater.RefreshRepository(record.Path));
             if (result)
             {
                 OutOfDateConfigRepositories.Remove(record);
@@ -830,10 +849,9 @@ public class MainWindowViewModel : ReactiveObject
     }
 
     private ExecutionLogAction _selectedRecentExecution;
+    private readonly ConfigRepositoryUpdater _configRepositoryUpdater;
 
 
-
-    
     private void AddExecutionAudit(ScriptConfig selectedAction)
     {
         AppSettingsService.UpdateRecent(recent =>
