@@ -6,6 +6,7 @@
              xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
              xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
              xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
+             xmlns:avalonia="clr-namespace:LoadingIndicators.Avalonia;assembly=LoadingIndicators.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="viewModels:MainWindowViewModel"
              x:Class="ScriptRunner.GUI.Views.NotificationSection">
@@ -36,6 +37,7 @@
                                     <Button  Margin="20,0,0,0" VerticalAlignment="Center"  IsEnabled="{Binding !IsPulling}"
                                             Command="{Binding DataContext.PullRepoChanges, RelativeSource={RelativeSource AncestorType={x:Type views:MainWindow}}}"
                                             CommandParameter="{Binding}">Pull</Button>
+                                    <avalonia:LoadingIndicator  IsActive="{Binding IsPulling}" Mode="Arc" SpeedRatio="1.2" />
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
