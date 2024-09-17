@@ -573,13 +573,22 @@ public class MainWindowViewModel : ReactiveObject
     {
         if (arg is OutdatedRepositoryModel record)
         {
+            record.IsPulling = true;
             var result = false;
-            await Task.Run(async () => result = await _configRepositoryUpdater.RefreshRepository(record.Path));
-            if (result)
+            try
             {
-                OutOfDateConfigRepositories.Remove(record);
-                RefreshSettings();
+                await Task.Run(async () => result = await _configRepositoryUpdater.RefreshRepository(record.Path));
             }
+            finally
+            {
+                if (result)
+                {
+                    OutOfDateConfigRepositories.Remove(record);
+                    RefreshSettings();
+                }
+                record.IsPulling = false;
+            }
+            
         }
     }
 
