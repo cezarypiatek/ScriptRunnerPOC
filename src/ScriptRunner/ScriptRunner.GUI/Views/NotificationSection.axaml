@@ -30,9 +30,10 @@
                     <ItemsControl ItemsSource="{Binding OutOfDateConfigRepositories}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="backgroundTasks:OutdatedRepositoryModel">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Path}"></TextBlock>
-                                    <Button Margin="20,0,0,0" VerticalAlignment="Center" 
+                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding Path}"></TextBlock>
+                                    <TextBlock VerticalAlignment="Center" Margin="5,0" Text="{Binding BranchName, StringFormat='(branch: {0})'}"></TextBlock>
+                                    <Button  Margin="20,0,0,0" VerticalAlignment="Center"  IsEnabled="{Binding !IsPulling}"
                                             Command="{Binding DataContext.PullRepoChanges, RelativeSource={RelativeSource AncestorType={x:Type views:MainWindow}}}"
                                             CommandParameter="{Binding}">Pull</Button>
                                 </StackPanel>

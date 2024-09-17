@@ -1,11 +1,17 @@
-﻿namespace ScriptRunner.GUI.BackgroundTasks;
+﻿using ReactiveUI;
 
-public class OutdatedRepositoryModel
+namespace ScriptRunner.GUI.BackgroundTasks;
+
+public class OutdatedRepositoryModel:ReactiveObject
 {
     public string Path { get; set; }
+    public string BranchName { get; set; }
 
-    public OutdatedRepositoryModel(string path)
+    private bool _isPulling;
+
+    public bool IsPulling
     {
-        Path = path;
+        get => _isPulling;
+        set => this.RaiseAndSetIfChanged(ref _isPulling, value);
     }
 }
