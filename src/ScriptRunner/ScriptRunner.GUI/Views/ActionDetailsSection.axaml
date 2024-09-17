@@ -122,11 +122,18 @@
         <TabItem Header="History" IsSelected="{Binding !SelectedAction.HasDocs}">
           <ListBox SelectedItem="{Binding SelectedRecentExecution}" ItemsSource="{Binding ExecutionLogForCurrent}">
             <ListBox.ItemTemplate>
+              
+                
               <DataTemplate x:DataType="viewModels:ExecutionLogAction">
-                <StackPanel Orientation="Horizontal">
-                  <avalonia:Icon Value="fas fa-clock"  />
-                  <TextBlock  Margin="10,0" Text="{Binding Description}"></TextBlock>
-                </StackPanel>
+                <Grid> 
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <avalonia:Icon Value="fas fa-clock" Margin="0,5,0,0"  VerticalAlignment="Top"/>
+                  <TextBlock Grid.Column="1" VerticalAlignment="Top" TextWrapping="Wrap" Margin="10,0" Text="{Binding Description}"></TextBlock>
+                </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
