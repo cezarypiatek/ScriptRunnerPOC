@@ -305,28 +305,13 @@ public class MainWindowViewModel : ReactiveObject
         
         _appUpdateScheduler = new RealTimeScheduler(TimeSpan.FromDays(1), TimeSpan.FromHours(1), async () =>
         {
-            var isNewerVersion = await appUpdater.CheckIsNewerVersionAvailable();
-            if (isNewerVersion)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    ShowNewVersionAvailable = true;
-                });
-            }
+            await RefreshInfoAbouAppUpdates();
         });
         _appUpdateScheduler.Run();
 
-        _outdatedRepoCheckingScheduler = new RealTimeScheduler(TimeSpan.FromHours(
-            4), TimeSpan.FromHours(1), async () =>
+        _outdatedRepoCheckingScheduler = new RealTimeScheduler(TimeSpan.FromHours(4), TimeSpan.FromHours(1), async () =>
         {
-            var outOfDateRepos = await _configRepositoryUpdater.CheckAllRepositories();
-            Dispatcher.UIThread.Post(() =>
-            {
-                OutOfDateConfigRepositories.Clear();
-                OutOfDateConfigRepositories.AddRange(outOfDateRepos);
-            });
-
-            
+            await RefreshInfoAboutRepositories();
         });
 
         _outdatedRepoCheckingScheduler.Run();
@@ -334,6 +319,28 @@ public class MainWindowViewModel : ReactiveObject
 
         ActionParametersPanel = new ObservableCollection<Panel>();
         BuildUi();
+    }
+
+    private async Task RefreshInfoAbouAppUpdates()
+    {
+        var isNewerVersion = await appUpdater.CheckIsNewerVersionAvailable();
+        if (isNewerVersion)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                ShowNewVersionAvailable = true;
+            });
+        }
+    }
+
+    private async Task RefreshInfoAboutRepositories()
+    {
+        var outOfDateRepos = await _configRepositoryUpdater.CheckAllRepositories();
+        Dispatcher.UIThread.Post(() =>
+        {
+            OutOfDateConfigRepositories.Clear();
+            OutOfDateConfigRepositories.AddRange(outOfDateRepos);
+        });
     }
 
     public void CheckForUpdates()
@@ -555,6 +562,12 @@ public class MainWindowViewModel : ReactiveObject
         }
     }
 
+    public void ForceRefresh()
+    {
+        _ = RefreshInfoAbouAppUpdates();
+        _ = RefreshInfoAboutRepositories();
+        BuildUi();
+    }
     public void RefreshSettings() => BuildUi();
 
     public void OpenVaultWindow() => TryToOpenDialog<Vault>();
