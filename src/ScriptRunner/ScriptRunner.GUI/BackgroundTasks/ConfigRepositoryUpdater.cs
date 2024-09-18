@@ -35,14 +35,32 @@ class CliRepositoryClient : IRepositoryClient
         _ = await ExecuteCommand(repoPath, "git", "fetch --prune origin --verbose");
        if(await GetHeadBranchName(repoPath) is {} mainBranch)
         {
-            var (_, statusForBranch) = await ExecuteCommand(repoPath, "git", $"log {mainBranch}..origin/{mainBranch} --oneline");
-            var outdated = string.IsNullOrWhiteSpace(statusForBranch) == false;
-            return (outdated, mainBranch);
+            var isMainBranchOutdated = await IsBranchOutdated(repoPath, mainBranch, mainBranch);
+            if (isMainBranchOutdated)
+            {
+                if(await GetCurrentBranchName(repoPath) is {} currentBranch  && string.IsNullOrWhiteSpace(currentBranch) == false && currentBranch != mainBranch)
+                {
+                    var isCurrentBranchOutdated = await IsBranchOutdated(repoPath, currentBranch, mainBranch);
+                    if (isCurrentBranchOutdated == false)
+                    {
+                        return (false, mainBranch);
+                    }
+                }
+                
+            }
+            return (isMainBranchOutdated, mainBranch);
         }
         
         var (success, result) = await ExecuteCommand(repoPath, "git", "status -uno");
         var isOutdated = success && result.Contains("up to date", StringComparison.InvariantCultureIgnoreCase) == false;
         return (isOutdated, "current");
+    }
+
+    private static async Task<bool> IsBranchOutdated(string repoPath, string sourceBranch, string targetBranch)
+    {
+        var (_, statusForBranch) = await ExecuteCommand(repoPath, "git", $"log {sourceBranch}..origin/{targetBranch} --oneline");
+        var outdated = string.IsNullOrWhiteSpace(statusForBranch) == false;
+        return outdated;
     }
 
     static async Task<string?> GetHeadBranchName(string repoPath)
@@ -57,6 +75,11 @@ class CliRepositoryClient : IRepositoryClient
         }
 
         return null;
+    }
+    static async Task<string?> GetCurrentBranchName(string repoPath)
+    {
+        var (_, originDetectOutput) = await ExecuteCommand(repoPath, "git", "rev-parse --abbrev-ref HEAD");
+        return originDetectOutput;
     }
     
     public async Task<bool> PullRepository(string path)
