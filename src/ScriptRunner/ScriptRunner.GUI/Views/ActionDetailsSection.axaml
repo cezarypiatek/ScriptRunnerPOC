@@ -53,7 +53,7 @@
                 </TextBlock>
 
               </StackPanel>
-              <SelectableTextBlock  TextWrapping="Wrap"  Classes="consoleOutput" Text="{Binding CurrentRunOutputBuffered, Mode=OneWay}"   Inlines="{Binding SelectedAction.CommandFormatted}" ></SelectableTextBlock>
+              <SelectableTextBlock  TextWrapping="Wrap"  Classes="consoleOutput"  Inlines="{Binding SelectedAction.CommandFormatted}" ></SelectableTextBlock>
             </StackPanel>
           </Expander>
               
@@ -131,7 +131,7 @@
               </Border>
             </StackPanel>
             <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch" >
-              <Button DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="100" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
+              <Button DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="200" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
             </DockPanel>
           </StackPanel>
         </StackPanel>
@@ -183,14 +183,10 @@
               
                 
               <DataTemplate x:DataType="viewModels:ExecutionLogAction">
-                <Grid> 
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                  </Grid.ColumnDefinitions>
-                  
+                <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, *"> 
                   <avalonia:Icon Value="fas fa-clock" Margin="0,5,0,0"  VerticalAlignment="Top"/>
-                  <TextBlock Grid.Column="1" VerticalAlignment="Top" TextWrapping="Wrap" Margin="10,0" Text="{Binding Description}"></TextBlock>
+                  <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" TextWrapping="Wrap" Margin="10,0" Text="{Binding Timestamp, StringFormat={}{0:s}}"></TextBlock>
+                  <SelectableTextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Padding="0, 5" Inlines="{Binding ParametersDescription}" TextWrapping="Wrap"></SelectableTextBlock>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
