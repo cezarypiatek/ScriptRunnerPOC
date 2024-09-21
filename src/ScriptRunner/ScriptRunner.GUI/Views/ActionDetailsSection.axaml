@@ -8,77 +8,135 @@
              xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
              xmlns:mdxaml="https://github.com/whistyun/Markdown.Avalonia.Tight"
              xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="450"
              x:DataType="viewModels:MainWindowViewModel"
              x:Class="ScriptRunner.GUI.Views.ActionDetailsSection">
   <views:ContentWithSidebar  IsSidebarOpen="True" SidebarPosition="Right" SidebarWidth="300" MainMinWidth="855">
     <views:ContentWithSidebar.Main>
-         <ScrollViewer HorizontalAlignment="Stretch" >
-           <StackPanel Margin="20, 10" IsVisible="{Binding IsActionSelected, Mode=OneWay}">
-             <StackPanel Orientation="Vertical">
+      <ScrollViewer HorizontalAlignment="Stretch" >
+        <StackPanel Margin="20, 10"  IsVisible="{Binding IsActionSelected, Mode=OneWay}">
+          <Expander HorizontalAlignment="Stretch">
+            <Expander.Styles>
+              <Style Selector="Expander /template/ ToggleButton">
+                <Setter Property="Background" Value="#1e1f22"/>
+                <Setter Property="Padding" Value="10,0,0,0" />
+              </Style>
+            </Expander.Styles>
+            <Expander.Header >
+              <StackPanel Orientation="Horizontal"  >
+                <Button avalonia:Attached.Icon="fas fa-cog" Width="35" Height="35">
 
-               <StackPanel Orientation="Horizontal" Margin="7,0" >
-                 <Label VerticalAlignment="Center">From: </Label>
+                  <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedLeft" >
+                      <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
+                      <MenuItem Header="Reset default settings"  Command="{Binding ResetDefaults}" />
+                      <MenuItem Header="Open containing dir in VSCode"  Command="{Binding OpenDirInVsCode}" />
+                      <MenuItem Header="Open definition in VSCode"  Command="{Binding OpenDefinitionInVsCode}" />
+                    </MenuFlyout>
+                  </Button.Flyout>
+                </Button>
+                <TextBlock Classes="h1" Margin="10" Text="{Binding SelectedAction.Name}" />
+              </StackPanel>
+            </Expander.Header>
+            <StackPanel>
+              <TextBlock IsVisible="{Binding SelectedAction.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="10, 0" Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
+              <StackPanel Orientation="Horizontal" Margin="7,0" >
+                <Label VerticalAlignment="Center">Loaded from: </Label>
 
-                 <TextBlock Margin="10, 0" TextWrapping="Wrap" VerticalAlignment="Center">
-                   <TextBlock.Text>
-                     <MultiBinding StringFormat="{}{0} [{1}]">
-                       <Binding Path="SelectedAction.SourceName" />
-                       <Binding Path="SelectedAction.Source" />
-                     </MultiBinding>
-                   </TextBlock.Text>
-                 </TextBlock>
+                <TextBlock Margin="10, 0" TextWrapping="Wrap" VerticalAlignment="Center">
+                  <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0} [{1}]">
+                      <Binding Path="SelectedAction.SourceName" />
+                      <Binding Path="SelectedAction.Source" />
+                    </MultiBinding>
+                  </TextBlock.Text>
+                </TextBlock>
 
-               </StackPanel>
-               <StackPanel Orientation="Horizontal">
-                 <TextBlock Classes="h1" Margin="10" Text="{Binding SelectedAction.Name}" />
-                 <SplitButton avalonia:Attached.Icon="fas fa-cog" >
+              </StackPanel>
+              <SelectableTextBlock  TextWrapping="Wrap"  Classes="consoleOutput" Text="{Binding CurrentRunOutputBuffered, Mode=OneWay}"   Inlines="{Binding SelectedAction.CommandFormatted}" ></SelectableTextBlock>
+            </StackPanel>
+          </Expander>
+              
+          <Button Margin="0,10,0,0" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
+             
+          <StackPanel IsEnabled="{Binding SelectedActionInstalled}">
+            <StackPanel IsVisible="{Binding HasParams}">
+              <Border BorderThickness="1" BorderBrush="#4E4E4E" Background="#2B2B2B" Padding="25,5" Margin="0,10,0,0">
+                   <Grid  Margin="0,5,0,5" ColumnDefinitions="Auto,*,120" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                   
+                <TextBlock Classes="h2"
+                           VerticalAlignment="Top"
+                           Text="Predefined parameters: "
+                           Margin="0,5,0,0"
+                           Grid.Column="0"></TextBlock>
+                <ComboBox Margin="10,0,10,0"
+                          Grid.Column="1"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding SelectedAction.PredefinedArgumentSets}"
+                          SelectedItem="{Binding SelectedArgumentSet, Mode=TwoWay}"
+                >
+                  <ComboBox.DataTemplates>
+                    <DataTemplate x:DataType="scriptConfigs:ArgumentSet">
+                      <TextBlock Text="{Binding Description}"></TextBlock>
+                    </DataTemplate>
+                  </ComboBox.DataTemplates>
+                </ComboBox>
+                <WrapPanel Grid.Column="2" ItemWidth="40" >
+                  <Button 
+                    avalonia:Attached.Icon="fas fa-save"
+                    Padding="0"
+                    Margin="0"
+                    Width="35"
+                    Height="35"
+                    ToolTip.Tip="Save current parameters as predefined set"  
+                    Click="SaveCurrentParametersAsPredefined" 
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Center" 
+                    HorizontalContentAlignment="Center" ></Button>
+                  <Button 
+                    avalonia:Attached.Icon="fas fa-copy"
+                    Padding="0"
+                    Margin="0"
+                    Width="35"
+                    Height="35"
+                    ToolTip.Tip="Copy current parameters to clipboard"  
+                    Command="{Binding CopyParametersSetup}" 
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Center" 
+                    HorizontalContentAlignment="Center" ></Button>
+                  <Button 
+                    avalonia:Attached.Icon="fas fa-paste"
+                    Padding="0"
+                    Margin="0"
+                    Width="35"
+                    Height="35"
+                    ToolTip.Tip="Paste parameters from clipboard"  
+                    Command="{Binding PasteParametersSetup}" 
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Center" 
+                    HorizontalContentAlignment="Center" ></Button>
+                </WrapPanel>
 
-                   <SplitButton.Flyout>
-                     <MenuFlyout Placement="Bottom">
-                       <MenuItem Header="Save as defaults" Command="{Binding SaveAsDefault}"  />
-                       <MenuItem Header="Save as predefined"  Click="SaveAsPredefined" />
-                       <MenuItem Header="Copy current parameter setup" Command="{Binding CopyParametersSetup}" />
-                       <MenuItem Header="Paste parameter setup" Command="{Binding PasteParametersSetup}" />
-                       <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
-                       <MenuItem Header="Reset default settings"  Command="{Binding ResetDefaults}" />
-                       <MenuItem Header="Open containing dir in VSCode"  Command="{Binding OpenDirInVsCode}" />
-                       <MenuItem Header="Open definition in VSCode"  Command="{Binding OpenDefinitionInVsCode}" />
-                     </MenuFlyout>
-                   </SplitButton.Flyout>
+              </Grid>
+              </Border>
+              <Border BorderThickness="1" Background="#2B2B2B" BorderBrush="#4E4E4E" Padding="25,5" Margin="0,10,0,0">
+                <ItemsControl ItemsSource="{Binding ActionParametersPanel}">
+                  <ItemsControl.Styles>
+                    <Style Selector="ItemsPresenter">
+                      <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
+                    </Style>
+                  </ItemsControl.Styles>
+                </ItemsControl>
+              </Border>
+            </StackPanel>
+            <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch" >
+              <Button DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="100" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
+            </DockPanel>
+          </StackPanel>
+        </StackPanel>
 
-                 </SplitButton>
-               </StackPanel>
-               <TextBlock IsVisible="{Binding SelectedAction.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="10, 0" Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
-               <SelectableTextBlock  TextWrapping="Wrap"  Classes="consoleOutput" Text="{Binding CurrentRunOutputBuffered, Mode=OneWay}"   Inlines="{Binding SelectedAction.CommandFormatted}" ></SelectableTextBlock>
-               <Button Margin="5,5,5,15" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
-             </StackPanel>
-             <StackPanel IsEnabled="{Binding SelectedActionInstalled}">
-               <StackPanel IsVisible="{Binding HasParams}">
-                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                   <TextBlock Classes="h2" Text="Parameters: "></TextBlock>
-                   <ComboBox Margin="20,0,0,5" ItemsSource="{Binding SelectedAction.PredefinedArgumentSets}" SelectedItem="{Binding SelectedArgumentSet, Mode=TwoWay}" MinWidth="200">
-                     <ComboBox.DataTemplates>
-                       <DataTemplate x:DataType="scriptConfigs:ArgumentSet">
-                         <TextBlock Text="{Binding Description}"></TextBlock>
-                       </DataTemplate>
-                     </ComboBox.DataTemplates>
-                   </ComboBox>
-                 </StackPanel>
-                 <ItemsControl ItemsSource="{Binding ActionParametersPanel}">
-                   <ItemsControl.Styles>
-                     <Style Selector="ItemsPresenter">
-                       <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
-                     </Style>
-                   </ItemsControl.Styles>
-                 </ItemsControl>
-               </StackPanel>
-               <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch" >
-                 <Button DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="100" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
-               </DockPanel>
-             </StackPanel>
-           </StackPanel>
-         </ScrollViewer>
+      </ScrollViewer>
     </views:ContentWithSidebar.Main>
     <views:ContentWithSidebar.Sidebar>
       <TabControl SelectedIndex="{}">

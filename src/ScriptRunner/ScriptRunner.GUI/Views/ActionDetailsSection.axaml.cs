@@ -21,7 +21,7 @@ public partial class ActionDetailsSection : UserControl
         AvaloniaXamlLoader.Load(this);
     }
 
-    public async void SaveAsPredefined(object? sender, RoutedEventArgs e)
+    public async void SaveCurrentParametersAsPredefined(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
@@ -51,6 +51,18 @@ public partial class ActionDetailsSection : UserControl
                     }
                 }
             }
+        }
+    }
+
+    private void SplitButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if(sender is Button {Flyout: {}} sp)
+        {
+            if(sp.Flyout.IsOpen)
+            {
+                sp.Flyout.Hide();
+            }
+            else sp.Flyout.ShowAt(sp);
         }
     }
 }
