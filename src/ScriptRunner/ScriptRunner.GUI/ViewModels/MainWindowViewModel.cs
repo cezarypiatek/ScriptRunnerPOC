@@ -13,8 +13,10 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media;
 using Avalonia.Threading;
 using CliWrap;
 using DynamicData;
@@ -919,7 +921,25 @@ public class MainWindowViewModel : ReactiveObject
 public record ExecutionLogAction(DateTime Timestamp, string Source, string Name, Dictionary<string, string> Parameters)
 {
     [JsonIgnore]
-    public string Description => $"{Timestamp:s} - [{string.Join(", ", Parameters.Select(x => $"{x.Key} = {x.Value}"))}]";
+    public InlineCollection ParametersDescription => new InlineCollection()
+    {
+        new Run("["),
+        
+        Parameters.SelectMany((x,i) =>
+        {
+            var value = x.Value.StartsWith("!!vault:") ? "*****" : x.Value;
+            return new[]
+            {
+                new Run($"{x.Key} = "),
+                new Run(value)
+                {
+                    Foreground = Brushes.LightGreen,
+                },
+                new Run( i< Parameters.Count -1?", ":"")
+            };
+        }),
+        new Run("]"),
+    };
 };
 
 public record RecentAction(ActionId ActionId, DateTime Timestamp);
