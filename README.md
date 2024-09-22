@@ -20,6 +20,7 @@ ScriptRunner is a UI application designed to act as a shell for any command line
 - ✅ Allows you to define installation processes for script dependencies
 - ✅ Maintains an execution history log, allowing reuse of parameters from previous runs
 - ✅ Provides an intuitive browsing experience for your script library (tags, search, etc.)
+- ✅ Displays markdown documentation for your scripts
 
   
 ## How to install
