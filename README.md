@@ -1,26 +1,48 @@
-# ScriptRunner (POC)
+# ScriptRunner - Create a simple UI for your favorite scripts and command line tools without any coding.
+
+![image](https://github.com/user-attachments/assets/e837bba2-1754-4c1e-9d69-31e5f84d5f8c)
+
 
 ## Overview
 
 ScriptRunner is a UI application designed to act as a shell for any command line program or script. The main idea behind ScriptRunner is to allow users to define actions in a JSON file, specifying the parameters for the programs/scripts. ScriptRunner automatically generates a UI form for entering these parameters, making it easy to run the desired script. This document provides a complete guide to using ScriptRunner, including the structure of the manifest file, an example, and a detailed explanation of its components.
 
-## JSON Schema
+## Key features
 
-The JSON schema for the ScriptRunner manifest file is available at:
-[ScriptRunnerSchema.json](https://raw.githubusercontent.com/cezarypiatek/ScriptRunnerPOC/main/schema/v1/ScriptRunnerSchema.json)
+- ✅ Provides an easy-to-use interface for CLI tools and scripts
+- ✅ Compatible with any scripting language (PowerShell, Bash, Python, etc.)
+- ✅ Fully cross-platform (Windows, Linux, MacOS)
+- ✅ Securely manage passwords and API keys required by scripts
+- ✅ Provides notifications for updates to scripts shared via Git repositories
+- ✅ Allows creation of predefined parameter sets to streamline common use cases
+- ✅ Supports pre-defined responses for interactive script prompts
+- ✅ Includes troubleshooting messages for common script problems
+- ✅ Allows you to define installation processes for script dependencies
+- ✅ Maintains an execution history log, allowing reuse of parameters from previous runs
+- ✅ Provides an intuitive browsing experience for your script library (tags, search, etc.)
 
+  
 ## How to install
 
-Cross-platform recommended approach
+ScriptRunner is built with dotnet core and AvaloniUI, which makes it fully cross-platform. The only required prerequisite is the presence of dotnet SDK 6.0+, which can be downloaded from here https://dotnet.microsoft.com/en-us/download/dotnet
+If you already have dotnet sdk, you can install ScriptRunner on any platform with the following command:
 
 
 ```shell
-dotnet tool install --global ScriptRunnerGUI --no-cache --ignore-failed-sources
+dotnet tool install --global ScriptRunnerGUI --no-cache --ignore-failed-sources --add-source https://api.nuget.org/v3/index.json
 ```
+
+After successful installation, simply type `ScriptRunnerGUI` in the console to run it. On Windows, you can pin the ScriptRunner icon to your taskbar for easy access.
+
+![image](https://github.com/user-attachments/assets/6bb2e684-3dc4-4c4a-a9d8-c7c8be0060ff)
+
 
 ### How to use it
 
-Prepare a manifest for your action and save it as json file
+Prepare a manifest for your action and save it as a json file. The recommended way is to use an editor like VSCode and include the schema reference available at:
+[ScriptRunnerSchema.json](https://raw.githubusercontent.com/cezarypiatek/ScriptRunnerPOC/main/schema/v1/ScriptRunnerSchema.json) Thanks to the power of VSCode and JSON schema, you will get intellisense and semantic validation.
+A sample manifest that allows to run docker container can look as follows:
+
 
 ```json
 {
