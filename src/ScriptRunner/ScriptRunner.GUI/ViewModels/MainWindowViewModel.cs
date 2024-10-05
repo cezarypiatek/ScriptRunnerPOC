@@ -589,17 +589,21 @@ public class MainWindowViewModel : ReactiveObject
         if (arg is OutdatedRepositoryModel record)
         {
             record.IsPulling = true;
-            var result = false;
+            var pulledWithSuccess = false;
+            IReadOnlyList<string> releaseNotes = Array.Empty<string>();
             try
             {
-                await Task.Run(async () => result = await _configRepositoryUpdater.RefreshRepository(record.Path));
+                await Task.Run(async () => (pulledWithSuccess,releaseNotes) = await _configRepositoryUpdater.RefreshRepository(record.Path));
             }
             finally
             {
-                if (result)
+                if (pulledWithSuccess)
                 {
+
                     OutOfDateConfigRepositories.Remove(record);
                     RefreshSettings();
+                    var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandard("What's new", string.Join("\r\n", releaseNotes), icon: MsBox.Avalonia.Enums.Icon.Info, windowStartupLocation:WindowStartupLocation.CenterOwner);
+                    await messageBoxStandardWindow.ShowAsync();
                 }
                 record.IsPulling = false;
             }
