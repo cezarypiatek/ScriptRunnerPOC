@@ -111,7 +111,7 @@ public class RunningJobViewModel : ViewModelBase
                     .WithStandardInputPipe(PipeSource.FromStream(inputStream,autoFlush:true))
                     .WithStandardOutputPipe(PipeTarget.ToDelegate(s =>
                     {
-                        rawOutput.Append(s);
+                        rawOutput.AppendLine(s);
                         AppendToOutput(s, ConsoleOutputLevel.Normal);
                     }))
                     .WithStandardErrorPipe(PipeTarget.ToDelegate(s =>
