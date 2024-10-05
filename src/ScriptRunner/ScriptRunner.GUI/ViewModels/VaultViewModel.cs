@@ -1,6 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
+using DynamicData;
+using DynamicData.Binding;
 using ReactiveUI;
 using ScriptRunner.GUI.Infrastructure;
 
@@ -16,6 +20,11 @@ namespace ScriptRunner.GUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _entries, value);
         }
 
+
+        private readonly ObservableAsPropertyHelper<IEnumerable<VaultEntry>> _filteredEntries;
+        public IEnumerable<VaultEntry> FilteredEntries => _filteredEntries.Value;
+
+
         public void RemoveVaultEntry(VaultEntry entry)
         {
             Entries.Remove(entry);
@@ -25,13 +34,19 @@ namespace ScriptRunner.GUI.ViewModels
 
         public VaultViewModel()
         {
+
         }
 
-        public VaultViewModel(VaultProvider vaultProvider)
+        public VaultViewModel(VaultProvider vaultProvider):this()
         {
             RemoveVaultEntryCommand = ReactiveCommand.Create<VaultEntry>(RemoveVaultEntry);
             _vaultProvider = vaultProvider;
             Entries = new ObservableCollection<VaultEntry>(_vaultProvider.ReadFromVault());
+            this.Entries.ToObservableChangeSet()
+                .ToCollection()
+                .Select(entries => entries?.Where(x => (x.Name ?? "").StartsWith("!") == false) ?? Enumerable.Empty<VaultEntry>())
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .ToProperty(this, x=>x.FilteredEntries, out _filteredEntries);
         }
 
         public ReactiveCommand<VaultEntry, Unit> RemoveVaultEntryCommand { get;  }
@@ -43,7 +58,7 @@ namespace ScriptRunner.GUI.ViewModels
 
         public void SaveVault()
         {
-            var date = Entries.ToList();
+            var date = Entries.Where(x => string.IsNullOrWhiteSpace(x.Name) == false).ToList();
             _vaultProvider.UpdateVault(date);
         }
     }

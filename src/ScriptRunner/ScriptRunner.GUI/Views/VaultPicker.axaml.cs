@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -17,7 +18,7 @@ namespace ScriptRunner.GUI.Views
 
         public VaultPickerViewModel(VaultProvider vaultProvider)
         {
-            Entries = vaultProvider.ReadFromVault();
+            Entries = vaultProvider.ReadFromVault().Where(x=>x.Name.StartsWith("!") == false).ToList();
         }
         
         public IReadOnlyList<VaultEntry> Entries { get; set; }

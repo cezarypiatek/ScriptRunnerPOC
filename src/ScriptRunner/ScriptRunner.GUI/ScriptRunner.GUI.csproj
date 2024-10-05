@@ -44,6 +44,7 @@
     <PackageReference Include="Avalonia.Xaml.Interactions" Version="11.0.10.9" />
     <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.10.9" />
     <PackageReference Include="CliWrap" Version="3.4.4" />
+    <PackageReference Include="DynamicData" Version="9.0.4" />
     <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
     <PackageReference Include="LoadingIndicators.Avalonia" Version="11.0.11.1" />
     <PackageReference Include="Markdown.Avalonia" Version="11.0.2" />
