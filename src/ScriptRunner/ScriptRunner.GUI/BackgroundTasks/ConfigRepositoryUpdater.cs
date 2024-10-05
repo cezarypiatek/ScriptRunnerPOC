@@ -13,7 +13,7 @@ namespace ScriptRunner.GUI.BackgroundTasks;
 public interface IRepositoryClient
 {
     Task<(bool,string)> IsOutdated(string repoPath);
-    Task<bool> PullRepository(string path);
+    Task<(bool, IReadOnlyList<string>)> PullRepository(string path);
 }
 
 public record CliCommand(string Command, string Parameters, string WorkingDirectory);
@@ -82,12 +82,16 @@ class CliRepositoryClient : IRepositoryClient
         return originDetectOutput;
     }
     
-    public async Task<bool> PullRepository(string path)
+    public async Task<(bool, IReadOnlyList<string>)>  PullRepository(string path)
     {
         _ = await ExecuteCommand(path, "git", "fetch --prune origin --verbose");
+
         var mainBranch = await GetHeadBranchName(path) ?? "";
+        var (_, log) = await ExecuteCommand(path, "git", $"log {mainBranch}..origin/{mainBranch} --pretty=format:\"%s\"");
         var result = await _cliCommandExecutor.Invoke(new CliCommand("git", $"rebase origin/{mainBranch} {mainBranch} --verbose", path));
-        return result.StandardError.Contains("error", StringComparison.InvariantCultureIgnoreCase) == false;
+        var pulledWithSuccess = (result.StandardError.Contains("error", StringComparison.InvariantCultureIgnoreCase)  ||
+                                result.StandardError.Contains("fatal", StringComparison.InvariantCultureIgnoreCase)) == false;
+        return (pulledWithSuccess, log?.Split('\n')??Array.Empty<string>());
     }
 
     private static async Task<(bool, string)> ExecuteCommand(string repoPath, string command, string parameters)
@@ -98,8 +102,8 @@ class CliRepositoryClient : IRepositoryClient
             await Cli.Wrap(command)
                 .WithArguments(parameters)
                 .WithWorkingDirectory(repoPath)
-                .WithStandardOutputPipe(PipeTarget.ToDelegate(s => { sb.Append(s); }))
-                .WithStandardErrorPipe(PipeTarget.ToDelegate(s => { sb.Append(s); }))
+                .WithStandardOutputPipe(PipeTarget.ToDelegate(s => { sb.AppendLine(s); }))
+                .WithStandardErrorPipe(PipeTarget.ToDelegate(s => { sb.AppendLine(s); }))
                 .WithValidation(CommandResultValidation.None)
                 .ExecuteAsync(default);
         }
@@ -155,7 +159,7 @@ public class ConfigRepositoryUpdater
 
    
 
-    public Task<bool> RefreshRepository(string path)
+    public Task<(bool, IReadOnlyList<string>)> RefreshRepository(string path)
     {
         return repositoryClient.PullRepository(path);
     }
