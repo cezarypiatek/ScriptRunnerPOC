@@ -927,7 +927,7 @@ public record ExecutionLogAction(DateTime Timestamp, string Source, string Name,
         
         Parameters.SelectMany((x,i) =>
         {
-            var value = x.Value.StartsWith("!!vault:") ? "*****" : x.Value;
+            var value = x.Value?.StartsWith("!!vault:") == true ? "*****" : x.Value;
             return new[]
             {
                 new Run($"{x.Key} = "),
