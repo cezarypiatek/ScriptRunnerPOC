@@ -20,7 +20,7 @@
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
       <ScrollViewer >
-          <ItemsRepeater ItemsSource="{Binding Entries}">
+          <ItemsRepeater ItemsSource="{Binding FilteredEntries}">
               <ItemsRepeater.ItemTemplate>
                   <DataTemplate x:DataType="viewModels:VaultEntry">
                       <Grid Margin="10,10,10,0">
