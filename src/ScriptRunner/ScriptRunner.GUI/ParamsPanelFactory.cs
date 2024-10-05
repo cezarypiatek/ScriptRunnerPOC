@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -179,20 +180,25 @@ public class ParamsPanelFactory
                         ItemsSource = p.GetPromptSettings("options", out var options) ? options.Split(","):Array.Empty<string>(),
                         SelectedItem = value,
                         TabIndex = index,
-                        IsTabStop = true
+                        IsTabStop = true,
+                        Width = 500
                     }
                 };
             case PromptType.Multiselect:
                 var delimiter = p.GetPromptSettings("delimiter", s => s, ",");
                 return new MultiSelectControl
                 {
-                    Control = new ListBox
+                    Control = new  CheckBoxListBox
                     {
                         SelectionMode = SelectionMode.Multiple,
                         ItemsSource = p.GetPromptSettings("options", out var multiSelectOptions) ? multiSelectOptions.Split(delimiter) : Array.Empty<string>(),
                         SelectedItems = new AvaloniaList<string>((value ?? string.Empty).Split(delimiter)),
                         TabIndex = index,
-                        IsTabStop = true
+                        IsTabStop = true,
+                        BorderBrush = new SolidColorBrush(Color.Parse("#99ffffff")),
+                        CornerRadius = new CornerRadius(3),
+                        BorderThickness = new Thickness(1),
+                        Width = 500
                     },
                     Delimiter = delimiter
                 };
@@ -338,7 +344,6 @@ public class ParamsPanelFactory
         }
     }
 }
-
 
 public class ParamsPanel
 {
