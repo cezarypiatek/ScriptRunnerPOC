@@ -97,7 +97,7 @@ public class ParamsPanelFactory
                     });
                 };
                 Attached.SetIcon(generateButton, "fas fa-wand-magic-sparkles");
-                ToolTip.SetTip(generateButton, "Auto fill");
+                ToolTip.SetTip(generateButton, string.IsNullOrWhiteSpace(param.ValueGeneratorLabel)? "Auto fill": param.ValueGeneratorLabel);
                 actionPanel.Children.Add(generateButton);
             }
             paramsPanel.Children.Add(actionPanel);
