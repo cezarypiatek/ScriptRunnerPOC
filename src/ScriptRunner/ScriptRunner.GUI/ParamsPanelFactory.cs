@@ -245,7 +245,8 @@ public class ParamsPanelFactory
                     Format = p.GetPromptSettings("format", out var timeFormat) ? timeFormat : null,
                 };
             case PromptType.Checkbox:
-                var checkedValueText  = p.GetPromptSettings("checkedValue", out var checkedValue)? checkedValue: "true";
+                var (defaultChecked, defaultUnchecked) = scriptConfig.AutoParameterBuilderStyle == "powershell" ? ("$true", "$false") : ("true", "false");
+                var checkedValueText  = p.GetPromptSettings("checkedValue", out var checkedValue)? checkedValue: defaultChecked;
                 return new CheckboxControl
                 {
                     Control = new CheckBox
@@ -255,7 +256,7 @@ public class ParamsPanelFactory
                         IsTabStop = true
                     },
                     CheckedValue = checkedValueText,
-                    UncheckedValue =  p.GetPromptSettings("uncheckedValue", out var uncheckedValue)? uncheckedValue: "false",
+                    UncheckedValue =  p.GetPromptSettings("uncheckedValue", out var uncheckedValue)? uncheckedValue: defaultUnchecked,
                 };
             case PromptType.Multilinetext:
                 return new TextControl
