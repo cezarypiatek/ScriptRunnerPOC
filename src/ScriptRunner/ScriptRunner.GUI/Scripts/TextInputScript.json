@@ -1,5 +1,5 @@
 {
-  "$schema": "./ScriptRunnerSchema.json",
+  "$schema": "https://raw.githubusercontent.com/cezarypiatek/ScriptRunnerPOC/main/schema/v1/ScriptRunnerSchema.json",
   "actions": [
     {
       "name": "Ping",

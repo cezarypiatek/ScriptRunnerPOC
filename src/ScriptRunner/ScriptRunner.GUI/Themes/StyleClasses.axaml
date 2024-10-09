@@ -63,6 +63,19 @@
         </StackPanel>
     </Design.PreviewWith>
 
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="#007BFF" />
+        <Style Selector="^:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#002BFF" />
+        </Style>
+    </Style>
+    <Style Selector="Button.secondary">
+        <Setter Property="Background" Value="#55A7FF" />
+        <Style Selector="^:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#00CCFF" />
+        </Style>
+    </Style>
+    
     <Style Selector="TextBlock.h1">
         <Setter Property="FontSize" Value="24" />
         <Setter Property="FontWeight" Value="Bold" />

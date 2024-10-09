@@ -23,27 +23,29 @@
               </Style>
             </Expander.Styles>
             <Expander.Header >
-              <StackPanel Orientation="Horizontal"  >
-                <Button avalonia:Attached.Icon="fas fa-cog" Width="35" Height="35">
-
-                  <Button.Flyout>
-                    <MenuFlyout Placement="BottomEdgeAlignedLeft" >
-                      <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
-                      <MenuItem Header="Reset default settings"  Command="{Binding ResetDefaults}" />
-                      <MenuItem Header="Open containing dir in VSCode"  Command="{Binding OpenDirInVsCode}" />
-                      <MenuItem Header="Open definition in VSCode"  Command="{Binding OpenDefinitionInVsCode}" />
-                    </MenuFlyout>
-                  </Button.Flyout>
-                </Button>
-                <TextBlock Classes="h1" Margin="10" Text="{Binding SelectedAction.Name}" />
+              <StackPanel Orientation="Vertical" Margin="0,10">
+                <StackPanel Orientation="Horizontal"  >
+                  <Button avalonia:Attached.Icon="fas fa-cog" Width="35" Height="35">
+                    <Button.Flyout>
+                      <MenuFlyout Placement="BottomEdgeAlignedLeft" >
+                        <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
+                        <MenuItem Header="Reset default settings"  Command="{Binding ResetDefaults}" />
+                        <MenuItem Header="Open containing dir in VSCode"  Command="{Binding OpenDirInVsCode}" />
+                        <MenuItem Header="Open definition in VSCode"  Command="{Binding OpenDefinitionInVsCode}" />
+                      </MenuFlyout>
+                    </Button.Flyout>
+                  </Button>
+                  <TextBlock Classes="h1" Margin="10,0" TextWrapping="Wrap" Text="{Binding SelectedAction.Name}" />
+                  
+                </StackPanel>
+                <TextBlock Margin="5,5,5,0" IsVisible="{Binding SelectedAction.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
               </StackPanel>
             </Expander.Header>
             <StackPanel>
-              <TextBlock IsVisible="{Binding SelectedAction.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="10, 0" Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
-              <StackPanel Orientation="Horizontal" Margin="7,0" >
+              <StackPanel Orientation="Horizontal">
                 <Label VerticalAlignment="Center">Loaded from: </Label>
 
-                <TextBlock Margin="10, 0" TextWrapping="Wrap" VerticalAlignment="Center">
+                <TextBlock FontWeight="Bold" Margin="10, 0" TextWrapping="Wrap" VerticalAlignment="Center">
                   <TextBlock.Text>
                     <MultiBinding StringFormat="{}{0} [{1}]">
                       <Binding Path="SelectedAction.SourceName" />
@@ -131,7 +133,7 @@
               </Border>
             </StackPanel>
             <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch" >
-              <Button DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="200" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
+              <Button Classes="primary" DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="200" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
             </DockPanel>
           </StackPanel>
         </StackPanel>
