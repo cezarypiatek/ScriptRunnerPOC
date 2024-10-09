@@ -101,6 +101,9 @@
                                 "valueGeneratorLabel":{
                                     "type": "string"
                                 },
+                                "skipFromAutoParameterBuilder":{
+                                    "type": "boolean"
+                                },
                                 "prompt": {
                                     "type":"string",
                                     "enum": [
