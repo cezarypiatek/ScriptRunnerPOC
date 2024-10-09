@@ -68,6 +68,7 @@ public class ScriptParam
     public string? AutoParameterBuilderPattern { get; set; }
     public string? ValueGeneratorCommand { get; set; }
     public string? ValueGeneratorLabel { get; set; }
+    public bool SkipFromAutoParameterBuilder { get; set; }
 
     public bool GetPromptSettings(string name, [NotNullWhen(true)] out string? value)
     {
