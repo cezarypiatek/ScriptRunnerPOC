@@ -13,11 +13,6 @@ class PatternBaseBuilderAutoParameterBuilder : IAutoParameterBuilder
 
     public string Build(ScriptParam param)
     {
-        if(param.SkipFromAutoParameterBuilder)
-        {
-            return string.Empty;
-        }
-
         var actionAutoParameterBuilderPattern = param.AutoParameterBuilderPattern ?? _pattern ?? string.Empty;
         return actionAutoParameterBuilderPattern
             .Replace("{name}", param.Name)
