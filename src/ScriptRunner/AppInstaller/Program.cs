@@ -43,8 +43,8 @@ internal class Program
         {
             Console.WriteLine($"Updating dotnet tool {packageName}");
             var command = string.IsNullOrWhiteSpace(version) == false 
-                ? $"tool update {packageName} --global --no-cache --ignore-failed-sources --version {version} --add-source https://api.nuget.org/v3/index.json"
-                : $"tool update {packageName} --global --no-cache --ignore-failed-sources --add-source https://api.nuget.org/v3/index.json";
+                ? $"tool update {packageName} --global --no-cache --ignore-failed-sources --version {version} --verbosity diag --configfile nuget.config"
+                : $"tool update {packageName} --global --no-cache --ignore-failed-sources --verbosity diag --configfile nuget.config";
             var process = Process.Start("dotnet", command);
             process.WaitForExit();
             if (process.ExitCode != 0)
