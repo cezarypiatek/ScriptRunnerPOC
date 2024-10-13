@@ -597,6 +597,7 @@ public class MainWindowViewModel : ReactiveObject
             }
             finally
             {
+                record.IsPulling = false;
                 if (pulledWithSuccess)
                 {
 
@@ -605,7 +606,6 @@ public class MainWindowViewModel : ReactiveObject
                     var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandard("What's new", string.Join("\r\n", releaseNotes), icon: MsBox.Avalonia.Enums.Icon.Info, windowStartupLocation:WindowStartupLocation.CenterOwner);
                     await messageBoxStandardWindow.ShowAsync();
                 }
-                record.IsPulling = false;
             }
             
         }

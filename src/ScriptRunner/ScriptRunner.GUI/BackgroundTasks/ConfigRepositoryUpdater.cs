@@ -71,7 +71,7 @@ class CliRepositoryClient : IRepositoryClient
         var match = Regex.Match(originDetectOutput, @"HEAD branch:\s*(\S+)");
         if (match.Success)
         {
-            return match.Groups[1].Value; // Return the branch name captured by the group
+            return match.Groups[1].Value?.Trim(); // Return the branch name captured by the group
         }
 
         return null;
@@ -79,7 +79,7 @@ class CliRepositoryClient : IRepositoryClient
     static async Task<string?> GetCurrentBranchName(string repoPath)
     {
         var (_, originDetectOutput) = await ExecuteCommand(repoPath, "git", "rev-parse --abbrev-ref HEAD");
-        return originDetectOutput;
+        return originDetectOutput?.Trim();
     }
     
     public async Task<(bool, IReadOnlyList<string>)>  PullRepository(string path)
