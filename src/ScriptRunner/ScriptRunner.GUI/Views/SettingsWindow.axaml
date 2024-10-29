@@ -26,7 +26,7 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <Border Padding="10" Margin="10" BorderThickness="1" CornerRadius="3" BorderBrush="#FF4E0841">
+        <Border Padding="10" Margin="10" BorderThickness="1" CornerRadius="3" BorderBrush="#85DFFF">
             <TextBlock TextWrapping="Wrap" Classes="h2" Margin="10" Text="Use this dialog to add action config sources to your application. You can select individual files or entire directories, and if a directory is chosen, you have the option to search recursively for config files. If the directory is a Git repository, the app will monitor it for upstream changes to keep your configuration up to date." />
         </Border>
         <ScrollViewer Grid.Row="1">
