@@ -8,15 +8,12 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Security.Principal;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.Media;
 using Avalonia.Threading;
 using CliWrap;
 using DynamicData;
@@ -206,6 +203,7 @@ public class MainWindowViewModel : ReactiveObject
 
     public MainWindowViewModel(ParamsPanelFactory paramsPanelFactory, VaultProvider vaultProvider)
     {
+        CompactedHistoryForCurrent = true;
         this._configRepositoryUpdater = new ConfigRepositoryUpdater(new CliRepositoryClient(command =>
         {
             var tcs = new TaskCompletionSource<CliCommandOutputs>();
@@ -294,16 +292,40 @@ public class MainWindowViewModel : ReactiveObject
                 h => this.ExecutionLog.CollectionChanged -= h)
             .Select(_ => Unit.Default) // We don't care about the event args; we just want to know something changed.
             .StartWith(Unit.Default) // To ensure initial population.
-            .CombineLatest(this.WhenAnyValue(x => x.SelectedAction).Where(x => x != null),
+            .CombineLatest(
+                this.WhenAnyValue(
+                    x => x.SelectedAction, 
+                    x=>x.CompactedHistoryForCurrent,
+                    x=>x.TermForCurrentHistoryFilter
+                    ).Where(x => x.Item1 != null).Throttle(TimeSpan.FromMilliseconds(200)),
                 (_, selectedAction) => selectedAction)
-            .Select(selectedAction =>
+            .Select(data =>
             {
-                return this.ExecutionLog
-                    .Where(y => y.Source == selectedAction.SourceName && y.Name == selectedAction.Name);
+                var (selectedAction, compacted, term) = data;
+                var filtered = this.ExecutionLog.Where(y => y.Source == selectedAction!.SourceName && y.Name == selectedAction.Name);
+                
+                if (compacted)
+                {
+                    filtered = filtered.GroupBy(x => x.ParametersDescriptionString(), (key, group) => group.First());
+                }
+
+                if (string.IsNullOrWhiteSpace(term) == false)
+                {
+                    filtered = filtered.Where(x => x.Parameters.Values.Any(p => p?.Contains(term, StringComparison.InvariantCultureIgnoreCase) == true));
+                }
+
+                return filtered;
             })
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.ExecutionLogForCurrent, out _executionLogForCurrent);
-            
+
+        this.WhenAnyValue(x => x.SelectedAction)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(s =>
+            {
+                TermForCurrentHistoryFilter = "";
+            });
+
         
         _appUpdateScheduler = new RealTimeScheduler(TimeSpan.FromDays(1), TimeSpan.FromHours(1), async () =>
         {
@@ -323,6 +345,23 @@ public class MainWindowViewModel : ReactiveObject
         BuildUi();
     }
 
+    private bool _compactedHistoryForCurrent;
+
+    public bool CompactedHistoryForCurrent
+    {
+        get => _compactedHistoryForCurrent;
+        set => this.RaiseAndSetIfChanged(ref _compactedHistoryForCurrent, value);
+    }
+
+    private string _termForCurrentHistoryFilter;
+
+    public string TermForCurrentHistoryFilter
+    {
+        get => _termForCurrentHistoryFilter;
+        set => this.RaiseAndSetIfChanged(ref _termForCurrentHistoryFilter, value);
+    }
+    
+    
     private async Task RefreshInfoAbouAppUpdates()
     {
         var isNewerVersion = await appUpdater.CheckIsNewerVersionAvailable();
@@ -921,30 +960,6 @@ public class MainWindowViewModel : ReactiveObject
         return command.Split(' ', 2);
     }
 }
-
-public record ExecutionLogAction(DateTime Timestamp, string Source, string Name, Dictionary<string, string> Parameters)
-{
-    [JsonIgnore]
-    public InlineCollection ParametersDescription => new InlineCollection()
-    {
-        new Run("["),
-        
-        Parameters.SelectMany((x,i) =>
-        {
-            var value = x.Value?.StartsWith("!!vault:") == true ? "*****" : x.Value;
-            return new[]
-            {
-                new Run($"{x.Key} = "),
-                new Run(value)
-                {
-                    Foreground = Brushes.LightGreen,
-                },
-                new Run( i< Parameters.Count -1?", ":"")
-            };
-        }),
-        new Run("]"),
-    };
-};
 
 public record RecentAction(ActionId ActionId, DateTime Timestamp);
 
