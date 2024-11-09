@@ -54,7 +54,17 @@ public class RunningJobViewModel : ViewModelBase
     }
 
     public string ExecutedCommand { get; set; }
-    public void CancelExecution() => ExecutionCancellation.Cancel();
+    public void CancelExecution()
+    {
+        GracefulCancellation.Cancel();
+        KillAvailable = true;
+    }
+    
+    public void Kill()
+    {
+        KillCancellation.Cancel();
+    }
+
     public void DismissTroubleshootingMessage()
     {
         CurrentTroubleshootingMessage = null;
@@ -102,7 +112,8 @@ public class RunningJobViewModel : ViewModelBase
             {
                 await using var inputStream = new MultiplexerStream();
                 inputWriter = new StreamWriter(inputStream);
-                ExecutionCancellation = new CancellationTokenSource();
+                GracefulCancellation = new CancellationTokenSource();
+                KillCancellation = new CancellationTokenSource();
                 ChangeStatus(RunningJobStatus.Running);
                 await Cli.Wrap(commandPath)
                     .WithArguments(args)
@@ -121,7 +132,7 @@ public class RunningJobViewModel : ViewModelBase
                     }))
                     .WithValidation(CommandResultValidation.None)
                     .WithEnvironmentVariables(EnvironmentVariables ?? new())
-                    .ExecuteAsync(ExecutionCancellation.Token);
+                    .ExecuteAsync(KillCancellation.Token, GracefulCancellation.Token);
                 ChangeStatus(RunningJobStatus.Finished);
             }
             catch (Exception e)
@@ -153,6 +164,7 @@ public class RunningJobViewModel : ViewModelBase
                     RawOutput = rawOutput.ToString();
                     RawErrorOutput = rawErrorOutput.ToString();
                     RaiseExecutionCompleted();
+                    KillAvailable = false;
                 });
                _logForwarder.Finish();
             }
@@ -703,6 +715,15 @@ public class RunningJobViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _executionPending, value);
     }
 
+    private bool _killAvailable;
+
+    public bool KillAvailable
+    {
+        get => _killAvailable;
+        set => this.RaiseAndSetIfChanged(ref _killAvailable, value);
+    }
+    
+
     public string RawOutput { get; set; }
     public string RawErrorOutput { get; set; }
 
@@ -718,7 +739,8 @@ public class RunningJobViewModel : ViewModelBase
     private TextDecorationCollection? _underlineDecoration;
     private Cursor? _linkCursor;
 
-    public CancellationTokenSource ExecutionCancellation { get; set; }
+    public CancellationTokenSource GracefulCancellation { get; set; }
+    public CancellationTokenSource KillCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }
 
     public InlineCollection RichOutput { get; set; } = new();
