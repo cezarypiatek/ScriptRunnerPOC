@@ -43,11 +43,11 @@
                       <Button Margin="20" Padding="10" HorizontalAlignment="Center" FontSize="26" Command="{Binding DismissTroubleshootingMessage}">Dismiss</Button>
                   </StackPanel>
               </ScrollViewer>
-              <ScrollViewer Grid.Row="1" ScrollChanged="ScrollChangedHandler" BringIntoViewOnFocusChange="False">
+              <ScrollViewer Grid.Row="1" ScrollChanged="ScrollChangedHandler" BringIntoViewOnFocusChange="False" Margin="0,0,0,10">
                   <SelectableTextBlock   Classes="consoleOutput"  Inlines="{Binding RichOutput}" ></SelectableTextBlock>
               </ScrollViewer>
-              <StackPanel Grid.Row="2" IsVisible="{Binding ExecutionPending, Mode=OneWay}" >
-                  <ItemsRepeater ItemsSource="{Binding CurrentInteractiveInputs}" Margin="0, 10, 0,0">
+              <StackPanel Grid.Row="2" IsVisible="{Binding ExecutionPending, Mode=OneWay}" Margin="0, 0, 0,10">
+                  <ItemsRepeater ItemsSource="{Binding CurrentInteractiveInputs}">
                       <ItemsRepeater.Layout>
                           <StackLayout Spacing="10"
                                        Orientation="Horizontal" />
@@ -59,12 +59,12 @@
                       </ItemsRepeater.ItemTemplate>
                       
                   </ItemsRepeater>
-                  <TextBox  Text="{Binding InputCommand, Mode=TwoWay}" KeyUp="AcceptCommand"  Margin="0,10,10,0" FontFamily="Consolas"></TextBox>
+                  <TextBox  Text="{Binding InputCommand, Mode=TwoWay}" KeyUp="AcceptCommand"  Margin="0,0,10,0" FontFamily="Consolas"></TextBox>
               </StackPanel>
             
-            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,10,0,10">
-              <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0"
-                       Command="{Binding CancelExecution}" IsEnabled="{Binding ExecutionPending}">Cancel</Button>
+            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10" IsVisible="{Binding ExecutionPending}">
+              <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0" Command="{Binding CancelExecution}" IsEnabled="{Binding !KillAvailable}" >Cancel</Button>
+              <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0" Command="{Binding Kill}" IsVisible="{Binding KillAvailable}" >Kill</Button>
               <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
             </StackPanel>
           </Grid>
