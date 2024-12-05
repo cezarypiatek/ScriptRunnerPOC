@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -19,6 +21,7 @@ using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.ViewModels;
 using ScriptRunner.GUI.Views;
+using Path = System.IO.Path;
 
 namespace ScriptRunner.GUI;
 
@@ -60,12 +63,76 @@ public class ParamsPanelFactory
                         
             };
             ToolTip.SetTip(label, param.Name);
+
+            var controlForEdit = controlRecord.Control;
+            
+            if (param.Prompt is PromptType.Multilinetext or PromptType.FileContent)
+            {
+                bool _isResizing = false;
+                Point _lastPointerPosition = default;
+                
+                var resizeHandle = new Border()
+                {
+                    Height = 10,
+                    Background = Brushes.Transparent,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    ZIndex = 1,
+                    Margin = new Thickness(0,-10,0,0),
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    Cursor = new Cursor(StandardCursorType.SizeNorthSouth)
+                };
+                resizeHandle.Child = new Icon()
+                {
+                    Value = "fas fa-signal",
+                    HorizontalAlignment = HorizontalAlignment.Right
+                };
+                
+
+                resizeHandle.PointerPressed += (sender, e) =>
+                {
+                    _isResizing = true;
+                    _lastPointerPosition = e.GetPosition(paramsPanel);
+                    e.Handled = true;
+                };
+
+                resizeHandle.PointerMoved += (sender, e) =>
+                {
+                    if (_isResizing)
+                    {
+                        var currentPosition = e.GetPosition(paramsPanel);
+                        var delta = currentPosition - _lastPointerPosition;
+
+                        var textBox = controlRecord.Control;
+                        textBox.Height = Math.Max(textBox.MinHeight, textBox.Height + delta.Y);
+
+                        _lastPointerPosition = currentPosition;
+                    }
+                };
+
+                resizeHandle.PointerReleased += (sender, e) =>
+                {
+                    _isResizing = false;
+                };
+                //paramsPanel.Children.Add(resizeHandle);
+
+                var panel = new StackPanel()
+                {
+                    Orientation = Orientation.Vertical
+                };
+                panel.Children.Add(controlRecord.Control);
+                panel.Children.Add(resizeHandle);
+                controlForEdit = panel;
+
+
+            }
+          
+           
             var actionPanel = new StackPanel
             {
                 Children =
                 {
                     label,
-                    controlRecord.Control
+                    controlForEdit
                 },
                 Classes =
                 {
@@ -269,7 +336,8 @@ public class ParamsPanelFactory
                         Text = value,
                         TabIndex = index,
                         IsTabStop = true,
-                        Width = 500
+                        Width = 500,
+                        
                     }
                 };
             case PromptType.FileContent:
