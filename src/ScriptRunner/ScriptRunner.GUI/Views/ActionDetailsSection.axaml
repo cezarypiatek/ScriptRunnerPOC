@@ -144,7 +144,7 @@
       <TabControl SelectedIndex="{}">
         <TabItem IsVisible="{Binding SelectedAction.HasDocs}" Header="Documentation">
           <Border Grid.Column="1" Background="#1f1f1f" IsVisible="{Binding SelectedAction.HasDocs}" >
-            <mdxaml:MarkdownScrollViewer xml:space="default" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}">
+            <mdxaml:MarkdownScrollViewer xml:space="default" SelectionEnabled="True" Margin="20"  Markdown="{Binding SelectedAction.DocsContent}" AssetPathRoot="{Binding SelectedAction.DocAssetPath}">
               <mdxaml:MarkdownScrollViewer.Styles>
                 <Style Selector="ctxt|CTextBlock">
                   <Setter Property="Foreground" Value="#C3C3C3"/>
