@@ -1,6 +1,8 @@
-﻿using Avalonia;
+﻿using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using ScriptRunner.GUI.ViewModels;
 
@@ -34,6 +36,22 @@ public partial class RunningJobsSection : UserControl
             {
                 viewModel.AcceptCommand();
             }
+        }
+    }
+
+    private void InputElement_OnGotFocus(object? sender, GotFocusEventArgs e)
+    {
+        if (sender is TextBox textBox)
+        {
+            textBox.Height = Double.NaN;
+        }
+    }
+
+    private void InputElement_OnLostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox textBox)
+        {
+            textBox.Height = 30;
         }
     }
 }
