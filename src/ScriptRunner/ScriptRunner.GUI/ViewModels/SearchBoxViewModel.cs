@@ -31,7 +31,9 @@ namespace ScriptRunner.GUI.ViewModels
             {
                 Config = x,
                 ArgumentSet = p,
-                FullName = p.Description == "<default>"? x.FullName : $"{x.FullName} - {p.Description}"
+                FullName = p.Description == "<default>"? x.FullName : $"{x.FullName} - {p.Description}",
+                ActionName =  p.Description == "<default>"? x.Name : $"{x.Name} - {p.Description}",
+                SourceName = x.SourceName
             })).ToList();
 
             var intial = true;
@@ -100,6 +102,8 @@ namespace ScriptRunner.GUI.ViewModels
         public ScriptConfig Config { get; set; }
         public ArgumentSet ArgumentSet{ get; set; }
         public string FullName { get; set; }
+        public string ActionName { get; set; }
+        public string SourceName { get; set; }
         
     }
 }
