@@ -54,25 +54,27 @@
                   <SelectableTextBlock TextWrapping="Wrap" Margin="0"  Classes="consoleOutput"  Inlines="{Binding RichOutput}" ></SelectableTextBlock>
               </ScrollViewer>
               <StackPanel Grid.Row="2" IsVisible="{Binding ExecutionPending, Mode=OneWay}" Margin="0, 0, 0,10">
-                  <ItemsRepeater ItemsSource="{Binding CurrentInteractiveInputs}">
-                      <ItemsRepeater.Layout>
-                          <StackLayout Spacing="10"
-                                       Orientation="Horizontal" />
-                      </ItemsRepeater.Layout>
-                      <ItemsRepeater.ItemTemplate>
-                          <DataTemplate x:DataType="scriptConfigs:InteractiveInputItem">
-                              <Button Classes="secondary" Padding="20,5" Content="{Binding Label}" Command="{Binding $parent[ItemsRepeater].DataContext.ExecuteInteractiveInput}" CommandParameter="{Binding Value}"></Button>
-                          </DataTemplate>
-                      </ItemsRepeater.ItemTemplate>
+                  <Panel IsVisible="{Binding CurrentInteractiveInputs.Count}" Margin="0,0,0,10">
+                      <ItemsRepeater ItemsSource="{Binding CurrentInteractiveInputs}">
+                          <ItemsRepeater.Layout>
+                              <StackLayout Spacing="10"
+                                           Orientation="Horizontal" />
+                          </ItemsRepeater.Layout>
+                          <ItemsRepeater.ItemTemplate>
+                              <DataTemplate x:DataType="scriptConfigs:InteractiveInputItem">
+                                  <Button Classes="secondary" Padding="20,5" Content="{Binding Label}" Command="{Binding $parent[ItemsRepeater].DataContext.ExecuteInteractiveInput}" CommandParameter="{Binding Value}"></Button>
+                              </DataTemplate>
+                          </ItemsRepeater.ItemTemplate>
                       
-                  </ItemsRepeater>
+                      </ItemsRepeater>
+                  </Panel>
                   <TextBox  Text="{Binding InputCommand, Mode=TwoWay}" KeyUp="AcceptCommand"  Margin="0,0,10,0" FontFamily="Consolas"></TextBox>
               </StackPanel>
             
             <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10" IsVisible="{Binding ExecutionPending}">
-              <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0" Command="{Binding CancelExecution}" IsEnabled="{Binding !KillAvailable}" >Cancel</Button>
-              <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0" Command="{Binding Kill}" IsVisible="{Binding KillAvailable}" >Kill</Button>
               <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
+              <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0" Command="{Binding CancelExecution}" IsEnabled="{Binding !KillAvailable}" >Cancel</Button>
+              <Button  Width="60" HorizontalContentAlignment="Center" Command="{Binding Kill}" IsVisible="{Binding KillAvailable}" Background="Firebrick">Kill</Button>
             </StackPanel>
           </Grid>
 

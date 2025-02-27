@@ -125,7 +125,6 @@
 
     <Style Selector="ProgressBar.executionProgressBar">
         <Setter Property="Height" Value="30" />
-        <Setter Property="Margin" Value="20 ,0" />
 	</Style>
 
     <Style Selector="SelectableTextBlock.consoleOutput">
