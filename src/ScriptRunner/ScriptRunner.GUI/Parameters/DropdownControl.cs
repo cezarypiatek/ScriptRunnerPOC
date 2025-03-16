@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using ScriptRunner.GUI.Views;
 
 namespace ScriptRunner.GUI;
 
@@ -8,7 +9,12 @@ public class DropdownControl : IControlRecord
 
     public string GetFormattedValue()
     {
-        return ((ComboBox)Control).SelectedItem?.ToString();
+        return Control switch
+        {
+            ComboBox cb => cb.SelectedItem?.ToString(),
+            SearchableComboBox acb => acb.SelectedItem,
+            _ => ""
+        } ?? string.Empty;
     }
 
     public string Name { get; set; }
