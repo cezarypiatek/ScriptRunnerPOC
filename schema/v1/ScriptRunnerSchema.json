@@ -186,6 +186,10 @@
                                                 },
                                                 "searchable": {
                                                     "type": "boolean"
+                                                },
+                                                "optionsGeneratorCommand":
+                                                {
+                                                    "type": "string"
                                                 }
                                             }
                                         }

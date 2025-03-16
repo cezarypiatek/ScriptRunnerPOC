@@ -64,7 +64,7 @@ public class ScriptParam
     public string Description { get; set; }
     public PromptType Prompt { get; set; }
     public string Default { get; set; }
-    public Dictionary<string, string> PromptSettings { get; set; } = new();
+    public Dictionary<string, object> PromptSettings { get; set; } = new();
     public string? AutoParameterBuilderPattern { get; set; }
     public string? ValueGeneratorCommand { get; set; }
     public string? ValueGeneratorLabel { get; set; }
@@ -72,14 +72,16 @@ public class ScriptParam
 
     public bool GetPromptSettings(string name, [NotNullWhen(true)] out string? value)
     {
-        return PromptSettings.TryGetValue(name, out value);
+        var res = PromptSettings.TryGetValue(name, out var objV);
+        value = objV?.ToString();
+        return res;
     }
     
     public T GetPromptSettings<T>(string name, Func<string,T> convert, T @default)
     {
         if (PromptSettings.TryGetValue(name, out var value))
         {
-            return convert(value);
+            return convert(value.ToString()!);
         }
 
         return @default;
