@@ -48,7 +48,7 @@ public class ParamsPanelFactory
         foreach (var (param,i) in action.Params.Select((x,i)=>(x,i)))
         {
             values.TryGetValue(param.Name, out var value);
-            var controlRecord = CreateControlRecord(param, value, i, action, secretBindings);
+            var controlRecord = CreateControlRecord(param, value, i, action, secretBindings, commandExecutor);
             controlRecord.Name = param.Name;
             if (controlRecord.Control is Layoutable l)
             {
@@ -178,7 +178,8 @@ public class ParamsPanelFactory
     }
 
     private IControlRecord CreateControlRecord(ScriptParam p, string? value, int index,
-        ScriptConfig scriptConfig, List<VaultBinding> secretBindings)
+        ScriptConfig scriptConfig, List<VaultBinding> secretBindings,
+        Func<string, string, Task<string?>> commandExecutor)
     {
         switch (p.Prompt)
         {
@@ -239,24 +240,74 @@ public class ParamsPanelFactory
                 };
             case PromptType.Dropdown:
                 var initialOptions = p.GetPromptSettings("options", out var options) ? options.Split(","):Array.Empty<string>();
+                var observableOptions = new ObservableCollection<string>(initialOptions);
                 var searchable = p.GetPromptSettings("searchable", bool.Parse, false);
+                var optionsGeneratorCommand = p.GetPromptSettings("optionsGeneratorCommand", out var optionsGeneratorCommandText) ? optionsGeneratorCommandText : null;
+                
+                
+                if (observableOptions.Count == 0 && string.IsNullOrWhiteSpace(value) == false && string.IsNullOrWhiteSpace(optionsGeneratorCommand) == false)
+                {
+                    observableOptions.Add(value);
+                }
+                
+                Control inputControl = searchable ? new SearchableComboBox()
+                {
+                    Items = observableOptions,
+                    SelectedItem = value,
+                    TabIndex = index,
+                    IsTabStop = true,
+                    Width = 500
+                }: new ComboBox
+                { 
+                    ItemsSource = observableOptions,
+                    SelectedItem = value,
+                    TabIndex = index,
+                    IsTabStop = true,
+                    Width = 500
+                };
+                var actionPanel = new StackPanel()
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 5,
+                    Children =
+                    {
+                        inputControl
+                    }
+                };
+                if (string.IsNullOrWhiteSpace(optionsGeneratorCommand) == false)
+                {
+                    var generateButton = new Button()
+                    {
+                        Margin = new(5,0,5,0),
+                        Width = 32,
+                        VerticalAlignment = VerticalAlignment.Stretch,
+                        HorizontalContentAlignment = HorizontalAlignment.Center
+                    };
+                    generateButton.Click += async(sender, args) =>
+                    {
+                        generateButton.IsEnabled = false;
+                        generateButton.Classes.Add("spinning");
+                        var result = await commandExecutor($"Generate options for '{p.Name}'", optionsGeneratorCommand) ?? "";
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            observableOptions.Clear();
+                            foreach (var option in result.Split(new[]{'\r', '\n',','}, StringSplitOptions.RemoveEmptyEntries).Distinct().OrderBy(x=>x))
+                            {
+                                observableOptions.Add(option);
+                            }
+                            generateButton.Classes.Remove("spinning");
+                            generateButton.IsEnabled = true;
+                        });
+                    };
+                    Attached.SetIcon(generateButton, "fas fa-sync");
+                    ToolTip.SetTip(generateButton, "Refresh available options");
+                    actionPanel.Children.Add(generateButton);
+                }
+               
                 return new DropdownControl
                 {
-                    Control = searchable ? new SearchableComboBox()
-                    {
-                        Items = new ObservableCollection<string>(initialOptions),
-                        SelectedItem = value,
-                        TabIndex = index,
-                        IsTabStop = true,
-                        Width = 500
-                    }: new ComboBox
-                    { 
-                        ItemsSource = initialOptions,
-                        SelectedItem = value,
-                        TabIndex = index,
-                        IsTabStop = true,
-                        Width = 500
-                    }
+                    Control = actionPanel,
+                    InputControl = inputControl
                 };
             case PromptType.Multiselect:
                 var delimiter = p.GetPromptSettings("delimiter", s => s, ",");

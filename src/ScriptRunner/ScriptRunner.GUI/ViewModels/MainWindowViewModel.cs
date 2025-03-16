@@ -229,13 +229,17 @@ public class MainWindowViewModel : ReactiveObject
         _vaultProvider = vaultProvider;
         this.appUpdater = new GithubUpdater();
 
+        ExecutionLogAction? lastSelected = null;
+        
         this.WhenAnyValue(x=>x.SelectedRecentExecution)
-            .Where(x=>x is not null)
+            .Where(x=>x is not null && x != lastSelected)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(b =>
             {
+                lastSelected = b;
                 if (Actions.FirstOrDefault(x => x.Name == b.Name && x.SourceName == b.Source) is { } selected)
                 {
+                    
                     SelectedAction = selected;
                     RenderParameterForm(selected, b.Parameters);
                 }
@@ -860,7 +864,7 @@ public class MainWindowViewModel : ReactiveObject
             var usedParams = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{selectedAction.Name}_{Guid.NewGuid():N}");
             var executionLogAction = new ExecutionLogAction(DateTime.Now,  selectedAction.SourceName, selectedAction.Name, usedParams);
             ExecutionLog.Insert(0, executionLogAction);
-            SelectedRecentExecution = executionLogAction;
+            //SelectedRecentExecution = executionLogAction;
             AppSettingsService.UpdateExecutionLog(ExecutionLog.ToList());
         }
         
@@ -912,7 +916,7 @@ public class MainWindowViewModel : ReactiveObject
     public ExecutionLogAction SelectedRecentExecution
     {
         get => _selectedRecentExecution;
-        set => this.RaiseAndSetIfChanged(ref _selectedRecentExecution, value);
+        set=> this.RaiseAndSetIfChanged(ref _selectedRecentExecution, value);
     }
 
     private ExecutionLogAction _selectedRecentExecution;

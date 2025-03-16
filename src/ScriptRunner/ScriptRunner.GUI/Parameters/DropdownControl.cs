@@ -6,10 +6,11 @@ namespace ScriptRunner.GUI;
 public class DropdownControl : IControlRecord
 {
     public Control Control { get; set; }
+    public Control InputControl { get; set; }
 
     public string GetFormattedValue()
     {
-        return Control switch
+        return InputControl switch
         {
             ComboBox cb => cb.SelectedItem?.ToString(),
             SearchableComboBox acb => acb.SelectedItem,

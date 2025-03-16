@@ -83,22 +83,6 @@ namespace ScriptRunner.GUI.Views;
             }
         }
 
-        private void AutoCompleteBox_TextChanged(object? sender, EventArgs e)
-        {
-            if (_autoCompleteBox != null)
-            {
-                var text = _autoCompleteBox.Text;
-                if (Items.Contains(text))
-                {
-                    SelectedItem = text;
-                }
-                else
-                {
-                    SelectedItem = null; // Reset if not a valid selection
-                }
-            }
-        }
-
         private void AutoCompleteBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (_autoCompleteBox?.SelectedItem is string selected)

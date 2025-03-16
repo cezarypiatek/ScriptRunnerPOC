@@ -4,16 +4,16 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ScriptRunner.GUI.Views.SearchableComboBox">
-    <StackPanel Orientation="Horizontal">
+    <Grid ColumnDefinitions="*, Auto">
         <!-- AutoCompleteBox for search -->
-        <AutoCompleteBox x:Name="PART_AutoCompleteBox"
+        <AutoCompleteBox Grid.Column="0"  x:Name="PART_AutoCompleteBox"
                          FilterMode="ContainsOrdinal"
                          MinimumPrefixLength="0"
                          MinWidth="150"
                          IsTextCompletionEnabled="true"/>
 
         <!-- Button to show all options -->
-        <Button Content="▼"
+        <Button Grid.Column="1" Content="▼"
                 Background="Black"
                 BorderBrush="White"
                 BorderThickness="0,1,1,1"
@@ -26,5 +26,5 @@
                 </Style>
             </Button.Styles>
         </Button>
-    </StackPanel>
+    </Grid>
 </UserControl>
