@@ -1,0 +1,118 @@
+﻿using System;
+using System.Collections.ObjectModel;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
+
+namespace ScriptRunner.GUI.Views;
+
+  public partial class SearchableComboBox : UserControl
+    {
+        public static readonly StyledProperty<ObservableCollection<string>> ItemsProperty =
+            AvaloniaProperty.Register<ContentControl, ObservableCollection<string>>(nameof(Items));
+
+        public static readonly StyledProperty<string> SelectedItemProperty =
+            AvaloniaProperty.Register<ContentControl, string>(nameof(SelectedItem));
+
+        private AutoCompleteBox? _autoCompleteBox;
+
+        public SearchableComboBox()
+        {
+            Items = new ObservableCollection<string>();
+            ItemsProperty.Changed.Subscribe(args =>
+            {
+                if(args.Sender is SearchableComboBox searchableComboBox)
+                {
+                    if(searchableComboBox._autoCompleteBox != null)
+                    {
+                        searchableComboBox._autoCompleteBox.ItemsSource = args.NewValue.Value;
+                    }
+                }
+
+            });
+            SelectedItemProperty.Changed.Subscribe(args =>
+            {
+                if(args.Sender is SearchableComboBox searchableComboBox)
+                {
+                    if(searchableComboBox._autoCompleteBox != null)
+                    {
+                        searchableComboBox._autoCompleteBox.SelectedItem = args.NewValue.Value;
+                    }
+                }
+            });
+            this.InitializeComponent();
+        }
+
+        public ObservableCollection<string> Items
+        {
+            get => GetValue(ItemsProperty);
+            set => SetValue(ItemsProperty, value);
+        }
+
+        public string SelectedItem
+        {
+            get => GetValue(SelectedItemProperty);
+            set
+            {
+                if (Items.Contains(value))
+                {
+                    SetValue(SelectedItemProperty, value);
+                }
+            }
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+            _autoCompleteBox = this.FindControl<AutoCompleteBox>("PART_AutoCompleteBox");
+
+            if (_autoCompleteBox != null)
+            {
+                _autoCompleteBox.ItemsSource = Items;
+                _autoCompleteBox.SelectedItem = SelectedItem;
+                //_autoCompleteBox.TextChanged += AutoCompleteBox_TextChanged;
+                _autoCompleteBox.LostFocus += (sender, args) =>
+                {
+                    if(_autoCompleteBox.SelectedItem == null)
+                    {
+                        _autoCompleteBox.Text = "";
+                    }
+                };
+                _autoCompleteBox.SelectionChanged += AutoCompleteBox_SelectionChanged;
+            }
+        }
+
+        private void AutoCompleteBox_TextChanged(object? sender, EventArgs e)
+        {
+            if (_autoCompleteBox != null)
+            {
+                var text = _autoCompleteBox.Text;
+                if (Items.Contains(text))
+                {
+                    SelectedItem = text;
+                }
+                else
+                {
+                    SelectedItem = null; // Reset if not a valid selection
+                }
+            }
+        }
+
+        private void AutoCompleteBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (_autoCompleteBox?.SelectedItem is string selected)
+            {
+                SelectedItem = selected;
+            }
+        }
+
+        private void ShowAllOptions_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_autoCompleteBox != null)
+            {
+                _autoCompleteBox.ItemsSource = new ObservableCollection<string>(Items);
+                _autoCompleteBox.IsDropDownOpen = true;
+            }
+        }
+    }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -237,11 +238,20 @@ public class ParamsPanelFactory
                     MaskingRequired = true,
                 };
             case PromptType.Dropdown:
+                var initialOptions = p.GetPromptSettings("options", out var options) ? options.Split(","):Array.Empty<string>();
+                var searchable = p.GetPromptSettings("searchable", bool.Parse, false);
                 return new DropdownControl
                 {
-                    Control = new ComboBox
+                    Control = searchable ? new SearchableComboBox()
+                    {
+                        Items = new ObservableCollection<string>(initialOptions),
+                        SelectedItem = value,
+                        TabIndex = index,
+                        IsTabStop = true,
+                        Width = 500
+                    }: new ComboBox
                     { 
-                        ItemsSource = p.GetPromptSettings("options", out var options) ? options.Split(","):Array.Empty<string>(),
+                        ItemsSource = initialOptions,
                         SelectedItem = value,
                         TabIndex = index,
                         IsTabStop = true,

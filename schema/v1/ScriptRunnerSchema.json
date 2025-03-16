@@ -183,6 +183,9 @@
                                             "properties": {
                                                 "options": {
                                                     "type": "string"
+                                                },
+                                                "searchable": {
+                                                    "type": "boolean"
                                                 }
                                             }
                                         }
