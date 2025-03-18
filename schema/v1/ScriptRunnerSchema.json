@@ -190,6 +190,10 @@
                                                 "optionsGeneratorCommand":
                                                 {
                                                     "type": "string"
+                                                },
+                                                "delimiter":
+                                                {
+                                                    "type": "string"
                                                 }
                                             }
                                         }
