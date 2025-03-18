@@ -240,7 +240,8 @@ public class ParamsPanelFactory
                     MaskingRequired = true,
                 };
             case PromptType.Dropdown:
-                var initialOptions = p.GetPromptSettings("options", out var options) ? options.Split(","):Array.Empty<string>();
+                var delimiterForOptions = p.GetPromptSettings("delimiter", x => x, ",");
+                var initialOptions = p.GetPromptSettings("options", out var options) ? options.Split(delimiterForOptions):Array.Empty<string>();
                 var observableOptions = new ObservableCollection<string>(initialOptions);
                 var searchable = p.GetPromptSettings("searchable", bool.Parse, false);
                 var optionsGeneratorCommand = p.GetPromptSettings("optionsGeneratorCommand", out var optionsGeneratorCommandText) ? optionsGeneratorCommandText : null;
@@ -293,7 +294,7 @@ public class ParamsPanelFactory
                         Dispatcher.UIThread.Post(() =>
                         {
                             observableOptions.Clear();
-                            foreach (var option in result.Split(new[]{'\r', '\n',','}, StringSplitOptions.RemoveEmptyEntries).Distinct().OrderBy(x=>x))
+                            foreach (var option in result.Split(new[]{"\r", "\n",delimiterForOptions}, StringSplitOptions.RemoveEmptyEntries).Distinct().OrderBy(x=>x))
                             {
                                 observableOptions.Add(option);
                             }
