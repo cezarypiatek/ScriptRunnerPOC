@@ -10,6 +10,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -283,7 +284,8 @@ public class ParamsPanelFactory
                         VerticalAlignment = VerticalAlignment.Stretch,
                         HorizontalContentAlignment = HorizontalAlignment.Center
                     };
-                    generateButton.Click += async(sender, args) =>
+                    bool wasGenerated = false;
+                    EventHandler<RoutedEventArgs> generate = async(sender, args) =>
                     {
                         generateButton.IsEnabled = false;
                         generateButton.Classes.Add("spinning");
@@ -297,8 +299,24 @@ public class ParamsPanelFactory
                             }
                             generateButton.Classes.Remove("spinning");
                             generateButton.IsEnabled = true;
+                            wasGenerated = true;
+                            if (inputControl is SearchableComboBox scb)
+                            {
+                                scb.ShowAll();
+                            }
                         });
                     };
+                    generateButton.Click += generate;
+                    if(inputControl is SearchableComboBox scb)
+                    {
+                        scb.GotFocus += (sender, args) =>
+                        {
+                            if (wasGenerated == false)
+                            {
+                                generate(sender, args);
+                            }
+                        };
+                    }
                     Attached.SetIcon(generateButton, "fas fa-sync");
                     ToolTip.SetTip(generateButton, "Refresh available options");
                     actionPanel.Children.Add(generateButton);
