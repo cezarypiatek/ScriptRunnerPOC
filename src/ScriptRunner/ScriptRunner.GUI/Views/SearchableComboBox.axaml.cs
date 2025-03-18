@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 
 namespace ScriptRunner.GUI.Views;
 
@@ -72,29 +74,51 @@ namespace ScriptRunner.GUI.Views;
                 _autoCompleteBox.ItemsSource = Items;
                 _autoCompleteBox.SelectedItem = SelectedItem;
                 //_autoCompleteBox.TextChanged += AutoCompleteBox_TextChanged;
+                _autoCompleteBox.GotFocus += (sender, args) =>
+                {
+                    _autoCompleteBox.IsDropDownOpen = true;
+                };
                 _autoCompleteBox.LostFocus += (sender, args) =>
                 {
-                    if(_autoCompleteBox.SelectedItem == null)
+                    Task.Run(async () =>
                     {
-                        _autoCompleteBox.Text = "";
-                    }
+                        await Task.Delay(TimeSpan.FromSeconds(1));
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            if(_autoCompleteBox.SelectedItem == null)
+                            {
+                                _autoCompleteBox.Text = "";
+                            }
+                        });
+                    });
                 };
+               
                 _autoCompleteBox.SelectionChanged += AutoCompleteBox_SelectionChanged;
             }
         }
 
+        
+        private string previousValue = "";
         private void AutoCompleteBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (_autoCompleteBox?.SelectedItem is string selected)
+            if (_autoCompleteBox?.SelectedItem is string selected && selected != previousValue)
             {
                 SelectedItem = selected;
+                previousValue = selected;
             }
         }
 
         private void ShowAllOptions_Click(object? sender, RoutedEventArgs e)
         {
+            ShowAll();
+        }
+
+        public void ShowAll()
+        {
             if (_autoCompleteBox != null)
             {
+                _autoCompleteBox.Text = "";
+                _autoCompleteBox.Focus();
                 _autoCompleteBox.ItemsSource = new ObservableCollection<string>(Items);
                 _autoCompleteBox.IsDropDownOpen = true;
             }
