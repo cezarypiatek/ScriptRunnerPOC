@@ -424,13 +424,13 @@ public class RunningJobViewModel : ViewModelBase
         foreach (var part in s.SelectMany(x=>x.Split("\r\n")).TakeLast(OutputBufferSize))
         {
             var subParts = ConsoleSpecialCharsPattern.Split(part);
-            if (part.Contains("http://") || part.Contains("https://"))
+            if (part.Contains("http://", StringComparison.OrdinalIgnoreCase) || part.Contains("https://", StringComparison.OrdinalIgnoreCase))
             {
                 subParts = subParts.SelectMany(x => urlPattern.Split(x)).ToArray();
             }
             foreach (var chunk in subParts.Where(x=> x != string.Empty))
             {
-                if (chunk.StartsWith("http://") || chunk.StartsWith("https://"))
+                if (chunk.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || chunk.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                 {
                     _outputElements.Add(new Link(chunk));
                     continue;
@@ -443,7 +443,7 @@ public class RunningJobViewModel : ViewModelBase
                     subPart = subPart.Replace(";3m", "m");
                 }
                 
-                if (subPart.StartsWith("\u001b["))
+                if (subPart.StartsWith("\u001b[", StringComparison.Ordinal))
                 {
                     var foreground = subPart switch
                     {
