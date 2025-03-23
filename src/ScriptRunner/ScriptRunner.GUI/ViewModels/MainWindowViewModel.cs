@@ -503,7 +503,7 @@ public class MainWindowViewModel : ReactiveObject
                 var taskCompletionSource = new TaskCompletionSource<string>();
                 try
                 {
-                    ExecuteCommand(command, this.SelectedAction, title, s =>
+                    ExecuteCommand(command, this.SelectedAction, useSystemShell:false, title, s =>
                     {
                         taskCompletionSource.SetResult(s);
                     });
@@ -858,7 +858,7 @@ public class MainWindowViewModel : ReactiveObject
 
             var selectedActionCommand = selectedAction.Command;
             
-            ExecuteCommand(selectedActionCommand, selectedAction);
+            ExecuteCommand(selectedActionCommand, selectedAction, selectedAction.UseSystemShell);
 
             // Some audit staff
             var usedParams = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{selectedAction.Name}_{Guid.NewGuid():N}");
@@ -870,7 +870,7 @@ public class MainWindowViewModel : ReactiveObject
         
     }
 
-    private void ExecuteCommand(string command, ScriptConfig selectedAction, string? title = null, Action<string>? onComplete = null)
+    private void ExecuteCommand(string command, ScriptConfig selectedAction, bool useSystemShell, string? title = null, Action<string>? onComplete = null)
     {
         var (commandPath, args) = SplitCommandAndArgs(command);
         var envVariables = new Dictionary<string, string?>(selectedAction.EnvironmentVariables);
@@ -902,7 +902,7 @@ public class MainWindowViewModel : ReactiveObject
             job.ExecutionCompleted += (sender, args) => onComplete(job.RawOutput);
         }
         
-        job.RunJob(commandPath, args, selectedAction.WorkingDirectory, selectedAction.InteractiveInputs, selectedAction.Troubleshooting);
+        job.RunJob(commandPath, args, selectedAction.WorkingDirectory, selectedAction.InteractiveInputs, selectedAction.Troubleshooting, useSystemShell);
     }
 
     public ObservableCollection<ExecutionLogAction> ExecutionLog { get; set; } = new ();

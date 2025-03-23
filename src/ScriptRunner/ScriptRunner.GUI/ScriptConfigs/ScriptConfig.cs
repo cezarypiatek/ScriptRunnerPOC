@@ -14,6 +14,7 @@ public class ScriptConfig
     public string? Description { get; set; }
     public string Command { get; set; }
     public bool RunCommandAsAdmin { get; set; }
+    public bool UseSystemShell { get; set; }
     public string Docs { get; set; }
     public string DocsContent { get; set; } = string.Empty;
     public string DocAssetPath { get; set; }
