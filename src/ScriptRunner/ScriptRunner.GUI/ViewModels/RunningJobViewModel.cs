@@ -94,7 +94,9 @@ public class RunningJobViewModel : ViewModelBase
     public void RaiseExecutionCompleted() => ExecutionCompleted?.Invoke(this, EventArgs.Empty);
     private IReadOnlyList<InteractiveInputDescription> _inputs = new List<InteractiveInputDescription>();
     public void RunJob(string commandPath, string args, string? workingDirectory,
-        IReadOnlyList<InteractiveInputDescription> interactiveInputs, IReadOnlyList<TroubleshootingItem> troubleshooting)
+        IReadOnlyList<InteractiveInputDescription> interactiveInputs, 
+        IReadOnlyList<TroubleshootingItem> troubleshooting,
+        bool useSystemShell = false)
     {
 
         _inputs = interactiveInputs;
@@ -115,24 +117,63 @@ public class RunningJobViewModel : ViewModelBase
                 GracefulCancellation = new CancellationTokenSource();
                 KillCancellation = new CancellationTokenSource();
                 ChangeStatus(RunningJobStatus.Running);
-                await Cli.Wrap(commandPath)
-                    .WithArguments(args)
-                    //TODO: Working dir should be read from the config with the fallback set to the config file dir
-                    .WithWorkingDirectory(workingDirectory ?? "Scripts/")
-                    .WithStandardInputPipe(PipeSource.FromStream(inputStream,autoFlush:true))
-                    .WithStandardOutputPipe(PipeTarget.ToDelegate(s =>
+
+                if (useSystemShell)
+                {
+                    var processStartInfo = new ProcessStartInfo()
                     {
-                        rawOutput.AppendLine(s);
-                        AppendToOutput(s, ConsoleOutputLevel.Normal);
-                    }))
-                    .WithStandardErrorPipe(PipeTarget.ToDelegate(s =>
+                        FileName = commandPath,
+                        Arguments = args,
+                        WorkingDirectory = workingDirectory,
+                        UseShellExecute = true,
+                        RedirectStandardInput = false,
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = false
+                    };
+
+                    if (EnvironmentVariables != null)
                     {
-                        rawErrorOutput.Append(s);
-                        AppendToOutput(s, ConsoleOutputLevel.Error);
-                    }))
-                    .WithValidation(CommandResultValidation.None)
-                    .WithEnvironmentVariables(EnvironmentVariables ?? new())
-                    .ExecuteAsync(KillCancellation.Token, GracefulCancellation.Token);
+                        foreach (var o in EnvironmentVariables)
+                        {
+                            processStartInfo.EnvironmentVariables[o.Key] = o.Value;
+                        }    
+                    }
+                    var p = Process.Start(processStartInfo);
+                    try
+                    {
+                        if (p != null)
+                        {
+                            await p.WaitForExitAsync(GracefulCancellation.Token);    
+                        }
+                    }
+                    finally
+                    {
+                        if(p.HasExited == false)
+                            p.Kill();
+                    }
+                }
+                else
+                {
+                    await Cli.Wrap(commandPath)
+                        .WithArguments(args)
+                        //TODO: Working dir should be read from the config with the fallback set to the config file dir
+                        .WithWorkingDirectory(workingDirectory ?? "Scripts/")
+                        .WithStandardInputPipe(PipeSource.FromStream(inputStream,autoFlush:true))
+                        .WithStandardOutputPipe(PipeTarget.ToDelegate(s =>
+                        {
+                            rawOutput.AppendLine(s);
+                            AppendToOutput(s, ConsoleOutputLevel.Normal);
+                        }))
+                        .WithStandardErrorPipe(PipeTarget.ToDelegate(s =>
+                        {
+                            rawErrorOutput.Append(s);
+                            AppendToOutput(s, ConsoleOutputLevel.Error);
+                        }))
+                        .WithValidation(CommandResultValidation.None)
+                        .WithEnvironmentVariables(EnvironmentVariables ?? new())
+                        .ExecuteAsync(KillCancellation.Token, GracefulCancellation.Token);
+                } 
+               
                 ChangeStatus(RunningJobStatus.Finished);
             }
             catch (Exception e)

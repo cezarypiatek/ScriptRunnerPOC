@@ -28,6 +28,9 @@
                     "command": {
                         "type": "string"
                     },
+                    "useSystemShell": {
+                        "type": "boolean"
+                    },
                     "runCommandAsAdmin":{
                       "type":"boolean"  
                     },
