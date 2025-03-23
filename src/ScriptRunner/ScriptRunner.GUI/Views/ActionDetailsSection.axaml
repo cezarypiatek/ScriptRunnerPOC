@@ -185,7 +185,7 @@
               <TextBox Watermark="Search" Text="{Binding TermForCurrentHistoryFilter}"></TextBox>
               <CheckBox IsChecked="{Binding CompactedHistoryForCurrent}" ToolTip.Tip="Show latest execution with the same parameters">Compacted</CheckBox>
             </StackPanel>
-            <ListBox Grid.Row="1" SelectedItem="{Binding SelectedRecentExecution, Mode=OneWayToSource}" ItemsSource="{Binding ExecutionLogForCurrent}">
+            <ListBox Grid.Row="1" SelectedItem="{Binding SelectedRecentExecution}" ItemsSource="{Binding ExecutionLogForCurrent}">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="viewModels:ExecutionLogAction">
                   <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, *"> 
