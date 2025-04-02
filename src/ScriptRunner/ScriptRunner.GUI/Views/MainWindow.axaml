@@ -50,7 +50,7 @@
         <RowDefinition Height="Auto"></RowDefinition>
       <RowDefinition Height="*" MinHeight="40"></RowDefinition>
       <RowDefinition Height="3" MaxHeight="3"></RowDefinition>
-      <RowDefinition Height="300" ></RowDefinition>
+      <RowDefinition Height="300" MinHeight="100"></RowDefinition>
     </Grid.RowDefinitions>
         <Panel>
             <TextBlock VerticalAlignment="Center" Margin="0" HorizontalAlignment="Center" IsHitTestVisible="False" Padding="0" Text="{Binding Path=#MW.Title}"></TextBlock>
