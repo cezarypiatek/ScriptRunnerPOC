@@ -780,7 +780,7 @@ public class MainWindowViewModel : ReactiveObject
             }
             else
             {
-                var controlValue = controlRecord.GetFormattedValue();
+                var controlValue = controlRecord.GetFormattedValue().Trim();
                 defaultOverrides[controlRecord.Name] = controlValue;
             }
         }
@@ -877,7 +877,7 @@ public class MainWindowViewModel : ReactiveObject
         var maskedArgs = args;
         foreach (var controlRecord in _controlRecords)
         {
-            var controlValue = controlRecord.GetFormattedValue();
+            var controlValue = controlRecord.GetFormattedValue().Trim();
             args = args.Replace($"{{{controlRecord.Name}}}", controlValue);
             maskedArgs = maskedArgs.Replace($"{{{controlRecord.Name}}}", controlRecord.MaskingRequired? "*****": controlValue);
 
