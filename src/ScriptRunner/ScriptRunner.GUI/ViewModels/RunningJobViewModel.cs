@@ -459,6 +459,7 @@ public class RunningJobViewModel : ViewModelBase
     {
 
     });
+    private bool wasFallbackFromTransparent = false;
     private void AppendToUiOutput(IList<string> s)
     {
         List<OutputElement> _outputElements = _outputElementListPool.Get();
@@ -558,8 +559,20 @@ public class RunningJobViewModel : ViewModelBase
 
                     if (subPart == "\u001b[7m")
                     {
-                        (currentConsoleTextColor, currentConsoleBackgroundColor) =
-                            (currentConsoleBackgroundColor, currentConsoleTextColor);
+                        if(currentConsoleBackgroundColor == Brushes.Transparent)
+                        {
+                            wasFallbackFromTransparent = true;
+                            (currentConsoleTextColor, currentConsoleBackgroundColor) = (Brushes.Black, currentConsoleTextColor);
+                        }
+                        else
+                        {
+                            if(wasFallbackFromTransparent)
+                            {
+                                wasFallbackFromTransparent = false;
+                                (currentConsoleTextColor, currentConsoleBackgroundColor) = (currentConsoleBackgroundColor, Brushes.Transparent);
+                            }
+                            else (currentConsoleTextColor, currentConsoleBackgroundColor) = (currentConsoleBackgroundColor, currentConsoleTextColor);
+                        }
                     }
 
                     if (subPart == "\u001b[1m")
