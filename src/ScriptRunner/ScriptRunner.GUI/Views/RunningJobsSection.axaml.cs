@@ -22,7 +22,7 @@ public partial class RunningJobsSection : UserControl
 
     private void ScrollChangedHandler(object? sender, ScrollChangedEventArgs e)
     {
-        if (sender is ScrollViewer sc && e.ExtentDelta.Length > 0)
+        if (sender is ScrollViewer sc && e.ExtentDelta.Y > 0)
         {
             sc.ScrollToEnd();
         }
