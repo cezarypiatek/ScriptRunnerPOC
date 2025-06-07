@@ -56,7 +56,7 @@ public partial class SideMenu : UserControl
                 {
                     popup.Close();
 
-                    if (pattern.EventArgs is SearchBox.ResultSelectedEventArgs {Result: { } selectedCommand})
+                    if (pattern.EventArgs is SearchBox.ResultSelectedEventArgs {Result: { } selectedCommand, AutoLaunch: var autoLaunch})
                     {
                         var selectedTagged = viewModel.FilteredActionList.SelectMany(x => x.Children)
                             .FirstOrDefault(x => x.Config == selectedCommand.Config);
@@ -64,9 +64,12 @@ public partial class SideMenu : UserControl
                         if (selectedTagged != null)
                         {
                             viewModel.SelectedActionOrGroup = selectedTagged;
-                            viewModel.SelectedArgumentSet = selectedCommand.ArgumentSet;    
+                            viewModel.SelectedArgumentSet = selectedCommand.ArgumentSet;
+                            if (autoLaunch)
+                            {
+                                viewModel.RunScript();
+                            }
                         }
-                        
                     }
                 });
             }

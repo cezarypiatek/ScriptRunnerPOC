@@ -105,11 +105,12 @@ namespace ScriptRunner.GUI.Views
         public class ResultSelectedEventArgs : EventArgs
         {
             public ScriptConfigWithArgumentSet? Result { get; set; }
+            public bool AutoLaunch { get; set; }
             public ResultSelectedEventArgs()
             {
             }
         }
 
-        private void OnResultSelected(ScriptConfigWithArgumentSet? v) => ResultSelected?.Invoke(this, new ResultSelectedEventArgs(){Result = v});
+        private void OnResultSelected(ScriptConfigWithArgumentSet? v) => ResultSelected?.Invoke(this, new ResultSelectedEventArgs(){Result = v, AutoLaunch = ViewModel!.AutoLaunch});
     }
 }

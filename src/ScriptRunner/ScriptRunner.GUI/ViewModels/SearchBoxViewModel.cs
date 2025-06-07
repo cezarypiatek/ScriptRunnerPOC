@@ -24,6 +24,8 @@ namespace ScriptRunner.GUI.ViewModels
         private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfigWithArgumentSet>> _filteredActionList;
         public IEnumerable<ScriptConfigWithArgumentSet> FilteredActionList => _filteredActionList.Value;
 
+        public bool AutoLaunch { get; set; }
+
 
         public SearchBoxViewModel(IReadOnlyList<ScriptConfig> allActions, IReadOnlyList<RecentAction> recent)
         {
@@ -42,7 +44,19 @@ namespace ScriptRunner.GUI.ViewModels
                 .DistinctUntilChanged()
                 .Select(text =>
                 {
-                    if (intial)
+                    text = text?.Trim() ?? string.Empty;
+
+                    if (text.StartsWith(">"))
+                    {
+                        AutoLaunch = true;
+                        text = text.Substring(1);
+                    }
+                    else
+                    {
+                        AutoLaunch = false;
+                    }
+                    
+                    if (intial || string.IsNullOrWhiteSpace(text))
                     {
                         intial = false;
                         var selectedRecent = GetRecentActions(_allActions, recent);
@@ -52,7 +66,6 @@ namespace ScriptRunner.GUI.ViewModels
 
                     if (string.IsNullOrWhiteSpace(text) == false)
                     {
-                        text = text.Trim();
                         var tokens = text.ToUpper().Split(' ');
                         return _allActions.Select(a =>
                         {
