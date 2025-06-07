@@ -117,8 +117,8 @@ public class RunningJobViewModel : ViewModelBase
                 GracefulCancellation = new CancellationTokenSource();
                 KillCancellation = new CancellationTokenSource();
                 ChangeStatus(RunningJobStatus.Running);
-
-                if (useSystemShell)
+                var isJustLink = commandPath.StartsWith("http://") || commandPath.StartsWith("https://");
+                if (useSystemShell || isJustLink)
                 {
                     var processStartInfo = new ProcessStartInfo()
                     {
@@ -130,6 +130,10 @@ public class RunningJobViewModel : ViewModelBase
                         RedirectStandardOutput = false,
                         RedirectStandardError = false
                     };
+                    if (isJustLink)
+                    {
+                        processStartInfo.Verb = "open";
+                    }
 
                     if (EnvironmentVariables != null)
                     {
