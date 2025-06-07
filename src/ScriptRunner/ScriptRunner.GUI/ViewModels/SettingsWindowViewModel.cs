@@ -1,7 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using ReactiveUI;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.Views;
@@ -32,6 +39,50 @@ public class SettingsWindowViewModel : ViewModelBase
     {
         ConfigScriptFiles.Add(new ConfigScriptRow());
     }
+
+    public async Task AddNewConfigScriptFromDir()
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime {MainWindow: {}sourceWindow})
+        {
+
+            var result = await sourceWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+            {
+                AllowMultiple = false
+            });
+
+            if (result.Count == 1)
+            {
+                ConfigScriptFiles.Add(new ConfigScriptRow()
+                {
+                    Type = ConfigScriptType.Directory,
+                    Path = result[0].Path.LocalPath,
+                    Recursive = true
+                });
+            }
+        }
+    }
+    
+    public async Task AddNewConfigScriptFromFile()
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime {MainWindow: {}sourceWindow})
+        {
+
+            var result = await sourceWindow.StorageProvider.OpenFilePickerAsync(new ()
+            {
+                AllowMultiple = false
+            });
+
+            if (result.Count == 1)
+            {
+                ConfigScriptFiles.Add(new ConfigScriptRow()
+                {
+                    Type = ConfigScriptType.File,
+                    Path = result[0].Path.LocalPath,
+                    Recursive = false
+                });
+            }
+        }
+    }
     
     public void RemoveConfigScript(object arg)
     {
@@ -53,7 +104,6 @@ public class ConfigScriptRow
 {
     public string Name { get; set; }
     public string Path { get; set; }
-    public bool Exists { get; set; }
     public bool Recursive { get; set; }
     public ConfigScriptType Type { get; set; }
 
