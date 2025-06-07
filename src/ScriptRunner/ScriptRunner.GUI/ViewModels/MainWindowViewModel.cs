@@ -879,6 +879,7 @@ public class MainWindowViewModel : ReactiveObject
         {
             var controlValue = controlRecord.GetFormattedValue()?.Trim();
             args = args.Replace($"{{{controlRecord.Name}}}", controlValue);
+            commandPath = commandPath.Replace($"{{{controlRecord.Name}}}", controlValue);
             maskedArgs = maskedArgs.Replace($"{{{controlRecord.Name}}}", controlRecord.MaskingRequired? "*****": controlValue);
 
             foreach (var (key, val) in envVariables)
