@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
 using ScriptRunner.GUI.ViewModels;
 
 
@@ -87,6 +89,58 @@ public class ScriptParam
 
         return @default;
     }
+
+    public List<DropdownOption> GetDropdownOptions(string delimiter = ",")
+    {
+        if (!PromptSettings.TryGetValue("options", out var optionsValue))
+        {
+            return new List<DropdownOption>();
+        }
+
+        // Case 1: String with comma-separated values
+        if (optionsValue is string optionsString)
+        {
+            return optionsString
+                .Split(new[] { delimiter }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => new DropdownOption(x.Trim()))
+                .ToList();
+        }
+
+        // Case 2: JsonElement (from deserialization)
+        if (optionsValue is JsonElement jsonElement)
+        {
+            if (jsonElement.ValueKind == JsonValueKind.String)
+            {
+                return jsonElement.GetString()!
+                    .Split(new[] { delimiter }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => new DropdownOption(x.Trim()))
+                    .ToList();
+            }
+            
+            if (jsonElement.ValueKind == JsonValueKind.Array)
+            {
+                var result = new List<DropdownOption>();
+                foreach (var item in jsonElement.EnumerateArray())
+                {
+                    if (item.ValueKind == JsonValueKind.String)
+                    {
+                        // Array of strings
+                        result.Add(new DropdownOption(item.GetString()!));
+                    }
+                    else if (item.ValueKind == JsonValueKind.Object)
+                    {
+                        // Array of objects with label and value
+                        var label = item.GetProperty("label").GetString()!;
+                        var value = item.GetProperty("value").GetString()!;
+                        result.Add(new DropdownOption(label, value));
+                    }
+                }
+                return result;
+            }
+        }
+
+        return new List<DropdownOption>();
+    }
 }
 
 public class InteractiveInputDescription
@@ -100,3 +154,4 @@ public class InteractiveInputItem
     public string Label { get; set; }
     public string Value { get; set; }
 }
+

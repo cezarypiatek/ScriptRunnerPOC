@@ -241,32 +241,60 @@ public class ParamsPanelFactory
                 };
             case PromptType.Dropdown:
                 var delimiterForOptions = p.GetPromptSettings("delimiter", x => x, ",");
-                var initialOptions = p.GetPromptSettings("options", out var options) ? options.Split(delimiterForOptions):Array.Empty<string>();
-                var observableOptions = new ObservableCollection<string>(initialOptions);
+                var dropdownOptions = p.GetDropdownOptions(delimiterForOptions);
+                var observableDropdownOptions = new ObservableCollection<DropdownOption>(dropdownOptions);
                 var searchable = p.GetPromptSettings("searchable", bool.Parse, false);
                 var optionsGeneratorCommand = p.GetPromptSettings("optionsGeneratorCommand", out var optionsGeneratorCommandText) ? optionsGeneratorCommandText : null;
                 
-                
-                if (observableOptions.Count == 0 && string.IsNullOrWhiteSpace(value) == false && string.IsNullOrWhiteSpace(optionsGeneratorCommand) == false)
+                // Find selected item by matching value
+                DropdownOption? selectedOption = null;
+                if (!string.IsNullOrWhiteSpace(value))
                 {
-                    observableOptions.Add(value);
+                    selectedOption = observableDropdownOptions.FirstOrDefault(opt => opt.Value == value);
+                    if (selectedOption == null && string.IsNullOrWhiteSpace(optionsGeneratorCommand) == false)
+                    {
+                        // Add the value as a temporary option if not found and generator is available
+                        selectedOption = new DropdownOption(value);
+                        observableDropdownOptions.Add(selectedOption);
+                    }
                 }
                 
-                Control inputControl = searchable ? new SearchableComboBox()
+                Control inputControl;
+                
+                if (searchable)
                 {
-                    Items = observableOptions,
-                    SelectedItem = value,
-                    TabIndex = index,
-                    IsTabStop = true,
-                    Width = 500
-                }: new ComboBox
-                { 
-                    ItemsSource = observableOptions,
-                    SelectedItem = value,
-                    TabIndex = index,
-                    IsTabStop = true,
-                    Width = 500
-                };
+                    // For searchable, convert to strings (SearchableComboBox only supports strings)
+                    var stringOptions = new ObservableCollection<string>(dropdownOptions.Select(o => o.Label));
+                    var selectedString = selectedOption?.Label;
+                    
+                    var searchBox = new SearchableComboBox()
+                    {
+                        Items = stringOptions,
+                        TabIndex = index,
+                        IsTabStop = true,
+                        Width = 500
+                    };
+                    
+                    // Set selected item after Items collection is set
+                    if (!string.IsNullOrWhiteSpace(selectedString) && stringOptions.Contains(selectedString))
+                    {
+                        searchBox.SelectedItem = selectedString;
+                    }
+                    
+                    inputControl = searchBox;
+                }
+                else
+                {
+                    inputControl = new ComboBox
+                    { 
+                        ItemsSource = observableDropdownOptions,
+                        SelectedItem = selectedOption,
+                        TabIndex = index,
+                        IsTabStop = true,
+                        Width = 500
+                    };
+                }
+                
                 var actionPanel = new StackPanel()
                 {
                     Orientation = Orientation.Horizontal,
@@ -293,24 +321,42 @@ public class ParamsPanelFactory
                         var result = await commandExecutor($"Generate options for '{p.Name}'", optionsGeneratorCommand) ?? "";
                         Dispatcher.UIThread.Post(() =>
                         {
-                            observableOptions.Clear();
-                            foreach (var option in result.Split(new[]{"\r", "\n",delimiterForOptions}, StringSplitOptions.RemoveEmptyEntries).Distinct().OrderBy(x=>x))
+                            var newOptions = result.Split(new[]{"\r", "\n",delimiterForOptions}, StringSplitOptions.RemoveEmptyEntries)
+                                .Distinct()
+                                .OrderBy(x=>x)
+                                .Select(opt => new DropdownOption(opt.Trim()))
+                                .ToList();
+                                
+                            if (searchable && inputControl is SearchableComboBox searchBox)
                             {
-                                observableOptions.Add(option);
+                                searchBox.Items.Clear();
+                                foreach (var option in newOptions)
+                                {
+                                    searchBox.Items.Add(option.Label);
+                                }
                             }
+                            else if (inputControl is ComboBox comboBox)
+                            {
+                                observableDropdownOptions.Clear();
+                                foreach (var option in newOptions)
+                                {
+                                    observableDropdownOptions.Add(option);
+                                }
+                            }
+                            
                             generateButton.Classes.Remove("spinning");
                             generateButton.IsEnabled = true;
                             wasGenerated = true;
-                            if (inputControl is SearchableComboBox scb)
+                            if (inputControl is SearchableComboBox scb2)
                             {
-                                scb.ShowAll();
+                                scb2.ShowAll();
                             }
                         });
                     };
                     generateButton.Click += generate;
-                    if(inputControl is SearchableComboBox scb)
+                    if(inputControl is SearchableComboBox searchableBox)
                     {
-                        scb.GotFocus += (sender, args) =>
+                        searchableBox.GotFocus += (sender, args) =>
                         {
                             if (wasGenerated == false)
                             {
@@ -326,17 +372,24 @@ public class ParamsPanelFactory
                 return new DropdownControl
                 {
                     Control = actionPanel,
-                    InputControl = inputControl
+                    InputControl = inputControl,
+                    DropdownOptions = observableDropdownOptions
                 };
             case PromptType.Multiselect:
                 var delimiter = p.GetPromptSettings("delimiter", s => s, ",");
+                var multiSelectOptions = p.GetDropdownOptions(delimiter);
+                
+                // Parse selected values
+                var selectedValues = (value ?? string.Empty).Split(new[] { delimiter }, StringSplitOptions.RemoveEmptyEntries).Select(v => v.Trim()).ToList();
+                var selectedDropdownOptions = multiSelectOptions.Where(opt => selectedValues.Contains(opt.Value)).ToList();
+                
                 return new MultiSelectControl
                 {
                     Control = new  CheckBoxListBox
                     {
                         SelectionMode = SelectionMode.Multiple,
-                        ItemsSource = p.GetPromptSettings("options", out var multiSelectOptions) ? multiSelectOptions.Split(delimiter) : Array.Empty<string>(),
-                        SelectedItems = new AvaloniaList<string>((value ?? string.Empty).Split(delimiter)),
+                        ItemsSource = multiSelectOptions,
+                        SelectedItems = new AvaloniaList<DropdownOption>(selectedDropdownOptions),
                         TabIndex = index,
                         IsTabStop = true,
                         BorderBrush = new SolidColorBrush(Color.Parse("#99ffffff")),

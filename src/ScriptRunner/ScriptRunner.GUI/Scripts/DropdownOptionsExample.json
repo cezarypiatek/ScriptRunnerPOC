@@ -1,0 +1,66 @@
+﻿{
+  "$schema": "../../../../schema/v1/ScriptRunnerSchema.json",
+  "actions": [
+    {
+      "name": "Coma separated",
+      "description": "Demonstrates different formats for dropdown options",
+      "command": "echo",
+      "autoParameterBuilderStyle": "powershell",
+      "params": [
+        {
+          "name": "Environment",
+          "description": "Coma separated string",
+          "prompt": "dropdown",
+          "promptSettings": {
+            "options": "Development,Staging,Production"
+          }
+        },
+        {
+          "name": "List",
+          "description": "List of strings",
+          "prompt": "dropdown",
+          "promptSettings": {
+            "options": ["us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1"]
+          }
+        },
+        {
+          "name": "Size",
+          "description": "List of label/value objects",
+          "prompt": "dropdown",
+          "promptSettings": {
+            "options": [
+              {"label": "Small (1 CPU, 2GB RAM)", "value": "t2.small"},
+              {"label": "Medium (2 CPU, 4GB RAM)", "value": "t2.medium"},
+              {"label": "Large (4 CPU, 8GB RAM)", "value": "t2.large"},
+              {"label": "X-Large (8 CPU, 16GB RAM)", "value": "t2.xlarge"}
+            ]
+          }
+        },
+        {
+          "name": "Features",
+          "description": "Select features (multiSelect with array of strings)",
+          "prompt": "multiSelect",
+          "promptSettings": {
+            "options": ["Monitoring", "Backups", "Auto-scaling", "High Availability"],
+            "delimiter": ","
+          }
+        },
+        {
+          "name": "Services",
+          "description": "Select services (multiSelect with label/value objects)",
+          "prompt": "multiSelect",
+          "promptSettings": {
+            "options": [
+              {"label": "Web Server (HTTPS)", "value": "web-https"},
+              {"label": "Database (PostgreSQL)", "value": "db-postgres"},
+              {"label": "Cache (Redis)", "value": "cache-redis"},
+              {"label": "Queue (RabbitMQ)", "value": "queue-rabbitmq"}
+            ],
+            "delimiter": ","
+          }
+        }
+      ]
+    }
+  ]
+}
+
