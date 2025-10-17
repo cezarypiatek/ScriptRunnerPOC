@@ -118,6 +118,7 @@
 
     <Style Selector="StackPanel.paramRow Label">
         <Setter Property="MinWidth" Value="300"></Setter>
+        <Setter Property="Margin" Value="0,4, 15, 4"></Setter>
     </Style>
 
     <Style Selector="StackPanel.paramRow TextBox">

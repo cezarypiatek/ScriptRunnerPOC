@@ -58,8 +58,12 @@ public class ParamsPanelFactory
 
             var label = new Label
             {
-                Content = string.IsNullOrWhiteSpace(param.Description)? param.Name: param.Description,
-                        
+                Content = new TextBlock
+                {
+                    Text = string.IsNullOrWhiteSpace(param.Description) ? param.Name : param.Description,
+                    TextWrapping = TextWrapping.Wrap,
+                    MaxWidth = 300
+                }
             };
             ToolTip.SetTip(label, param.Name);
 
