@@ -335,9 +335,24 @@
                                 {
                                     "properties": {
                                         "prompt": {
+                                            "const": "multilineText"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "properties": {
+                                                "syntax": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
                                             "enum": [
-                                                "text",
-                                                "multilineText",
+                                                "text",                                                
                                                 "password",
                                                 "filePicker",
                                                 "directoryPicker"

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Collections;
@@ -14,12 +15,17 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
+using AvaloniaEdit;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Highlighting;
+using AvaloniaEdit.TextMate;
 using Projektanker.Icons.Avalonia;
 using ScriptRunner.GUI.Infrastructure;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.ViewModels;
 using ScriptRunner.GUI.Views;
+using TextMateSharp.Grammars;
 using Path = System.IO.Path;
 
 namespace ScriptRunner.GUI;
@@ -162,9 +168,13 @@ public class ParamsPanelFactory
                         if (controlRecord is { Control: TextBox tb })
                         {
                             tb.Text = result?.Trim() ?? string.Empty;
-                            generateButton.Classes.Remove("spinning");
-                            generateButton.IsEnabled = true;
                         }
+                        else if (controlRecord is { Control: TextEditor te })
+                        {
+                            te.Text = result?.Trim() ?? string.Empty;
+                        }
+                        generateButton.Classes.Remove("spinning");
+                        generateButton.IsEnabled = true;
                     });
                 };
                 Attached.SetIcon(generateButton, "fas fa-wand-magic-sparkles");
@@ -460,6 +470,15 @@ public class ParamsPanelFactory
                     UncheckedValue =  p.GetPromptSettings("uncheckedValue", out var uncheckedValue)? uncheckedValue: defaultUnchecked,
                 };
             case PromptType.Multilinetext:
+                if (p.GetPromptSettings("syntax", out var syntax) && !string.IsNullOrWhiteSpace(syntax))
+                {
+                    return new TextControl
+                    {
+                        Control = CreateAvaloniaEdit(value, index, syntax)
+                    };
+                }
+
+                // Use regular TextBox without syntax highlighting
                 return new TextControl
                 {
                     Control = new TextBox
@@ -471,7 +490,6 @@ public class ParamsPanelFactory
                         TabIndex = index,
                         IsTabStop = true,
                         Width = 500,
-                        
                     }
                 };
             case PromptType.FileContent:
@@ -483,19 +501,11 @@ public class ParamsPanelFactory
                 
                 var templateText  = p.GetPromptSettings("templateText", out var rawTemplate)? rawTemplate: "";
                 var textForControl = File.Exists(value) ? File.ReadAllText(value) : templateText;
-                
-                return new FileContent(p.GetPromptSettings("extension", out var extension)?extension:"dat")
+
+                var fileExtension = p.GetPromptSettings("extension", out var extension)?extension:"dat";
+                return new FileContent(fileExtension)
                 {
-                    Control = new TextBox
-                    {
-                        TextWrapping = TextWrapping.Wrap,
-                        AcceptsReturn = true,
-                        Height = 100,
-                        Text = textForControl,
-                        TabIndex = index,
-                        IsTabStop = true,
-                        Width = 500
-                    }
+                    Control = CreateAvaloniaEdit(textForControl, index, fileExtension.TrimStart('.'))
                 };
             case PromptType.FilePicker:
 
@@ -545,5 +555,32 @@ public class ParamsPanelFactory
             default:
                 throw new ArgumentOutOfRangeException(nameof(p.Prompt), p.Prompt, null);
         }
+    }
+
+    private static TextEditor CreateAvaloniaEdit(string? value, int index, string syntax)
+    {
+        var textEditor = new TextEditor
+        {
+            Document = new TextDocument(value ?? string.Empty),
+            TabIndex = index,
+            MinHeight = 100,
+            Height = 100,
+            Width = 500,
+            ShowLineNumbers = true,
+            FontFamily = new FontFamily("Cascadia Code,Consolas,Menlo,Monospace"),
+            Background = new SolidColorBrush(Color.FromRgb(30, 30, 30)),
+            BorderBrush = new SolidColorBrush(Color.FromArgb(153, 255, 255,255)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(3)
+        };
+        textEditor.TextArea.TextView.Margin = new Thickness(10, 0);
+        var registry  = new  RegistryOptions(ThemeName.DarkPlus);
+        TextMate.Installation textMateInstallation = textEditor.InstallTextMate(registry);
+        if (registry.GetLanguageByExtension("." + syntax) is { } languageByExtension)
+        {
+            textMateInstallation.SetGrammar(registry.GetScopeByLanguageId(languageByExtension.Id));
+        }
+
+        return textEditor;
     }
 }

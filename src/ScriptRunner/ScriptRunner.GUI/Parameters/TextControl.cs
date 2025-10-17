@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using AvaloniaEdit;
 
 namespace ScriptRunner.GUI;
 
@@ -8,7 +9,12 @@ public class TextControl : IControlRecord
 
     public string GetFormattedValue()
     {
-        return ((TextBox)Control).Text;
+        return Control switch
+        {
+            TextBox textBox => textBox.Text,
+            TextEditor textEditor => textEditor.Text,
+            _ => ((TextBox)Control).Text
+        };
     }
 
     public string Name { get; set; }
