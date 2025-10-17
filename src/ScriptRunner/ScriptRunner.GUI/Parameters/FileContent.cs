@@ -3,6 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using Avalonia.Controls;
+using AvaloniaEdit;
 
 namespace ScriptRunner.GUI;
 
@@ -20,7 +21,12 @@ public class FileContent : IControlRecord
 
     public string GetFormattedValue()
     {
-        var fileContent = ((TextBox)Control).Text;
+        var fileContent =  Control switch
+        {
+            TextBox textBox => textBox.Text,
+            TextEditor textEditor => textEditor.Text,
+            _ => ((TextBox)Control).Text
+        };
         var hash = string.IsNullOrWhiteSpace(fileContent)? "EMPTY" : ComputeSHA256(fileContent).Substring(0,10);
         FileName = Path.Combine(Path.GetTempPath(), hash + "." + _extension);
         File.WriteAllText(FileName, fileContent, Encoding.UTF8);

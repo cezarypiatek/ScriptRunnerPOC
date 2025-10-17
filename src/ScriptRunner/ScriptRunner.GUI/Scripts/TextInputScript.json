@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/cezarypiatek/ScriptRunnerPOC/main/schema/v1/ScriptRunnerSchema.json",
+  "$schema": "../../../../schema/v1/ScriptRunnerSchema.json",
   "actions": [
     {
       "name": "Ping",
@@ -25,9 +25,9 @@
             "address": "wwww.github.com"
           }
         }
-      ],
-      "predefinedArgumentSetsOrdering": "ascending"
-    },{
+      ]
+    },
+    {
       "name": "AllControlsTest",
       "description": "Demo of all available controls",
       "command": "pwsh.exe -NoProfile -Command Write-Host '{p1} {p2} {p3} {p4} {p5} {p6} {p7} {p8} {p9} {p10} {p11} {p12}'",
@@ -43,6 +43,25 @@
           "description": "Multiline Text parameter",
           "default": "Line 1\r\n Line 2",
           "prompt": "multilineText"
+        },
+        {
+          "name": "p2",
+          "description": "Multiline JSONr",
+          "default": "Line 1\r\n Line 2",
+          "prompt": "multilineText",
+            "promptSettings": {
+                "syntax": "json"
+            }
+        },
+        {
+          "name": "p22",
+          "description": "Fil Ccontent",
+          "default": "using System;\r\n\r\nclass Program {\r\n    static void Main() {\r\n        Console.WriteLine(\"Hello, World!\");\r\n    }\r\n}",
+          "prompt": "fileContent",
+            "promptSettings": {
+              "extension": "cs",
+              "templateText": "using System;\r\n\r\nclass Program {\r\n    static void Main() {\r\n        Console.WriteLine(\"Hello, World!\");\r\n    }\r\n}"
+            }
         },
         {
           "name": "p3",
