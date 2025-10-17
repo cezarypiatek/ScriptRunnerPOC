@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Controls;
+using ScriptRunner.GUI.ScriptConfigs;
 
 namespace ScriptRunner.GUI;
 
@@ -13,7 +14,11 @@ public class MultiSelectControl : IControlRecord
         var copy = new List<string>();
         foreach (var item in selectedItems)
         {
-            if (item.ToString() is { } nonNullItem)
+            if (item is DropdownOption option)
+            {
+                copy.Add(option.Value);
+            }
+            else if (item?.ToString() is { } nonNullItem)
             {
                 copy.Add(nonNullItem);
             }
