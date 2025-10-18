@@ -55,5 +55,15 @@ public class CheckBoxListBox : ListBox
             }
         };
         this.Styles.Add(style);
+
+        // Style for selected items
+        var selectedStyle = new Style(x => x.OfType<ListBoxItem>().Class(":selected").Template().OfType<ContentPresenter>())
+        {
+            Setters =
+            {
+                new Setter(ContentPresenter.BackgroundProperty, Avalonia.Media.Brushes.Transparent)
+            }
+        };
+        this.Styles.Add(selectedStyle);
     }
 }
