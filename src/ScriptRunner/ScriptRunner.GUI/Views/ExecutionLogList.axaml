@@ -1,0 +1,162 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ScriptRunner.GUI.ViewModels"
+             xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
+             xmlns:converters="using:ScriptRunner.GUI.Converters"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ScriptRunner.GUI.Views.ExecutionLogList"
+             x:Name="Root">
+    <UserControl.Resources>
+        <converters:StringEmptyToVisibilityConverter x:Key="StringEmptyToVisibilityConverter"/>
+    </UserControl.Resources>
+    <ListBox Name="ExecutionLogListBox"
+             Background="#1e1e1e"
+             ItemsSource="{Binding #Root.GroupedItems}" 
+             SelectedItem="{Binding #Root.SelectedLogItem, Mode=TwoWay}">
+        <ListBox.Styles>
+            <Style Selector="ListBoxItem">
+                <Setter Property="Padding" Value="0"/>
+            </Style>
+            <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                <Setter Property="Background" Value="Transparent"/>
+            </Style>
+            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                <Setter Property="Background" Value="Transparent"/>
+            </Style>
+            
+            <!-- Default state for action item -->
+            <Style Selector="ListBoxItem Border#ActionBorder">
+                <Setter Property="Background" Value="#252525"/>
+                <Setter Property="BorderThickness" Value="0,0,0,0"/>
+            </Style>
+            
+            <!-- Hover state (not selected) -->
+            <Style Selector="ListBoxItem:pointerover:not(:selected) Border#ActionBorder">
+                <Setter Property="Background" Value="#2d2d2d"/>
+                <Setter Property="BorderThickness" Value="3,0,0,0"/>
+            </Style>
+            
+            <!-- Selected state -->
+            <Style Selector="ListBoxItem:selected Border#ActionBorder">
+                <Setter Property="Background" Value="#2a4a5a"/>
+                <Setter Property="BorderThickness" Value="3,0,0,0"/>
+            </Style>
+            
+            <!-- Selected AND hover state (lighter version of selected) -->
+            <Style Selector="ListBoxItem:selected:pointerover Border#ActionBorder">
+                <Setter Property="Background" Value="#336a7f"/>
+                <Setter Property="BorderThickness" Value="3,0,0,0"/>
+            </Style>
+        </ListBox.Styles>
+        <ListBox.DataTemplates>
+            <!-- Date Header Template -->
+            <DataTemplate DataType="vm:ExecutionLogDateHeader">
+                <Border Padding="10,8,10,5" 
+                        Background="Transparent"
+                        Cursor="Hand"
+                        PointerPressed="OnDateHeaderClicked"
+                        Name="DateHeaderBorder">
+                    <Border.Styles>
+                        <Style Selector="Border.highlight">
+                            <Style.Animations>
+                                <Animation Duration="0:0:0.0" FillMode="Forward">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="Background" Value="#40FFD700"/>
+                                    </KeyFrame>
+                                </Animation>
+                                <Animation Duration="0:0:1.5" FillMode="Forward" Delay="0:0:0.3">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="Background" Value="#40FFD700"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </Border.Styles>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <avalonia:Icon Value="fas fa-calendar-alt" 
+                                      FontSize="12" 
+                                      Foreground="#3baced"/>
+                        <TextBlock Text="{Binding DateDisplay}" 
+                                   FontWeight="SemiBold" 
+                                   FontSize="13"
+                                   Foreground="#3baced"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </DataTemplate>
+            
+            <!-- Action Item Template -->
+            <DataTemplate DataType="vm:ExecutionLogItemAction">
+                <Border x:Name="ActionBorder"
+                        Padding="15,8,10,8" 
+                        Cursor="Hand"
+                        CornerRadius="4"
+                        Margin="4,2"
+                        BorderBrush="#3baced"
+                        BorderThickness="0,0,0,0">
+                    <Grid RowDefinitions="Auto,Auto">
+                        
+                        <!-- Timestamp row -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,5">
+                            <avalonia:Icon Value="fas fa-clock" 
+                                          FontSize="12"
+                                          VerticalAlignment="Center"
+                                          Opacity="0.6"/>
+                            <TextBlock Text="{Binding Action.Timestamp, StringFormat={}{0:g}}" 
+                                       FontSize="12" 
+                                       Opacity="0.6"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Action.Name}" 
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                        
+                        <!-- Parameters as tags with wrapping -->
+                        <ItemsControl Grid.Row="1" ItemsSource="{Binding Action.ParameterTags}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding BackgroundBrush}"
+                                            CornerRadius="3"
+                                            Padding="6,3"
+                                            Margin="0,0,4,4"
+                                            ToolTip.Tip="{Binding Value}"
+                                            IsVisible="{Binding Value, Converter={StaticResource StringEmptyToVisibilityConverter}}">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="{Binding Name}" 
+                                                      FontWeight="SemiBold"
+                                                      FontSize="11"
+                                                      Foreground="White"/>
+                                            <TextBlock Text="=" 
+                                                      FontSize="11"
+                                                      Foreground="White"
+                                                      Opacity="0.7"/>
+                                            <TextBlock Text="{Binding Value}" 
+                                                      FontSize="11"
+                                                      Foreground="White"
+                                                      MaxWidth="200"
+                                                      TextTrimming="CharacterEllipsis"
+                                                      TextWrapping="NoWrap"
+                                                      MaxLines="1"
+                                                      />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ListBox.DataTemplates>
+    </ListBox>
+</UserControl>

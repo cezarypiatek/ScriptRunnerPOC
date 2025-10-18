@@ -31,5 +31,13 @@ public record ExecutionLogAction(DateTime Timestamp, string Source, string Name,
         new Run("]"),
     };
     
+    [JsonIgnore]
+    public IEnumerable<ParameterTag> ParameterTags => Parameters
+        .OrderBy(x => x.Key)
+        .Select(x => new ParameterTag(
+            x.Key, 
+            x.Value ?? string.Empty, 
+            isMasked: x.Value?.StartsWith("!!vault:") == true));
+    
     public string ParametersDescriptionString() => string.Join(", ", Parameters.OrderBy(x=>x.Key).Select(x => $"{x.Key} = {x.Value}"));
 };

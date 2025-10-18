@@ -323,6 +323,58 @@ public class MainWindowViewModel : ReactiveObject
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.ExecutionLogForCurrent, out _executionLogForCurrent);
 
+        // Create grouped execution log with date dividers
+        Observable
+            .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
+                h => this.ExecutionLog.CollectionChanged += h,
+                h => this.ExecutionLog.CollectionChanged -= h)
+            .Select(_ => Unit.Default)
+            .StartWith(Unit.Default)
+            .Select(_ =>
+            {
+                var items = new List<ExecutionLogItemBase>();
+                DateTime? lastDate = null;
+                
+                foreach (var action in ExecutionLog)
+                {
+                    var actionDate = action.Timestamp.Date;
+                    
+                    // Add date header if the date changed
+                    if (lastDate == null || lastDate != actionDate)
+                    {
+                        items.Add(new ExecutionLogDateHeader(actionDate));
+                        lastDate = actionDate;
+                    }
+                    
+                    items.Add(new ExecutionLogItemAction(action));
+                }
+                
+                return items.AsEnumerable();
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.ExecutionLogGrouped, out _executionLogGrouped);
+
+        // Create available dates list for date picker
+        Observable
+            .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
+                h => this.ExecutionLog.CollectionChanged += h,
+                h => this.ExecutionLog.CollectionChanged -= h)
+            .Select(_ => Unit.Default)
+            .StartWith(Unit.Default)
+            .Select(_ =>
+            {
+                // Group by date and count items
+                var dateGroups = ExecutionLog
+                    .GroupBy(x => x.Timestamp.Date)
+                    .OrderByDescending(g => g.Key)
+                    .Select(g => new DateGroupInfo(g.Key, g.Count()))
+                    .ToList();
+                
+                return dateGroups.AsEnumerable();
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.AvailableDates, out _availableDates);
+
         this.WhenAnyValue(x => x.SelectedAction)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(s =>
@@ -908,6 +960,24 @@ public class MainWindowViewModel : ReactiveObject
 
     public ObservableCollection<ExecutionLogAction> ExecutionLog { get; set; } = new ();
     
+    // Grouped execution log with date dividers
+    private readonly ObservableAsPropertyHelper<IEnumerable<ExecutionLogItemBase>> _executionLogGrouped;
+    public IEnumerable<ExecutionLogItemBase> ExecutionLogGrouped => _executionLogGrouped.Value;
+    
+    // Available dates for date picker
+    private readonly ObservableAsPropertyHelper<IEnumerable<DateGroupInfo>> _availableDates;
+    public IEnumerable<DateGroupInfo> AvailableDates => _availableDates.Value;
+    
+    // Date picker visibility
+    private bool _isDatePickerVisible;
+    public bool IsDatePickerVisible
+    {
+        get => _isDatePickerVisible;
+        set => this.RaiseAndSetIfChanged(ref _isDatePickerVisible, value);
+    }
+    
+    // Store reference to the ListBox for scrolling
+    public Action<DateTime>? ScrollToDateAction { get; set; }
     
     private readonly ObservableAsPropertyHelper<IEnumerable<ExecutionLogAction>>  _executionLogForCurrent;
     public IEnumerable<ExecutionLogAction>  ExecutionLogForCurrent => _executionLogForCurrent.Value;
@@ -921,6 +991,30 @@ public class MainWindowViewModel : ReactiveObject
     }
 
     private ExecutionLogAction _selectedRecentExecution;
+    
+    public ExecutionLogItemBase? SelectedExecutionLogItem
+    {
+        get => _selectedExecutionLogItem;
+        set
+        {
+            // Ignore selection of date headers - only allow action items to be selected
+            if (value is ExecutionLogDateHeader)
+            {
+                // Reset selection to null for date headers
+                this.RaiseAndSetIfChanged(ref _selectedExecutionLogItem, null);
+                return;
+            }
+            
+            this.RaiseAndSetIfChanged(ref _selectedExecutionLogItem, value);
+            // When an ExecutionLogItemAction is selected, set the underlying ExecutionLogAction
+            if (value is ExecutionLogItemAction itemAction)
+            {
+                SelectedRecentExecution = itemAction.Action;
+            }
+        }
+    }
+
+    private ExecutionLogItemBase? _selectedExecutionLogItem;
     private readonly ConfigRepositoryUpdater _configRepositoryUpdater;
 
 
@@ -933,6 +1027,14 @@ public class MainWindowViewModel : ReactiveObject
         });
     }
 
+    /// <summary>
+    /// Scrolls to the specified date in the execution log
+    /// </summary>
+    public void ScrollToDate(DateTime date)
+    {
+        IsDatePickerVisible = false;
+        ScrollToDateAction?.Invoke(date);
+    }
 
     public void CloseJob(object arg)
     {
