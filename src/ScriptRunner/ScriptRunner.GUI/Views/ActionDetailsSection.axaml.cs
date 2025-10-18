@@ -65,4 +65,12 @@ public partial class ActionDetailsSection : UserControl
             else sp.Flyout.ShowAt(sp);
         }
     }
+
+    private void OnActionPanelScrollChange(object? sender, ScrollChangedEventArgs e)
+    {
+        if (sender is ScrollViewer sc && e.ExtentDelta.Y > 0)
+        {
+            sc.ScrollToHome();
+        }
+    }
 }
