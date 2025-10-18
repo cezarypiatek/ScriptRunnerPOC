@@ -11,6 +11,13 @@
              x:DataType="viewModels:MainWindowViewModel"
              >
     <TabControl x:Name="RunningJobsPanel" ItemsSource="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}" >
+      <TabControl.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="Close All Finished" Command="{Binding CloseAllFinished}" />
+          <MenuItem Header="Close All Failed" Command="{Binding CloseAllFailed}" />
+          <MenuItem Header="Close All Cancelled" Command="{Binding CloseAllCancelled}" />
+        </ContextMenu>
+      </TabControl.ContextMenu>
       <TabControl.ItemTemplate>
         <DataTemplate x:DataType="viewModels:RunningJobViewModel">
           <StackPanel Orientation="Horizontal">

@@ -1045,6 +1045,36 @@ public class MainWindowViewModel : ReactiveObject
         }
     }
 
+    public void CloseAllFinished()
+    {
+        var finishedJobs = RunningJobs.Where(job => job.Status != RunningJobStatus.Running).ToList();
+        foreach (var job in finishedJobs)
+        {
+            job.CancelExecution();
+            RunningJobs.Remove(job);
+        }
+    }
+
+    public void CloseAllFailed()
+    {
+        var failedJobs = RunningJobs.Where(job => job.Status == RunningJobStatus.Failed).ToList();
+        foreach (var job in failedJobs)
+        {
+            job.CancelExecution();
+            RunningJobs.Remove(job);
+        }
+    }
+
+    public void CloseAllCancelled()
+    {
+        var cancelledJobs = RunningJobs.Where(job => job.Status == RunningJobStatus.Cancelled).ToList();
+        foreach (var job in cancelledJobs)
+        {
+            job.CancelExecution();
+            RunningJobs.Remove(job);
+        }
+    }
+
     private static string[] SplitCommand(string command)
     {
         command = command.Trim();
