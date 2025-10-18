@@ -24,16 +24,6 @@
              BorderBrush="#3baced">
         
         <Panel>
-            <Popup Name="PopupContainer" 
-                   IsLightDismissEnabled="True" 
-                   Placement="AnchorAndGravity" 
-                   PlacementAnchor="Top" 
-                   Topmost="True" 
-                   PlacementConstraintAdjustment="All" 
-                   PlacementGravity="Bottom"
-                   PlacementTarget="MainGrid"
-            >
-            </Popup>
             <ExperimentalAcrylicBorder IsHitTestVisible="False">
                 <ExperimentalAcrylicBorder.Material>
                     <ExperimentalAcrylicMaterial
@@ -86,6 +76,18 @@
     <GridSplitter IsTabStop="False" Grid.Row="3"   ResizeDirection="Rows"  BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
     <views:RunningJobsSection Grid.Row="4" ></views:RunningJobsSection>
   </Grid>
+  
+            <!-- Search overlay - positioned on top of everything -->
+            <Panel Name="SearchOverlay" 
+                   IsVisible="False" 
+                   Background="#80000000"
+                   ZIndex="1000">
+                <Panel Name="SearchBoxContainer"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Margin="0,100,0,0">
+                </Panel>
+            </Panel>
         </Panel>
 </Border>
 </reactiveUi:ReactiveWindow>

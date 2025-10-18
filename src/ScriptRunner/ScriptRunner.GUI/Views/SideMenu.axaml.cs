@@ -35,26 +35,51 @@ public partial class SideMenu : UserControl
         if (DataContext is MainWindowViewModel viewModel)
         {
             openSearchBoxEventHandler?.Dispose();
-            var recent = AppSettingsService.Load().Recent.Values.OrderByDescending(x => x.Timestamp).Take(5).ToArray();
+            var recent = AppSettingsService.Load().Recent?.Values.OrderByDescending(x => x.Timestamp).Take(5).ToArray() ?? Array.Empty<RecentAction>();
             var popupContent = new SearchBox(viewModel?.Actions ?? new List<ScriptConfig>(), recent);
 
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime {MainWindow: {} mainWindow})
             {
-                var popup = desktop.MainWindow.Find<Popup>("PopupContainer");
-                popup.Child = popupContent;
-                popup.VerticalOffset = desktop.MainWindow.Height * 0.3;
+                var overlay = mainWindow.Find<Panel>("SearchOverlay");
+                var container = mainWindow.Find<Panel>("SearchBoxContainer");
+                
+                if (overlay == null || container == null)
+                {
+                    return;
+                }
+                
+                // Clear previous content and add new SearchBox
+                container.Children.Clear();
+                container.Children.Add(popupContent);
+                
+                // Show the overlay
+                overlay.IsVisible = true;
 
-                popupContent.KeyUp += (o, args) =>
+                // Handle escape key to close
+                popupContent.KeyUp += (_, args) =>
                 {
                     if (args.Key == Key.Escape)
                     {
-                        popup.Close();
+                        overlay.IsVisible = false;
+                        container.Children.Clear();
                     }
                 };
-                popup.Open();
-                this.openSearchBoxEventHandler= Observable.FromEventPattern(popupContent, nameof(popupContent.ResultSelected)).Subscribe(pattern =>
+                
+                // Handle clicking on the overlay background to close
+                overlay.PointerPressed += (_, args) =>
                 {
-                    popup.Close();
+                    // Only close if clicking on the overlay itself, not the search box
+                    if (args.Source == overlay)
+                    {
+                        overlay.IsVisible = false;
+                        container.Children.Clear();
+                    }
+                };
+                
+                this.openSearchBoxEventHandler = Observable.FromEventPattern(popupContent, nameof(popupContent.ResultSelected)).Subscribe(pattern =>
+                {
+                    overlay.IsVisible = false;
+                    container.Children.Clear();
 
                     if (pattern.EventArgs is SearchBox.ResultSelectedEventArgs {Result: { } selectedCommand, AutoLaunch: var autoLaunch})
                     {
