@@ -55,7 +55,7 @@
         },
         {
           "name": "p22",
-          "description": "Fil Ccontent",
+          "description": "Fil Content",
           "default": "using System;\r\n\r\nclass Program {\r\n    static void Main() {\r\n        Console.WriteLine(\"Hello, World!\");\r\n    }\r\n}",
           "prompt": "fileContent",
             "promptSettings": {
@@ -71,7 +71,7 @@
           "promptSettings":{
             "checkedValue": "checked",
             "uncheckedValue": "unchecked"
-          }          
+          }
         },
         {
           "name": "p4",
