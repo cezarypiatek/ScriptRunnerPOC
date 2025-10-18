@@ -54,17 +54,15 @@
               <views:ContentWithSidebar.Sidebar>
                   <Panel>
                       <views:ActionsList Name="ActionsList"  IsVisible="{Binding IsScriptListVisible}" ></views:ActionsList>
-                      <ListBox SelectedItem="{Binding SelectedRecentExecution}" ItemsSource="{Binding ExecutionLog}" IsVisible="{Binding IsRecentListVisible}">
-                          <ListBox.ItemTemplate>
-                              <DataTemplate x:DataType="vm:ExecutionLogAction">
-                                  <StackPanel Orientation="Horizontal">
-                                      <avalonia:Icon Value="fas fa-clock"  />
-                                      <TextBlock  Margin="10,0" Text="{Binding Timestamp, StringFormat={}{0:s}}"></TextBlock>
-                                      <TextBlock Text="{Binding Name}"></TextBlock>
-                                  </StackPanel>
-                              </DataTemplate>
-                          </ListBox.ItemTemplate>
-                      </ListBox>
+                      <Panel IsVisible="{Binding IsRecentListVisible}">
+                          <views:ExecutionLogList Name="ExecutionLogListControl"
+                                                  Items="{Binding ExecutionLog}"
+                                                  SelectedItem="{Binding SelectedRecentExecution, Mode=TwoWay}"
+                                                  ShowDatePicker="True"/>
+                          
+                          <!-- Date picker overlay -->
+                          <views:DatePickerOverlay />
+                      </Panel>
                   </Panel>
               </views:ContentWithSidebar.Sidebar>
               <views:ContentWithSidebar.Main>

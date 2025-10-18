@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ScriptRunner.GUI.ViewModels"
+             xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ScriptRunner.GUI.Views.DatePickerOverlay"
+             x:DataType="vm:MainWindowViewModel">
+    <Panel>
+        <!-- Semi-transparent background overlay -->
+        <Border Background="#80000000" 
+                PointerPressed="OnOverlayClicked"
+                IsVisible="{Binding IsDatePickerVisible}"/>
+        
+        <!-- Date picker popup -->
+        <Border Background="#1e1e1e" 
+                BorderBrush="#3baced"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20"
+                MaxWidth="400"
+                MaxHeight="500"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsVisible="{Binding IsDatePickerVisible}"
+                BoxShadow="0 8 32 0 #40000000">
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                    <TextBlock Text="Jump to Date" 
+                               FontSize="18" 
+                               FontWeight="SemiBold"
+                               Foreground="#3baced"
+                               Margin="0,0,0,5"/>
+                    <TextBlock Text="Select a date to quickly navigate" 
+                               FontSize="12" 
+                               Opacity="0.7"/>
+                </StackPanel>
+                
+                <!-- Date list -->
+                <Border Grid.Row="1" 
+                        Background="#252525"
+                        CornerRadius="4"
+                        Padding="5">
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding AvailableDates}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="12,10"
+                                            Margin="2"
+                                            CornerRadius="4"
+                                            Cursor="Hand"
+                                            Background="Transparent"
+                                            PointerPressed="OnDateItemClicked">
+                                        <Border.Styles>
+                                            <Style Selector="Border:pointerover">
+                                                <Setter Property="Background" Value="#3baced20"/>
+                                            </Style>
+                                        </Border.Styles>
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <avalonia:Icon Value="fas fa-calendar-day" 
+                                                          FontSize="14" 
+                                                          Foreground="#3baced"/>
+                                            <TextBlock Text="{Binding DateDisplay}" 
+                                                      FontSize="14"
+                                                      VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Count, StringFormat='({0})'}" 
+                                                      FontSize="12"
+                                                      Opacity="0.6"
+                                                      VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Border>
+    </Panel>
+</UserControl>
+

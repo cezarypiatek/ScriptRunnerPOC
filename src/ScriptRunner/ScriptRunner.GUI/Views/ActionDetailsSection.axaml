@@ -186,17 +186,10 @@
               <TextBox Watermark="Search" Text="{Binding TermForCurrentHistoryFilter}"></TextBox>
               <CheckBox IsChecked="{Binding CompactedHistoryForCurrent}" ToolTip.Tip="Show latest execution with the same parameters">Compacted</CheckBox>
             </StackPanel>
-            <ListBox Grid.Row="1" SelectedItem="{Binding SelectedRecentExecution}" ItemsSource="{Binding ExecutionLogForCurrent}">
-              <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="viewModels:ExecutionLogAction">
-                  <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, *"> 
-                    <avalonia:Icon Value="fas fa-clock" Margin="0,3,0,0"  VerticalAlignment="Top"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" TextWrapping="Wrap" Margin="10,0" Text="{Binding Timestamp, StringFormat={}{0:s}}"></TextBlock>
-                    <SelectableTextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Padding="0, 5" Inlines="{Binding ParametersDescription}" TextWrapping="Wrap" IsHitTestVisible="False"></SelectableTextBlock>
-                  </Grid>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
+            <views:ExecutionLogList Grid.Row="1" 
+                                    Items="{Binding ExecutionLogForCurrent}"
+                                    SelectedItem="{Binding SelectedRecentExecution, Mode=TwoWay}"
+                                    ShowDatePicker="True"/>
           </Grid>
         </TabItem>
       </TabControl>

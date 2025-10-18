@@ -34,6 +34,26 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         InitializeComponent();
         ViewModel = Locator.Current.GetService<MainWindowViewModel>();
         Title = $"ScriptRunner {this.GetType().Assembly.GetName().Version}";
+        
+        // Set up scroll action for date navigation
+        if (ViewModel != null)
+        {
+            ViewModel.ScrollToDateAction = ScrollToDate;
+        }
+        
+        // Subscribe to date header click event from ExecutionLogList control
+        var executionLogList = this.FindControl<ExecutionLogList>("ExecutionLogListControl");
+        if (executionLogList != null)
+        {
+            executionLogList.DateHeaderClicked += (sender, args) =>
+            {
+                if (ViewModel != null)
+                {
+                    ViewModel.IsDatePickerVisible = true;
+                }
+            };
+        }
+        
         if (AppSettingsService.Load().Layout is { } layoutSettings)
         {
             
@@ -67,6 +87,16 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                         settings.Top = (int)pattern.EventArgs.EffectiveViewport.Top;
                     });
                 });
+        }
+    }
+    
+    private async void ScrollToDate(DateTime date)
+    {
+        // Find the ExecutionLogList control
+        var executionLogList = this.FindControl<ExecutionLogList>("ExecutionLogListControl");
+        if (executionLogList != null)
+        {
+            await executionLogList.ScrollToDate(date);
         }
     }
 }
