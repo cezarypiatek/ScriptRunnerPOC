@@ -59,7 +59,11 @@ public class ParamsPanelFactory
             controlRecord.Name = param.Name;
             if (controlRecord.Control is Layoutable l)
             {
-                l.MaxWidth = 500;
+                // Don't set MaxWidth for multiline/file content controls since they have resize handles
+                if (param.Prompt is not (PromptType.Multilinetext or PromptType.FileContent))
+                {
+                    l.MaxWidth = 500;
+                }
             }
 
             var label = new Label
@@ -83,12 +87,13 @@ public class ParamsPanelFactory
                 var resizeHandle = new Border()
                 {
                     Height = 10,
+                    Width = 10,
                     Background = Brushes.Transparent,
                     HorizontalAlignment = HorizontalAlignment.Right,
                     ZIndex = 1,
                     Margin = new Thickness(0,-10,0,0),
                     VerticalAlignment = VerticalAlignment.Bottom,
-                    Cursor = new Cursor(StandardCursorType.SizeNorthSouth)
+                    Cursor = new Cursor(StandardCursorType.BottomRightCorner)
                 };
                 resizeHandle.Child = new Icon()
                 {
@@ -112,7 +117,13 @@ public class ParamsPanelFactory
                         var delta = currentPosition - _lastPointerPosition;
 
                         var textBox = controlRecord.Control;
+                        
+                        // Resize vertically
                         textBox.Height = Math.Max(textBox.MinHeight, textBox.Height + delta.Y);
+                        
+                        // Resize horizontally
+                        var currentWidth = double.IsNaN(textBox.Width) ? textBox.Bounds.Width : textBox.Width;
+                        textBox.Width = Math.Max(100, currentWidth + delta.X);
 
                         _lastPointerPosition = currentPosition;
                     }
