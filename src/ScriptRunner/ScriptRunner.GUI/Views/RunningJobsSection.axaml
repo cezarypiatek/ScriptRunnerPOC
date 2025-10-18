@@ -73,6 +73,7 @@
             
             <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10" IsVisible="{Binding ExecutionPending}">
               <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
+              <ToggleButton Width="100" HorizontalContentAlignment="Center" Margin="10,0" IsChecked="{Binding FollowOutput, Mode=TwoWay}" ToolTip.Tip="Automatically scroll to bottom when new output appears">Follow output</ToggleButton>
               <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0" Command="{Binding CancelExecution}" IsEnabled="{Binding !KillAvailable}" >Cancel</Button>
               <Button  Width="60" HorizontalContentAlignment="Center" Command="{Binding Kill}" IsVisible="{Binding KillAvailable}" Background="Firebrick">Kill</Button>
             </StackPanel>
@@ -83,3 +84,4 @@
 
     </TabControl>
 </UserControl>
+

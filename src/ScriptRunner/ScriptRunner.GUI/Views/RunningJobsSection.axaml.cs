@@ -10,6 +10,8 @@ namespace ScriptRunner.GUI.Views;
 
 public partial class RunningJobsSection : UserControl
 {
+    private bool _isUserScrolling = false;
+
     public RunningJobsSection()
     {
         InitializeComponent();
@@ -22,9 +24,30 @@ public partial class RunningJobsSection : UserControl
 
     private void ScrollChangedHandler(object? sender, ScrollChangedEventArgs e)
     {
-        if (sender is ScrollViewer sc && e.ExtentDelta.Y > 0)
+        if (sender is ScrollViewer sc && sc.DataContext is RunningJobViewModel viewModel)
         {
-            sc.ScrollToEnd();
+            // If content was added (extent changed), auto-scroll if follow output is enabled
+            if (e.ExtentDelta.Y > 0 && viewModel.FollowOutput)
+            {
+                _isUserScrolling = false;
+                sc.ScrollToEnd();
+            }
+            // If user manually scrolled (offset changed without extent change)
+            else if (e.OffsetDelta.Y != 0 && e.ExtentDelta.Y == 0)
+            {
+                _isUserScrolling = true;
+                // Check if user scrolled away from bottom
+                var isAtBottom = Math.Abs(sc.Offset.Y - sc.ScrollBarMaximum.Y) < 1.0;
+                if (!isAtBottom && viewModel.FollowOutput)
+                {
+                    viewModel.FollowOutput = false;
+                }
+                // If user scrolled back to bottom, re-enable follow output
+                else if (isAtBottom && !viewModel.FollowOutput)
+                {
+                    viewModel.FollowOutput = true;
+                }
+            }
         }
     }
 
