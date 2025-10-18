@@ -803,6 +803,12 @@ public class RunningJobViewModel : ViewModelBase
 
     public InlineCollection RichOutput { get; set; } = new();
    
+    private bool _followOutput = true;
+    public bool FollowOutput
+    {
+        get => _followOutput;
+        set => this.RaiseAndSetIfChanged(ref _followOutput, value);
+    }
 }
 
 public enum TroubleShootingSeverity
