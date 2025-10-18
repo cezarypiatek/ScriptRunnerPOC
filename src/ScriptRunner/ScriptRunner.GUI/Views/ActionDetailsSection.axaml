@@ -13,8 +13,7 @@
              x:Class="ScriptRunner.GUI.Views.ActionDetailsSection">
   <views:ContentWithSidebar  IsSidebarOpen="True" SidebarPosition="Right" SidebarWidth="300" MainMinWidth="1000">
     <views:ContentWithSidebar.Main>
-      <ScrollViewer HorizontalAlignment="Stretch" >
-        <StackPanel Margin="20, 10"  IsVisible="{Binding IsActionSelected, Mode=OneWay}">
+      <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Margin="20, 10"  IsVisible="{Binding IsActionSelected, Mode=OneWay}">
           <Expander HorizontalAlignment="Stretch">
             <Expander.Styles>
               <Style Selector="Expander /template/ ToggleButton">
@@ -59,9 +58,9 @@
             </StackPanel>
           </Expander>
               
-          <Button Margin="0,10,0,0" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
+          <Button Grid.Row="1"  Margin="0,10,0,0" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
              
-          <StackPanel IsEnabled="{Binding SelectedActionInstalled}">
+          <StackPanel Grid.Row="2"  IsEnabled="{Binding SelectedActionInstalled}">
             <StackPanel IsVisible="{Binding HasParams}">
               <Border BorderThickness="1" BorderBrush="#4E4E4E" Background="#2B2B2B" Padding="25,5" Margin="0,10,0,0">
                    <Grid  Margin="0,5,0,5" ColumnDefinitions="Auto,*,120" HorizontalAlignment="Stretch" VerticalAlignment="Top">
@@ -122,23 +121,25 @@
 
               </Grid>
               </Border>
-              <Border BorderThickness="1" Background="#2B2B2B" BorderBrush="#4E4E4E" Padding="25,5" Margin="0,10,0,0">
-                <ItemsControl ItemsSource="{Binding ActionParametersPanel}">
-                  <ItemsControl.Styles>
-                    <Style Selector="ItemsPresenter">
-                      <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
-                    </Style>
-                  </ItemsControl.Styles>
-                </ItemsControl>
-              </Border>
+            
             </StackPanel>
-            <DockPanel Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch" >
-              <Button Classes="primary" DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="200" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
-            </DockPanel>
+            
           </StackPanel>
-        </StackPanel>
-
-      </ScrollViewer>
+          <Border Grid.Row="3"  BorderThickness="1" Background="#2B2B2B" BorderBrush="#4E4E4E" Padding="25,5, 0,5" Margin="0,10,0,0" IsEnabled="{Binding SelectedActionInstalled}">
+            <ScrollViewer ScrollChanged="OnActionPanelScrollChange"  BringIntoViewOnFocusChange="False" >
+              <ItemsControl ItemsSource="{Binding ActionParametersPanel}">
+                <ItemsControl.Styles>
+                  <Style Selector="ItemsPresenter">
+                    <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
+                  </Style>
+                </ItemsControl.Styles>
+              </ItemsControl>
+            </ScrollViewer>
+          </Border>
+          <DockPanel Grid.Row="4"  Margin="0, 20, 0 , 5" HorizontalAlignment="Stretch" IsEnabled="{Binding SelectedActionInstalled}">
+            <Button Classes="primary" DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="200" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
+          </DockPanel>
+        </Grid>
     </views:ContentWithSidebar.Main>
     <views:ContentWithSidebar.Sidebar>
       <TabControl SelectedIndex="{}">
