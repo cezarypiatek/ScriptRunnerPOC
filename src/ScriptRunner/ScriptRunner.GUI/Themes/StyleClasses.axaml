@@ -1,7 +1,8 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
-        xmlns:tanker="https://github.com/projektanker/icons.avalonia">
+        xmlns:tanker="https://github.com/projektanker/icons.avalonia"
+        xmlns:gui="clr-namespace:ScriptRunner.GUI">
     <Design.PreviewWith>
         <StackPanel>
             <TextBlock Classes="h1" Text="Heading 1"></TextBlock>
@@ -123,15 +124,47 @@
 
     <Style Selector="StackPanel.paramRow TextBox">
         <Setter Property="MinWidth" Value="300" />
+        <Setter Property="Background" Value="#1e1e1e" />
     </Style>
 
     <Style Selector="StackPanel.paramRow ComboBox">
         <Setter Property="MinWidth" Value="300" />
+        <Setter Property="Background" Value="#1e1e1e" />
     </Style>
 
     <Style Selector="StackPanel.paramRow ListBox">
         <Setter Property="MinWidth" Value="300" />
+        <Setter Property="Background" Value="#1e1e1e" />
     </Style>
+    
+    <Style Selector="StackPanel.paramRow DatePicker">
+        <Setter Property="Background" Value="#1e1e1e" />
+    </Style>
+    
+    <Style Selector="StackPanel.paramRow CalendarDatePicker">
+        <Setter Property="Background" Value="#1e1e1e" />
+    </Style>
+    
+    <Style Selector="StackPanel.paramRow TimePicker">
+        <Setter Property="Background" Value="#1e1e1e" />
+    </Style>
+    
+    <Style Selector="StackPanel.paramRow NumericUpDown">
+        <Setter Property="Background" Value="#1e1e1e" />
+    </Style>
+    
+    <Style Selector="StackPanel.paramRow views|PasswordBox">
+        <Setter Property="Background" Value="#1e1e1e" />
+    </Style>
+    
+    <Style Selector="StackPanel.paramRow views|SearchableComboBox">
+        <Setter Property="Background" Value="#1e1e1e" />
+    </Style>
+    
+    <Style Selector="StackPanel.paramRow gui|CheckBoxListBox">
+        <Setter Property="Background" Value="#1e1e1e" />
+    </Style>
+    
 
     <Style Selector="ProgressBar.executionProgressBar">
         <Setter Property="Height" Value="30" />

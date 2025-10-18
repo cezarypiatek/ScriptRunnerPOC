@@ -9,11 +9,11 @@
     <Style Selector="views1|ContentWithSidebar">
         <Setter Property="Template">
             <ControlTemplate>
-                <Grid ColumnDefinitions="*,3,400" Name="PART_Grid" >
+                <Grid ColumnDefinitions="*,10,400" Name="PART_Grid" >
                     <Panel Grid.Column="0" Name="PART_MainPanel"  >
                         <ContentPresenter Content="{TemplateBinding Main}"></ContentPresenter>
                     </Panel>
-                    <GridSplitter Grid.Column="1" Name="PART_Splitter"></GridSplitter>
+                    <GridSplitter Grid.Column="1" Name="PART_Splitter" MinWidth="2" HorizontalAlignment="Center" Background="#FF3E3E40"></GridSplitter>
                     <Panel Grid.Column="2" Name="PART_SidebarPanel" >
                         <ContentPresenter Content="{TemplateBinding Sidebar}"></ContentPresenter>
                     </Panel>

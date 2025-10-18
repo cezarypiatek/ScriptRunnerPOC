@@ -4,24 +4,31 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
              xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
+             xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="viewModels:MainWindowViewModel"
              x:Class="ScriptRunner.GUI.Views.ActionsList">
-    <TreeView x:Name="ActionTree" Background="#252526" Classes="actionsMenu" Grid.Row="0" ItemsSource="{Binding FilteredActionList }" SelectedItem="{Binding SelectedActionOrGroup, Mode=TwoWay}">
+    <TreeView x:Name="ActionTree" Background="#1e1e1e" Classes="actionsMenu" Grid.Row="0" ItemsSource="{Binding FilteredActionList }" SelectedItem="{Binding SelectedActionOrGroup, Mode=TwoWay}">
         <TreeView.Styles>
             <Style Selector="TreeViewItem:empty Panel#PART_ExpandCollapseChevronContainer">
                 <Setter Property="IsVisible" Value="False"></Setter>
             </Style>
             <Style Selector="TreeViewItem:empty Grid#PART_Header">
-                <Setter Property="Margin" Value="25,0,0,0"></Setter>
+                <Setter Property="Margin" Value="35,0,0,0"></Setter>
             </Style>
         </TreeView.Styles>
         <TreeView.DataTemplates>
             <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="viewModels:ScriptConfigGroupWrapper">
-                <TextBlock Text="{Binding Name}"></TextBlock>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <avalonia:Icon Value="fa-folder" FontSize="16" Foreground="#ffd700" />
+                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                </StackPanel>
             </TreeDataTemplate>
             <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
-                <TextBlock Text="{Binding  Name}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <avalonia:Icon Value="fa-file-code" FontSize="16" Foreground="#3baced" />
+                    <TextBlock Text="{Binding  Name}" VerticalAlignment="Center" />
+                </StackPanel>
             </DataTemplate>
         </TreeView.DataTemplates>
     </TreeView>
