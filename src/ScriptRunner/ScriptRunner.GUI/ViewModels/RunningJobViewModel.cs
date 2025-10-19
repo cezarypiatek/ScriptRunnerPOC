@@ -25,6 +25,7 @@ using Avalonia.Media.Immutable;
 using DynamicData;
 using Microsoft.Extensions.ObjectPool;
 using ScriptRunner.GUI.ScriptConfigs;
+using AvaloniaEdit.Document;
 
 namespace ScriptRunner.GUI.ViewModels;
 
@@ -453,9 +454,6 @@ public class RunningJobViewModel : ViewModelBase
             _logForwarder.Write(s);
         }
     }
-    
-    List<Inline> tmpInlinesForNewEntry = new List<Inline>();
-
 
     private Regex urlPattern = new Regex(@"(https?://[^\s<>\""']+)", RegexOptions.Compiled);
 
@@ -622,88 +620,163 @@ public class RunningJobViewModel : ViewModelBase
     {
         Dispatcher.UIThread.Post(() =>
         {
-            _lineBreak ??= new();
-            _underlineDecoration ??= new TextDecorationCollection()
-            {
-                new()
-                {
-                    Location = TextDecorationLocation.Underline,
-                }
-            };
-            tmpInlinesForNewEntry.Clear();
+            var sb = new StringBuilder();
+            var newSegments = new List<FormattedSegment>();
+            
             foreach (var part in s)
             {
-                Inline transformed = part switch
+                int startOffset = sb.Length;
+                
+                switch (part)
                 {
-                    LineEnding => _lineBreak,
-                    Link link => CreateLink(link.Text),
-                    TextSpan textSpan => new Run(textSpan.Text)
-                    {
-                        Foreground = textSpan.Foreground,
-                        Background = textSpan.BackGround,
-                        FontStyle = textSpan switch
+                    case LineEnding:
+                        sb.AppendLine();
+                        break;
+                    
+                    case Link link:
+                        sb.Append(link.Text);
+                        newSegments.Add(new FormattedSegment
                         {
-                            { IsBold: true } => FontStyle.Oblique,
-                            { IsItalic: true } => FontStyle.Italic,
-                            _ => FontStyle.Normal
-                        },
-                        TextDecorations = textSpan.IsUnderline ? _underlineDecoration : null
-                    },
-                    _ => throw new ArgumentOutOfRangeException(nameof(part))
-                };
-                tmpInlinesForNewEntry.Add(transformed);
-
+                            StartOffset = startOffset,
+                            Length = link.Text.Length,
+                            Foreground = Brushes.LightBlue,
+                            IsUnderline = true,
+                            IsLink = true,
+                            LinkUrl = link.Url ?? link.Text
+                        });
+                        break;
+                    
+                    case TextSpan textSpan:
+                        sb.Append(textSpan.Text);
+                        
+                        // Try to merge with the last segment if formatting is identical
+                        var lastSegment = newSegments.Count > 0 ? newSegments[^1] : null;
+                        if (lastSegment != null && 
+                            !lastSegment.IsLink &&
+                            lastSegment.StartOffset + lastSegment.Length == startOffset &&
+                            ReferenceEquals(lastSegment.Foreground, textSpan.Foreground) &&
+                            ReferenceEquals(lastSegment.Background, textSpan.BackGround) &&
+                            lastSegment.IsBold == textSpan.IsBold &&
+                            lastSegment.IsItalic == textSpan.IsItalic &&
+                            lastSegment.IsUnderline == textSpan.IsUnderline)
+                        {
+                            // Merge with previous segment by extending its length
+                            lastSegment.Length += textSpan.Text.Length;
+                        }
+                        else
+                        {
+                            // Create new segment
+                            newSegments.Add(new FormattedSegment
+                            {
+                                StartOffset = startOffset,
+                                Length = textSpan.Text.Length,
+                                Foreground = textSpan.Foreground,
+                                Background = textSpan.BackGround,
+                                IsBold = textSpan.IsBold,
+                                IsItalic = textSpan.IsItalic,
+                                IsUnderline = textSpan.IsUnderline,
+                                IsLink = false
+                            });
+                        }
+                        break;
+                    
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(part));
+                }
             }
 
-            if (RichOutput.Count + tmpInlinesForNewEntry.Count > OutputBufferSize)
+            var newText = sb.ToString();
+            
+            // Handle buffer size limit
+            if (RichOutput.TextLength + newText.Length > OutputBufferSize * 100)
             {
-                var tmpNewLines = RichOutput.Concat(tmpInlinesForNewEntry).TakeLast(OutputBufferSize).ToArray();
-                RichOutput.Clear();
-                RichOutput.AddRange(tmpNewLines);
+                var excessLength = (RichOutput.TextLength + newText.Length) - (OutputBufferSize * 100);
+                if (excessLength < RichOutput.TextLength)
+                {
+                    RichOutput.Remove(0, excessLength);
+                    // Adjust existing segments
+                    for (int i = _formattingSegments.Count - 1; i >= 0; i--)
+                    {
+                        var seg = _formattingSegments[i];
+                        if (seg.StartOffset + seg.Length <= excessLength)
+                        {
+                            _formattingSegments.RemoveAt(i);
+                        }
+                        else if (seg.StartOffset < excessLength)
+                        {
+                            seg.Length -= (excessLength - seg.StartOffset);
+                            seg.StartOffset = 0;
+                        }
+                        else
+                        {
+                            seg.StartOffset -= excessLength;
+                        }
+                    }
+                }
+                else
+                {
+                    RichOutput.Text = string.Empty;
+                    _formattingSegments.Clear();
+                }
             }
-            else RichOutput.AddRange(tmpInlinesForNewEntry);
+            
+            int baseOffset = RichOutput.TextLength;
+            RichOutput.Insert(RichOutput.TextLength, newText);
+            
+            // Add new segments with adjusted offsets and merge with last existing segment if possible
+            foreach (var segment in newSegments)
+            {
+                segment.StartOffset += baseOffset;
+                
+                // Try to merge with the very last segment in the existing list
+                var lastExistingSegment = _formattingSegments.Count > 0 ? _formattingSegments[^1] : null;
+                if (lastExistingSegment != null &&
+                    !lastExistingSegment.IsLink &&
+                    !segment.IsLink &&
+                    lastExistingSegment.StartOffset + lastExistingSegment.Length == segment.StartOffset &&
+                    ReferenceEquals(lastExistingSegment.Foreground, segment.Foreground) &&
+                    ReferenceEquals(lastExistingSegment.Background, segment.Background) &&
+                    lastExistingSegment.IsBold == segment.IsBold &&
+                    lastExistingSegment.IsItalic == segment.IsItalic &&
+                    lastExistingSegment.IsUnderline == segment.IsUnderline)
+                {
+                    // Merge by extending the last segment
+                    lastExistingSegment.Length += segment.Length;
+                }
+                else
+                {
+                    _formattingSegments.Add(segment);
+                }
+            }
+            
+            // Limit total number of segments to prevent performance issues
+            const int maxSegments = 10000;
+            if (_formattingSegments.Count > maxSegments)
+            {
+                int toRemove = _formattingSegments.Count - maxSegments;
+                _formattingSegments.RemoveRange(0, toRemove);
+            }
 
             s.Clear();
             _outputElementListPool.Return(s);
-        } );
+        });
     }
 
-    private InlineUIContainer CreateLink(string chunk)
+    private static void OpenUrl(string url)
     {
-        var link = new TextBlock
-        {
-            Text  = chunk,
-            Cursor = _linkCursor??= new Cursor(StandardCursorType.Hand),
-            Foreground = Brushes.LightBlue,
-            TextDecorations = _underlineDecoration
-        };
-        link.PointerPressed += OnLinkOnPointerPressed;
-        return new InlineUIContainer(link);
-    }
-
-    private static void OnLinkOnPointerPressed(object? sender, PointerPressedEventArgs args)
-    {
-        if(args.GetCurrentPoint(null).Properties.IsLeftButtonPressed == false)
-            return;
-        
-        if (sender is TextBlock { Text: { } url })
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                Process.Start(new ProcessStartInfo(url)
-                {
-                    UseShellExecute = true,
-                    Verb = "open"
-                });
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Process.Start(new ProcessStartInfo(url)
             {
-                Process.Start("xdg-open", url);
-            }
-            else
-            {
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    return;
-                Process.Start("open", url);
-            }
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            Process.Start("xdg-open", url);
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            Process.Start("open", url);
         }
     }
 
@@ -792,16 +865,15 @@ public class RunningJobViewModel : ViewModelBase
     private int _numberOfLines;
     private readonly IDisposable outputSub;
     private IReadOnlyList<TroubleshootingItem> _troubleshooting = Array.Empty<TroubleshootingItem>();
-    private LineBreak? _lineBreak;
+    private List<FormattedSegment> _formattingSegments = new();
     private readonly LogForwarder _logForwarder;
-    private TextDecorationCollection? _underlineDecoration;
-    private Cursor? _linkCursor;
 
     public CancellationTokenSource GracefulCancellation { get; set; }
     public CancellationTokenSource KillCancellation { get; set; }
     public Dictionary<string, string?> EnvironmentVariables { get; set; }
 
-    public InlineCollection RichOutput { get; set; } = new();
+    public TextDocument RichOutput { get; set; } = new();
+    public List<FormattedSegment> FormattingSegments => _formattingSegments;
    
     private bool _followOutput = true;
     public bool FollowOutput
@@ -809,6 +881,19 @@ public class RunningJobViewModel : ViewModelBase
         get => _followOutput;
         set => this.RaiseAndSetIfChanged(ref _followOutput, value);
     }
+}
+
+public class FormattedSegment
+{
+    public int StartOffset { get; set; }
+    public int Length { get; set; }
+    public IBrush? Foreground { get; set; }
+    public IBrush? Background { get; set; }
+    public bool IsBold { get; set; }
+    public bool IsItalic { get; set; }
+    public bool IsUnderline { get; set; }
+    public bool IsLink { get; set; }
+    public string? LinkUrl { get; set; }
 }
 
 public enum TroubleShootingSeverity

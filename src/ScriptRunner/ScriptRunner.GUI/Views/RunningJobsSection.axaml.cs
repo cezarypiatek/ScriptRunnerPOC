@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using ScriptRunner.GUI.ViewModels;
+using ScriptRunner.GUI.Controls;
 
 namespace ScriptRunner.GUI.Views;
 
@@ -24,8 +25,11 @@ public partial class RunningJobsSection : UserControl
 
     private void ScrollChangedHandler(object? sender, ScrollChangedEventArgs e)
     {
-        if (sender is ScrollViewer sc && sc.DataContext is RunningJobViewModel viewModel)
+        if ( e is {Source: ScrollViewer sc} && sender is Control{ DataContext: RunningJobViewModel viewModel } )
         {
+            // Find the FormattedTextEditor inside the ScrollViewer
+            var textEditor = sc.Content as FormattedTextEditor;
+            
             // If content was added (extent changed), auto-scroll if follow output is enabled
             if (e.ExtentDelta.Y > 0 && viewModel.FollowOutput)
             {
@@ -64,17 +68,9 @@ public partial class RunningJobsSection : UserControl
 
     private void InputElement_OnGotFocus(object? sender, GotFocusEventArgs e)
     {
-        if (sender is TextBox textBox)
-        {
-            textBox.Height = Double.NaN;
-        }
     }
 
     private void InputElement_OnLostFocus(object? sender, RoutedEventArgs e)
     {
-        if (sender is TextBox textBox)
-        {
-            textBox.Height = 30;
-        }
     }
 }
