@@ -55,9 +55,11 @@ namespace ScriptRunner.GUI.Views
                             FilteredItems.SelectedIndex++;
                         }
                     }
-                }else if (args.Key == Key.Enter)
+                }
+                else if (args.Key == Key.Enter)
                 {
-                    ChoseSelected();
+                    var autoLaunch = args.KeyModifiers.HasFlag(KeyModifiers.Control);
+                    ChoseSelected(autoLaunch);
                 }
             };
 
@@ -66,7 +68,8 @@ namespace ScriptRunner.GUI.Views
             {
                 if (args.Key == Key.Enter)
                 {
-                    ChoseSelected();
+                    var autoLaunch = args.KeyModifiers.HasFlag(KeyModifiers.Control);
+                    ChoseSelected(autoLaunch);
                 }
 
 
@@ -84,11 +87,11 @@ namespace ScriptRunner.GUI.Views
             };
         }
 
-        private void ChoseSelected()
+        private void ChoseSelected(bool autoLaunch = false)
         {
             if (FilteredItems.SelectedItem is ScriptConfigWithArgumentSet selectedConfig)
             {
-                OnResultSelected(selectedConfig);
+                OnResultSelected(selectedConfig, autoLaunch);
             }
         }
 
@@ -96,7 +99,8 @@ namespace ScriptRunner.GUI.Views
         {
             if (FilteredItems.SelectedItem is ScriptConfigWithArgumentSet selectedConfig)
             {
-                OnResultSelected(selectedConfig);
+                var autoLaunch = e.KeyModifiers.HasFlag(KeyModifiers.Control);
+                OnResultSelected(selectedConfig, autoLaunch);
             }
         }
 
@@ -111,6 +115,6 @@ namespace ScriptRunner.GUI.Views
             }
         }
 
-        private void OnResultSelected(ScriptConfigWithArgumentSet? v) => ResultSelected?.Invoke(this, new ResultSelectedEventArgs(){Result = v, AutoLaunch = ViewModel!.AutoLaunch});
+        private void OnResultSelected(ScriptConfigWithArgumentSet? v, bool autoLaunch) => ResultSelected?.Invoke(this, new ResultSelectedEventArgs(){Result = v, AutoLaunch = autoLaunch});
     }
 }

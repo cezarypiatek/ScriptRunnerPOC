@@ -24,8 +24,6 @@ namespace ScriptRunner.GUI.ViewModels
         private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfigWithArgumentSet>> _filteredActionList;
         public IEnumerable<ScriptConfigWithArgumentSet> FilteredActionList => _filteredActionList.Value;
 
-        public bool AutoLaunch { get; set; }
-
 
         public SearchBoxViewModel(IReadOnlyList<ScriptConfig> allActions, IReadOnlyList<RecentAction> recent)
         {
@@ -45,16 +43,6 @@ namespace ScriptRunner.GUI.ViewModels
                 .Select(text =>
                 {
                     text = text?.Trim() ?? string.Empty;
-
-                    if (text.StartsWith(">"))
-                    {
-                        AutoLaunch = true;
-                        text = text.Substring(1);
-                    }
-                    else
-                    {
-                        AutoLaunch = false;
-                    }
                     
                     if (intial || string.IsNullOrWhiteSpace(text))
                     {
