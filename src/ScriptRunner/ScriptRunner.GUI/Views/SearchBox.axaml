@@ -32,6 +32,39 @@
                       </DataTemplate>
                   </ListBox.ItemTemplate>
               </ListBox>
+              
+              <!-- Keyboard Shortcuts Footer -->
+              <Border Margin="0,10,0,0" Padding="8,6" Background="#1a1a1a" CornerRadius="3">
+                  <StackPanel Orientation="Horizontal" Spacing="15">
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                          <Border Background="#2d2d2d" Padding="4,2" CornerRadius="2">
+                              <TextBlock Text="↑↓" FontSize="10" Foreground="#a0a0a0" />
+                          </Border>
+                          <TextBlock Text="Navigate" FontSize="10" Foreground="#a0a0a0" VerticalAlignment="Center" />
+                      </StackPanel>
+                      
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                          <Border Background="#2d2d2d" Padding="4,2" CornerRadius="2">
+                              <TextBlock Text="Enter" FontSize="10" Foreground="#a0a0a0" />
+                          </Border>
+                          <TextBlock Text="Open" FontSize="10" Foreground="#a0a0a0" VerticalAlignment="Center" />
+                      </StackPanel>
+                      
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                          <Border Background="#2d2d2d" Padding="4,2" CornerRadius="2">
+                              <TextBlock Text="Ctrl+Enter" FontSize="10" Foreground="#a0a0a0" />
+                          </Border>
+                          <TextBlock Text="Auto Launch" FontSize="10" Foreground="#a0a0a0" VerticalAlignment="Center" />
+                      </StackPanel>
+                      
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                          <Border Background="#2d2d2d" Padding="4,2" CornerRadius="2">
+                              <TextBlock Text="Ctrl+Click" FontSize="10" Foreground="#a0a0a0" />
+                          </Border>
+                          <TextBlock Text="Auto Launch" FontSize="10" Foreground="#a0a0a0" VerticalAlignment="Center" />
+                      </StackPanel>
+                  </StackPanel>
+              </Border>
           </StackPanel>
       </Border>
   </StackPanel>
