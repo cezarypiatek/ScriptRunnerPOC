@@ -138,12 +138,22 @@ public class FormattedTextColorizer : DocumentColorizingTransformer
                 );
                 element.TextRunProperties.SetTypeface(newTypeface);
 
-                if (segment.IsUnderline)
+                // Apply text decorations (underline and/or strikethrough)
+                if (segment.IsUnderline || segment.IsStrikethrough)
                 {
-                    element.TextRunProperties.SetTextDecorations(new TextDecorationCollection
+                    var decorations = new TextDecorationCollection();
+                    
+                    if (segment.IsUnderline)
                     {
-                        new TextDecoration { Location = TextDecorationLocation.Underline }
-                    });
+                        decorations.Add(new TextDecoration { Location = TextDecorationLocation.Underline });
+                    }
+                    
+                    if (segment.IsStrikethrough)
+                    {
+                        decorations.Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
+                    }
+                    
+                    element.TextRunProperties.SetTextDecorations(decorations);
                 }
             });
         }

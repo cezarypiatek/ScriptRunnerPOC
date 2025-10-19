@@ -377,6 +377,7 @@ public class RunningJobViewModel : ViewModelBase
     private bool underline = false;
     private bool bold = false;
     private bool italic = false;
+    private bool strikethrough = false;
 
     public ObservableCollection<InteractiveInputItem> CurrentInteractiveInputs { get; set; } = new();
 
@@ -581,19 +582,40 @@ public class RunningJobViewModel : ViewModelBase
                     {
                         bold = true;
                     }
-                    else if (subPart == "\u003b[1m")
+                    else if (subPart == "\u001b[22m")
+                    {
+                        bold = false;
+                    }
+                    else if (subPart == "\u001b[3m")
                     {
                         italic = true;
+                    }
+                    else if (subPart == "\u001b[23m")
+                    {
+                        italic = false;
                     }
                     else if (subPart == "\u001b[4m")
                     {
                         underline = true;
+                    }
+                    else if (subPart == "\u001b[24m")
+                    {
+                        underline = false;
+                    }
+                    else if (subPart == "\u001b[9m")
+                    {
+                        strikethrough = true;
+                    }
+                    else if (subPart == "\u001b[29m")
+                    {
+                        strikethrough = false;
                     }
                     else if (subPart == "\u001b[0m")
                     {
                         bold = false;
                         underline = false;
                         italic = false;
+                        strikethrough = false;
                     }
 
 
@@ -603,8 +625,9 @@ public class RunningJobViewModel : ViewModelBase
                 _outputElements.Add(new TextSpan(
                     Text: subPart,
                     IsBold: bold,
-                    IsItalic: bold == false && italic,
+                    IsItalic: italic,
                     IsUnderline: underline,
+                    IsStrikethrough: strikethrough,
                     Foreground:currentConsoleTextColor,
                     BackGround: currentConsoleBackgroundColor
                     ));
@@ -658,7 +681,8 @@ public class RunningJobViewModel : ViewModelBase
                             ReferenceEquals(lastSegment.Background, textSpan.BackGround) &&
                             lastSegment.IsBold == textSpan.IsBold &&
                             lastSegment.IsItalic == textSpan.IsItalic &&
-                            lastSegment.IsUnderline == textSpan.IsUnderline)
+                            lastSegment.IsUnderline == textSpan.IsUnderline &&
+                            lastSegment.IsStrikethrough == textSpan.IsStrikethrough)
                         {
                             // Merge with previous segment by extending its length
                             lastSegment.Length += textSpan.Text.Length;
@@ -675,6 +699,7 @@ public class RunningJobViewModel : ViewModelBase
                                 IsBold = textSpan.IsBold,
                                 IsItalic = textSpan.IsItalic,
                                 IsUnderline = textSpan.IsUnderline,
+                                IsStrikethrough = textSpan.IsStrikethrough,
                                 IsLink = false
                             });
                         }
@@ -738,7 +763,8 @@ public class RunningJobViewModel : ViewModelBase
                     ReferenceEquals(lastExistingSegment.Background, segment.Background) &&
                     lastExistingSegment.IsBold == segment.IsBold &&
                     lastExistingSegment.IsItalic == segment.IsItalic &&
-                    lastExistingSegment.IsUnderline == segment.IsUnderline)
+                    lastExistingSegment.IsUnderline == segment.IsUnderline &&
+                    lastExistingSegment.IsStrikethrough == segment.IsStrikethrough)
                 {
                     // Merge by extending the last segment
                     lastExistingSegment.Length += segment.Length;
@@ -892,6 +918,7 @@ public class FormattedSegment
     public bool IsBold { get; set; }
     public bool IsItalic { get; set; }
     public bool IsUnderline { get; set; }
+    public bool IsStrikethrough { get; set; }
     public bool IsLink { get; set; }
     public string? LinkUrl { get; set; }
 }
