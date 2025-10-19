@@ -6,6 +6,7 @@
              xmlns:gui="clr-namespace:ScriptRunner.GUI"
              xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
              xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
+             xmlns:controls="clr-namespace:ScriptRunner.GUI.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ScriptRunner.GUI.Views.RunningJobsSection"
              x:DataType="viewModels:MainWindowViewModel"
@@ -57,9 +58,7 @@
                       <Button Margin="20" Padding="10" HorizontalAlignment="Center" FontSize="26" Command="{Binding DismissTroubleshootingMessage}">Dismiss</Button>
                   </StackPanel>
               </ScrollViewer>
-              <ScrollViewer Grid.Row="1" ScrollChanged="ScrollChangedHandler" BringIntoViewOnFocusChange="False" Margin="0,0,0,10">
-                  <SelectableTextBlock TextWrapping="Wrap" Margin="0"  Classes="consoleOutput"  Inlines="{Binding RichOutput}" ></SelectableTextBlock>
-              </ScrollViewer>
+              <controls:FormattedTextEditor ScrollChanged="ScrollChangedHandler" Grid.Row="1"  Margin="0,0,0,10" Classes="consoleOutput" ViewModel="{Binding}" ></controls:FormattedTextEditor>
               <StackPanel Grid.Row="2" IsVisible="{Binding ExecutionPending, Mode=OneWay}" Margin="0, 0, 0,10">
                   <Panel IsVisible="{Binding CurrentInteractiveInputs.Count}" Margin="0,0,0,10">
                       <ItemsRepeater ItemsSource="{Binding CurrentInteractiveInputs}">
@@ -80,7 +79,6 @@
             
             <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10" IsVisible="{Binding ExecutionPending}">
               <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
-              <ToggleButton Width="100" HorizontalContentAlignment="Center" Margin="10,0" IsChecked="{Binding FollowOutput, Mode=TwoWay}" ToolTip.Tip="Automatically scroll to bottom when new output appears">Follow output</ToggleButton>
               <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0" Command="{Binding CancelExecution}" IsEnabled="{Binding !KillAvailable}" >Cancel</Button>
               <Button  Width="60" HorizontalContentAlignment="Center" Command="{Binding Kill}" IsVisible="{Binding KillAvailable}" Background="Firebrick">Kill</Button>
             </StackPanel>
@@ -91,4 +89,3 @@
 
     </TabControl>
 </UserControl>
-
