@@ -41,19 +41,6 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             ViewModel.ScrollToDateAction = ScrollToDate;
         }
         
-        // Subscribe to date header click event from ExecutionLogList control
-        var executionLogList = this.FindControl<ExecutionLogList>("ExecutionLogListControl");
-        if (executionLogList != null)
-        {
-            executionLogList.DateHeaderClicked += (sender, args) =>
-            {
-                if (ViewModel != null)
-                {
-                    ViewModel.IsDatePickerVisible = true;
-                }
-            };
-        }
-        
         if (AppSettingsService.Load().Layout is { } layoutSettings)
         {
             

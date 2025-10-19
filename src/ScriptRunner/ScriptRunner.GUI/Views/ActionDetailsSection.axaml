@@ -203,7 +203,7 @@
 
               </mdxaml:MarkdownScrollViewer.Styles>
             </mdxaml:MarkdownScrollViewer>
-          </Border>    
+          </Border>
         </TabItem>
         <TabItem Header="History" IsSelected="{Binding !SelectedAction.HasDocs}">
           <Grid RowDefinitions="Auto,*">
@@ -211,14 +211,17 @@
               <TextBox Watermark="Search" Text="{Binding TermForCurrentHistoryFilter}"></TextBox>
               <CheckBox IsChecked="{Binding CompactedHistoryForCurrent}" ToolTip.Tip="Show latest execution with the same parameters">Compacted</CheckBox>
             </StackPanel>
-            <views:ExecutionLogList Grid.Row="1" 
-                                    Items="{Binding ExecutionLogForCurrent}"
-                                    SelectedItem="{Binding SelectedRecentExecution, Mode=TwoWay}"
-                                    ShowDatePicker="True"/>
+            <Panel Grid.Row="1">
+              <views:ExecutionLogList
+                                      Items="{Binding ExecutionLogForCurrent}"
+                                      SelectedItem="{Binding SelectedRecentExecution, Mode=TwoWay}"
+                                      ShowDatePicker="True"/>
+            </Panel>
+
           </Grid>
         </TabItem>
       </TabControl>
-      
+
     </views:ContentWithSidebar.Sidebar>
   </views:ContentWithSidebar>
   

@@ -59,9 +59,6 @@
                                                   Items="{Binding ExecutionLog}"
                                                   SelectedItem="{Binding SelectedRecentExecution, Mode=TwoWay}"
                                                   ShowDatePicker="True"/>
-                          
-                          <!-- Date picker overlay -->
-                          <views:DatePickerOverlay />
                       </Panel>
                   </Panel>
               </views:ContentWithSidebar.Sidebar>
