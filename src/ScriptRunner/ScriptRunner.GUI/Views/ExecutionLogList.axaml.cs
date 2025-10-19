@@ -29,8 +29,11 @@ public partial class ExecutionLogList : UserControl
     public static readonly StyledProperty<bool> ShowDatePickerProperty =
         AvaloniaProperty.Register<ExecutionLogList, bool>(nameof(ShowDatePicker), defaultValue: false);
 
-    // Event for when date header is clicked
-    public event EventHandler? DateHeaderClicked;
+    public static readonly StyledProperty<bool> IsDatePickerVisibleProperty =
+        AvaloniaProperty.Register<ExecutionLogList, bool>(nameof(IsDatePickerVisible), defaultValue: false);
+
+    public static readonly StyledProperty<IEnumerable<DateGroupInfo>?> AvailableDatesProperty =
+        AvaloniaProperty.Register<ExecutionLogList, IEnumerable<DateGroupInfo>?>(nameof(AvailableDates));
 
     private INotifyCollectionChanged? _currentCollection;
 
@@ -64,6 +67,18 @@ public partial class ExecutionLogList : UserControl
         set => SetValue(ShowDatePickerProperty, value);
     }
 
+    public bool IsDatePickerVisible
+    {
+        get => GetValue(IsDatePickerVisibleProperty);
+        set => SetValue(IsDatePickerVisibleProperty, value);
+    }
+
+    public IEnumerable<DateGroupInfo>? AvailableDates
+    {
+        get => GetValue(AvailableDatesProperty);
+        private set => SetValue(AvailableDatesProperty, value);
+    }
+
     public ExecutionLogList()
     {
         InitializeComponent();
@@ -89,6 +104,7 @@ public partial class ExecutionLogList : UserControl
             }
             
             RebuildGroupedList();
+            RebuildAvailableDates();
         });
         
         // Watch for changes to SelectedLogItem and update SelectedItem
@@ -141,9 +157,27 @@ public partial class ExecutionLogList : UserControl
         GroupedItems = items;
     }
 
+    private void RebuildAvailableDates()
+    {
+        if (Items == null)
+        {
+            AvailableDates = null;
+            return;
+        }
+
+        var dateGroups = Items
+            .GroupBy(a => a.Timestamp.Date)
+            .OrderByDescending(g => g.Key)
+            .Select(g => new DateGroupInfo(g.Key, g.Count()))
+            .ToList();
+
+        AvailableDates = dateGroups;
+    }
+
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         RebuildGroupedList();
+        RebuildAvailableDates();
     }
 
     public void OnDateHeaderClicked(object? sender, PointerPressedEventArgs e)
@@ -151,8 +185,23 @@ public partial class ExecutionLogList : UserControl
         // Show the date picker overlay when a date header is clicked (if enabled)
         if (ShowDatePicker)
         {
-            // Raise the event so parent can show date picker
-            DateHeaderClicked?.Invoke(this, EventArgs.Empty);
+            IsDatePickerVisible = true;
+        }
+        e.Handled = true;
+    }
+
+    public void OnDatePickerOverlayClicked(object? sender, PointerPressedEventArgs e)
+    {
+        // Close the overlay when clicking on the background
+        IsDatePickerVisible = false;
+    }
+
+    public void OnDatePickerItemClicked(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is Border border && border.DataContext is DateGroupInfo dateInfo)
+        {
+            IsDatePickerVisible = false;
+            _ = ScrollToDate(dateInfo.Date);
         }
         e.Handled = true;
     }
