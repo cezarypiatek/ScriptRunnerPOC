@@ -84,23 +84,75 @@ public class ParamsPanelFactory
                 bool _isResizing = false;
                 Point _lastPointerPosition = default;
                 
-                var resizeHandle = new Border()
+                // Create toolbar
+                var toolbar = new StackPanel()
                 {
-                    Height = 10,
-                    Width = 10,
-                    Background = Brushes.Transparent,
+                    Orientation = Orientation.Horizontal,
+                    Height = 24,
                     HorizontalAlignment = HorizontalAlignment.Right,
+                    //Background = new SolidColorBrush(Color.FromArgb(50, 128, 128, 128)),
+                    Spacing = 5,
                     ZIndex = 1,
-                    Margin = new Thickness(0,-10,0,0),
-                    VerticalAlignment = VerticalAlignment.Bottom,
-                    Cursor = new Cursor(StandardCursorType.BottomRightCorner)
-                };
-                resizeHandle.Child = new Icon()
-                {
-                    Value = "fas fa-signal",
-                    HorizontalAlignment = HorizontalAlignment.Right
+                    Margin = new Thickness(0,-25,0,0),
                 };
                 
+                // Expand button to open overlay
+                var expandButton = new Button()
+                {
+                    Width = 24,
+                    Height = 24,
+                    Padding = new Thickness(0),
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0)
+                };
+                
+                var expandIcon = new Icon()
+                {
+                    Value = "fas fa-expand",
+                    FontSize = 12
+                };
+                expandButton.Content = expandIcon;
+                ToolTip.SetTip(expandButton, "Open in larger editor");
+                
+                expandButton.Click += async (sender, e) =>
+                {
+                    var overlay = new Views.TextEditorOverlay();
+                    overlay.SetEditorControl(controlRecord.Control);
+                    
+                    // Find the parent window
+                    var parentWindow = TopLevel.GetTopLevel(controlRecord.Control as Visual) as Window;
+                    if (parentWindow != null)
+                    {
+                        await overlay.ShowDialog(parentWindow);
+                    }
+                    else
+                    {
+                        overlay.Show();
+                    }
+                };
+                
+                // Resize handle
+                var resizeHandle = new Border()
+                {
+                    Width = 24,
+                    Height = 24,
+                    Background = Brushes.Transparent,
+                    Cursor = new Cursor(StandardCursorType.BottomRightCorner),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(2,5,0,0),
+                };
+                
+                var resizeIcon = new Icon()
+                {
+                    Value = "fas fa-signal",
+                    FontSize = 12,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                resizeHandle.Child = resizeIcon;
+                ToolTip.SetTip(resizeHandle, "Drag to resize");
 
                 resizeHandle.PointerPressed += (sender, e) =>
                 {
@@ -133,14 +185,16 @@ public class ParamsPanelFactory
                 {
                     _isResizing = false;
                 };
-                //paramsPanel.Children.Add(resizeHandle);
+
+                toolbar.Children.Add(expandButton);
+                toolbar.Children.Add(resizeHandle);
 
                 var panel = new StackPanel()
                 {
                     Orientation = Orientation.Vertical
                 };
                 panel.Children.Add(controlRecord.Control);
-                panel.Children.Add(resizeHandle);
+                panel.Children.Add(toolbar);
                 controlForEdit = panel;
 
 
@@ -585,6 +639,10 @@ public class ParamsPanelFactory
             CornerRadius = new CornerRadius(3)
         };
         textEditor.TextArea.TextView.Margin = new Thickness(10, 0);
+        
+        // Store syntax as Tag so it can be retrieved later
+        textEditor.Tag = syntax;
+        
         var registry  = new  RegistryOptions(ThemeName.DarkPlus);
         TextMate.Installation textMateInstallation = textEditor.InstallTextMate(registry);
         if (registry.GetLanguageByExtension("." + syntax) is { } languageByExtension)

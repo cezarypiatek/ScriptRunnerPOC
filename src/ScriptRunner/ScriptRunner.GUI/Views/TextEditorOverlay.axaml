@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="ScriptRunner.GUI.Views.TextEditorOverlay"
+        Title="Edit Text"
+        Width="900"
+        Height="700"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True">
+    
+    <Grid RowDefinitions="*,Auto">
+        <!-- Content area -->
+        <Border Grid.Row="0" 
+                Padding="10"
+                Background="{DynamicResource SystemChromeLowColor}">
+            <ContentPresenter Name="EditorContentPresenter" />
+        </Border>
+        
+        <!-- Button bar -->
+        <Border Grid.Row="1" 
+                Background="{DynamicResource SystemChromeMediumColor}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="10">
+            <StackPanel Orientation="Horizontal" 
+                       HorizontalAlignment="Right" 
+                       Spacing="10">
+                <Button Name="OkButton" 
+                        Content="OK" 
+                        Width="80"
+                        HorizontalContentAlignment="Center"
+                        Classes="accent"/>
+                <Button Name="CancelButton" 
+                        HorizontalContentAlignment="Center"
+                        Content="Cancel" 
+                        Width="80"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
+
