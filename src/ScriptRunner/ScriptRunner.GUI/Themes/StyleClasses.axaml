@@ -152,11 +152,6 @@
     <Style Selector="StackPanel.paramRow NumericUpDown">
         <Setter Property="Background" Value="#1e1e1e" />
     </Style>
-    
-    <Style Selector="StackPanel.paramRow views|PasswordBox">
-        <Setter Property="Background" Value="#1e1e1e" />
-    </Style>
-    
     <Style Selector="StackPanel.paramRow views|SearchableComboBox">
         <Setter Property="Background" Value="#1e1e1e" />
     </Style>
