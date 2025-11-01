@@ -1,0 +1,219 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ScriptRunner.GUI.ViewModels"
+             xmlns:converters="using:ScriptRunner.GUI.Converters"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="ScriptRunner.GUI.Views.Statistics"
+             x:DataType="vm:StatisticsViewModel">
+    
+    <UserControl.Resources>
+        <converters:IntensityConverter x:Key="IntensityConverter"/>
+        <converters:IntensityToColorConverter x:Key="IntensityToColorConverter"/>
+        <converters:WeekToPositionConverter x:Key="WeekToPositionConverter"/>
+        <converters:DayToPositionConverter x:Key="DayToPositionConverter"/>
+        <converters:MonthLabelConverter x:Key="MonthLabelConverter"/>
+        <converters:MonthWidthConverter x:Key="MonthWidthConverter"/>
+        <converters:MonthPositionConverter x:Key="MonthPositionConverter"/>
+        <converters:IndexToRankConverter x:Key="IndexToRankConverter"/>
+    </UserControl.Resources>
+    
+    <UserControl.Styles>
+        <Style Selector="Border.heatmap-cell">
+            <Setter Property="Width" Value="12"/>
+            <Setter Property="Height" Value="12"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="CornerRadius" Value="2"/>
+        </Style>
+        
+        <Style Selector="Border.intensity-0">
+            <Setter Property="Background" Value="#161b22"/>
+        </Style>
+        <Style Selector="Border.intensity-1">
+            <Setter Property="Background" Value="#0e4429"/>
+        </Style>
+        <Style Selector="Border.intensity-2">
+            <Setter Property="Background" Value="#006d32"/>
+        </Style>
+        <Style Selector="Border.intensity-3">
+            <Setter Property="Background" Value="#26a641"/>
+        </Style>
+        <Style Selector="Border.intensity-4">
+            <Setter Property="Background" Value="#39d353"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="30">
+            
+            <!-- Header -->
+            <TextBlock Text="Execution Statistics" 
+                       FontSize="24" 
+                       FontWeight="Bold"
+                       Margin="0,0,0,10"/>
+            
+            <!-- Heatmap Section -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Execution Frequency (Last Year)" 
+                           FontSize="18" 
+                           FontWeight="SemiBold"/>
+                <StackPanel Spacing="5">
+                    <!-- Day labels -->
+                    <Grid ColumnDefinitions="30,*">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Margin="0,20,0,0"  Text="Mon" Height="28" Padding="0,14,0,0" FontSize="9" Foreground="#858585"/>
+                            <TextBlock Text="Wed" Height="28" Padding="0,14,0,0" FontSize="9" Foreground="#858585"/>
+                            <TextBlock Text="Fri" Height="28" Padding="0,14,0,0" FontSize="9" Foreground="#858585"/>
+                        </StackPanel>
+                        
+                        <!-- Combined scroll area for month labels and heatmap -->
+                        <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <StackPanel Orientation="Vertical">
+                                <!-- Month labels -->
+                                <ItemsControl ItemsSource="{Binding MonthLabels}" Height="20">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ., Converter={StaticResource MonthLabelConverter}}" 
+                                                       FontSize="10" 
+                                                       Foreground="#858585"
+                                                       Width="{Binding ., Converter={StaticResource MonthWidthConverter}}"
+                                                       Margin="0,0,0,0"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                
+                                <!-- Heatmap grid -->
+                                <ItemsControl ItemsSource="{Binding HeatmapDays}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Vertical" Height="110"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Width="12" 
+                                                    Height="12" 
+                                                    Margin="1" 
+                                                    CornerRadius="2"
+                                                    ToolTip.Tip="{Binding ToolTip}">
+                                                <Border.Background>
+                                                    <SolidColorBrush>
+                                                        <SolidColorBrush.Color>
+                                                            <MultiBinding Converter="{StaticResource IntensityToColorConverter}">
+                                                                <Binding Path="Intensity"/>
+                                                            </MultiBinding>
+                                                        </SolidColorBrush.Color>
+                                                    </SolidColorBrush>
+                                                </Border.Background>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                    
+                    <!-- Legend -->
+                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="50,10,0,0">
+                        <TextBlock Text="Less" FontSize="10" Foreground="#858585" VerticalAlignment="Center"/>
+                        <Border Classes="heatmap-cell intensity-0"/>
+                        <Border Classes="heatmap-cell intensity-1"/>
+                        <Border Classes="heatmap-cell intensity-2"/>
+                        <Border Classes="heatmap-cell intensity-3"/>
+                        <Border Classes="heatmap-cell intensity-4"/>
+                        <TextBlock Text="More" FontSize="10" Foreground="#858585" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+            
+            <!-- Top 10 Actions Section -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Top 10 Most Executed Actions" 
+                           FontSize="18" 
+                           FontWeight="SemiBold"/>
+                
+                <Border BorderBrush="#3E3E40" 
+                        BorderThickness="1" 
+                        CornerRadius="5"
+                        Padding="10">
+                    <Grid RowDefinitions="Auto,*">
+                        <!-- Table Header -->
+                        <Grid Grid.Row="0" 
+                              ColumnDefinitions="50,*,200,150"
+                              Margin="5"
+                              Height="30">
+                            <TextBlock Grid.Column="0" 
+                                       Text="#" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#858585"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" 
+                                       Text="Action Name" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#858585"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" 
+                                       Text="Source" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#858585"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="3" 
+                                       Text="Executions" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#858585"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"
+                                       Margin="0,0,10,0"/>
+                        </Grid>
+                        
+                        <!-- Table Content -->
+                        <ItemsControl Grid.Row="1" ItemsSource="{Binding TopActions}" Name="TopActionsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TopActionItem">
+                                    <Border BorderBrush="#2E2E30" 
+                                            BorderThickness="0,1,0,0"
+                                            Padding="5">
+                                        <Grid ColumnDefinitions="50,*,200,150" Height="35">
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{Binding Rank}"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="#858585"/>
+                                            <TextBlock Grid.Column="1" 
+                                                       Text="{Binding ActionName}"
+                                                       VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding ActionName}"/>
+                                            <TextBlock Grid.Column="2" 
+                                                       Text="{Binding Source}"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="#A0A0A0"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding Source}"/>
+                                            <StackPanel Grid.Column="3" 
+                                                        Orientation="Horizontal" 
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center"
+                                                        Spacing="5"
+                                                        Margin="0,0,10,0">
+                                                <TextBlock Text="{Binding ExecutionCount}"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#3baced"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            </StackPanel>
+            
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

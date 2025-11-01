@@ -60,6 +60,9 @@
                                                   SelectedItem="{Binding SelectedRecentExecution, Mode=TwoWay}"
                                                   ShowDatePicker="True"/>
                       </Panel>
+                      <Panel IsVisible="{Binding IsStatisticsVisible}">
+                          <views:Statistics DataContext="{Binding Statistics}"/>
+                      </Panel>
                   </Panel>
               </views:ContentWithSidebar.Sidebar>
               <views:ContentWithSidebar.Main>
