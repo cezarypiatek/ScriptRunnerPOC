@@ -321,7 +321,7 @@ public class ParamsPanelFactory
             case PromptType.Dropdown:
                 var delimiterForOptions = p.GetPromptSettings("delimiter", x => x, ",");
                 var dropdownOptions = p.GetDropdownOptions(delimiterForOptions);
-                var observableDropdownOptions = new ObservableCollection<DropdownOption>(dropdownOptions);
+                
                 var searchable = p.GetPromptSettings("searchable", bool.Parse, false);
                 var optionsGeneratorCommand = p.GetPromptSettings("optionsGeneratorCommand", out var optionsGeneratorCommandText) ? optionsGeneratorCommandText : null;
                 
@@ -329,15 +329,15 @@ public class ParamsPanelFactory
                 DropdownOption? selectedOption = null;
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    selectedOption = observableDropdownOptions.FirstOrDefault(opt => opt.Value == value);
-                    if (selectedOption == null && string.IsNullOrWhiteSpace(optionsGeneratorCommand) == false)
+                    selectedOption = dropdownOptions.FirstOrDefault(opt => opt.Value == value);
+                    if (selectedOption == null)
                     {
-                        // Add the value as a temporary option if not found and generator is available
-                        selectedOption = new DropdownOption(value);
-                        observableDropdownOptions.Add(selectedOption);
+                        // Add the value as a temporary option, maybe it was available before but not anymore
+                        selectedOption = new DropdownOption(value, value);
+                        dropdownOptions.Add(selectedOption);
                     }
                 }
-                
+                var observableDropdownOptions = new ObservableCollection<DropdownOption>(dropdownOptions);
                 Control inputControl;
                 
                 if (searchable)
