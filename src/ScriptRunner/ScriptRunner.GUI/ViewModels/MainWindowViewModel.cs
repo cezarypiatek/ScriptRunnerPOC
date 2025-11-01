@@ -49,6 +49,15 @@ public class MainWindowViewModel : ReactiveObject
 
     private bool _isRecentListVisible;
 
+    public bool IsStatisticsVisible
+    {
+        get => _isStatisticsVisible;
+        set => this.RaiseAndSetIfChanged(ref _isStatisticsVisible, value);
+    }
+
+    private bool _isStatisticsVisible;
+
+    public StatisticsViewModel Statistics { get; private set; }
 
     public bool IsSideBoxVisible => _isSideBoxVisible.Value;
 
@@ -229,6 +238,9 @@ public class MainWindowViewModel : ReactiveObject
         _vaultProvider = vaultProvider;
         this.appUpdater = new GithubUpdater();
 
+        // Initialize Statistics ViewModel
+        Statistics = new StatisticsViewModel(ExecutionLog);
+
         ExecutionLogAction? lastSelected = null;
         
         this.WhenAnyValue(x=>x.SelectedRecentExecution)
@@ -245,20 +257,30 @@ public class MainWindowViewModel : ReactiveObject
                 }
             });
         
-        this.WhenAnyValue(x => x.IsScriptListVisible, x => x.IsRecentListVisible)
-            .Select((t1, t2) => (t1.Item1 || t1.Item2))
+        this.WhenAnyValue(x => x.IsScriptListVisible, x => x.IsRecentListVisible, x => x.IsStatisticsVisible)
+            .Select(t => (t.Item1 || t.Item2 || t.Item3))
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.IsSideBoxVisible, out _isSideBoxVisible);
         
         this.WhenAnyValue(x => x.IsScriptListVisible)
             .Where(x => x)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(b => IsRecentListVisible = false);
+            .Subscribe(b => { IsRecentListVisible = false; IsStatisticsVisible = false; });
         
         this.WhenAnyValue(x => x.IsRecentListVisible)
             .Where(x => x)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(b => IsScriptListVisible = false);
+            .Subscribe(b => { IsScriptListVisible = false; IsStatisticsVisible = false; });
+        
+        this.WhenAnyValue(x => x.IsStatisticsVisible)
+            .Where(x => x)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(b => 
+            { 
+                IsScriptListVisible = false; 
+                IsRecentListVisible = false;
+                Statistics.RefreshStatistics();
+            });
         
         this.WhenAnyValue(x => x.ActionFilter, x => x.Actions)
             .Throttle(TimeSpan.FromMilliseconds(200))
