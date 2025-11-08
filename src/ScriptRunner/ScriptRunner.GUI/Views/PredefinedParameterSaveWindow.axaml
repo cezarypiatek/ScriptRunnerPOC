@@ -3,35 +3,132 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
-        mc:Ignorable="d" Width="500" Height="250"
+        xmlns:avalonia="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        mc:Ignorable="d" 
+        Width="550" 
+        Height="470"
         x:Class="ScriptRunner.GUI.Views.PredefinedParameterSaveWindow"
-        Title="Save argument values as..."
+        Title="Save Argument Values"
         WindowStartupLocation="CenterOwner"
-        >
-  <Grid Margin="10, 10, 20, 10" x:DataType="views:SavePredefinedParameterVM">
-      <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-          <ColumnDefinition Width="*"></ColumnDefinition>
-      </Grid.ColumnDefinitions>
-      <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="Auto"></RowDefinition>
-      </Grid.RowDefinitions>
-      
-      <RadioButton IsChecked="{Binding UseDefault}" Grid.Row="0" Grid.Column="0" GroupName="Source" VerticalAlignment="Center" Margin="20,10" >Default set</RadioButton>
-      
-    <RadioButton IsChecked="{Binding UseNew}" Grid.Row="1" Grid.Column="0" GroupName="Source" VerticalAlignment="Center" Margin="20,10" >New set:</RadioButton>
-    <TextBox HorizontalAlignment="Stretch" IsEnabled="{Binding UseNew}" Text="{Binding NewName}" Margin="0,10" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"></TextBox>
- 
-      
-    <RadioButton IsChecked="{Binding UseExisting}" Grid.Row="2" Grid.Column="0" GroupName="Source" VerticalAlignment="Center" Margin="20, 10">Existing set:</RadioButton>
-    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding ExistingSets}" SelectedItem="{Binding SelectedExisting}" IsEnabled="{Binding UseExisting}" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center"></ComboBox>
-    <Button Click="Save" Padding="30,10" Margin="0,30" Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" >Save</Button>
+        Background="#212222"
+        FontFamily="Segoe UI Variable">
+    
+    <Grid x:DataType="views:SavePredefinedParameterVM">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
         
-
-
-
-  </Grid>
+        <!-- Content Section -->
+        <Border Grid.Row="0" Margin="15,15,15,10" Padding="20" 
+                BorderThickness="1" BorderBrush="#4E4E4E" 
+                Background="#2B2B2B" CornerRadius="3">
+            <StackPanel Spacing="15">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <avalonia:Icon Value="fas fa-save" FontSize="16" Foreground="#85DFFF" VerticalAlignment="Center"/>
+                    <TextBlock Text="Choose where to save the argument values" 
+                               FontSize="15" 
+                               FontWeight="SemiBold" 
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Default Set Option -->
+                <Border BorderThickness="1" BorderBrush="#4E4E4E" 
+                        Background="#252525" CornerRadius="3" Padding="12">
+                    <RadioButton IsChecked="{Binding UseDefault}" 
+                                 GroupName="Source" 
+                                 VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <avalonia:Icon Value="fas fa-star" FontSize="14" Foreground="#FFD700" VerticalAlignment="Center"/>
+                            <TextBlock Text="Default set" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                </Border>
+                
+                <!-- New Set Option -->
+                <Border BorderThickness="1" BorderBrush="#4E4E4E" 
+                        Background="#252525" CornerRadius="3" Padding="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        
+                        <RadioButton Grid.Row="0" 
+                                     IsChecked="{Binding UseNew}" 
+                                     GroupName="Source" 
+                                     VerticalAlignment="Center"
+                                     Margin="0,0,0,10">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:Icon Value="fas fa-plus-circle" FontSize="14" Foreground="#85DFFF" VerticalAlignment="Center"/>
+                                <TextBlock Text="New set" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                        
+                        <TextBox Grid.Row="1" 
+                                 HorizontalAlignment="Stretch" 
+                                 IsEnabled="{Binding UseNew}" 
+                                 Text="{Binding NewName}" 
+                                 Watermark="Enter new set name"
+                                 Background="#1e1e1e"
+                                 MinHeight="32"
+                                 Margin="25,0,0,0"/>
+                    </Grid>
+                </Border>
+                
+                <!-- Existing Set Option -->
+                <Border BorderThickness="1" BorderBrush="#4E4E4E" 
+                        Background="#252525" CornerRadius="3" Padding="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        
+                        <RadioButton Grid.Row="0" 
+                                     IsChecked="{Binding UseExisting}" 
+                                     GroupName="Source" 
+                                     VerticalAlignment="Center"
+                                     Margin="0,0,0,10">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:Icon Value="fas fa-folder" FontSize="14" Foreground="#85DFFF" VerticalAlignment="Center"/>
+                                <TextBlock Text="Existing set" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                        
+                        <ComboBox Grid.Row="1" 
+                                  HorizontalAlignment="Stretch" 
+                                  ItemsSource="{Binding ExistingSets}" 
+                                  SelectedItem="{Binding SelectedExisting}" 
+                                  IsEnabled="{Binding UseExisting}"
+                                  Background="#1e1e1e"
+                                  MinHeight="32"
+                                  Margin="25,0,0,0"/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Border>
+        
+        <!-- Bottom Action Bar -->
+        <Border Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="#4E4E4E" 
+                Background="#252525" Padding="15">
+            <Button Click="Save" 
+                    Padding="30,10" 
+                    MinWidth="140"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    Background="#1a5c3a"
+                    Classes="primary">
+                <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#1a7c4a" />
+                    </Style>
+                </Button.Styles>
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                    <avalonia:Icon Value="fas fa-save" FontSize="14"/>
+                    <TextBlock Text="Save" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Button>
+        </Border>
+    </Grid>
 </Window>
