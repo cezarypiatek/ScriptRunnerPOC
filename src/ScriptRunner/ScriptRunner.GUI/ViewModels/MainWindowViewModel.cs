@@ -216,20 +216,22 @@ public class MainWindowViewModel : ReactiveObject
         this._configRepositoryUpdater = new ConfigRepositoryUpdater(new CliRepositoryClient(command =>
         {
             var tcs = new TaskCompletionSource<CliCommandOutputs>();
-            
-            var job = new RunningJobViewModel
+            Dispatcher.UIThread.Post(() =>
             {
-                Tile = $"Update repository",
-                ExecutedCommand = $"{command.Command} {command.Parameters}",
-            };
-            this.RunningJobs.Add(job);
-            SelectedRunningJob = job;
+                var job = new RunningJobViewModel
+                {
+                    Tile = $"Update repository",
+                    ExecutedCommand = $"{command.Command} {command.Parameters}",
+                };
+                this.RunningJobs.Add(job);
+                SelectedRunningJob = job;
 
-            job.ExecutionCompleted += (sender, args) =>
-            {
-                tcs.SetResult(new(job.RawOutput, job.RawErrorOutput));
-            };        
-            job.RunJob(command.Command, command.Parameters, command.WorkingDirectory, Array.Empty<InteractiveInputDescription>(), Array.Empty<TroubleshootingItem>());
+                job.ExecutionCompleted += (sender, args) =>
+                {
+                    tcs.SetResult(new(job.RawOutput, job.RawErrorOutput));
+                };        
+                job.RunJob(command.Command, command.Parameters, command.WorkingDirectory, Array.Empty<InteractiveInputDescription>(), Array.Empty<TroubleshootingItem>());
+            }); 
             return tcs.Task;
         }));
         IsScriptListVisible = true;
