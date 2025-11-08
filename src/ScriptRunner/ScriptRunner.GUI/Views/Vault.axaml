@@ -4,70 +4,157 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
         xmlns:avalonia="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="650"
-        Width="800"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="650"
+        Width="900"
         Height="650"
         x:Class="ScriptRunner.GUI.Views.Vault"
         WindowStartupLocation="CenterOwner"
-        Title="Vault">
+        Title="Vault - Secure Key-Value Storage"
+        Background="#212222"
+        FontFamily="Segoe UI Variable"
+        KeyboardNavigation.TabNavigation="Cycle">
     <Design.DataContext>
         <viewModels:VaultViewModel />
     </Design.DataContext>
 
-  <Grid x:Name="MainGrid">
+    <Grid x:Name="MainGrid" KeyboardNavigation.TabNavigation="Local">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-      <ScrollViewer >
-          <ItemsRepeater ItemsSource="{Binding FilteredEntries}">
-              <ItemsRepeater.ItemTemplate>
-                  <DataTemplate x:DataType="viewModels:VaultEntry">
-                      <Grid Margin="10,10,10,0">
-                          <Grid.ColumnDefinitions>
-                              <ColumnDefinition Width="Auto"></ColumnDefinition>
-                              <ColumnDefinition Width="0.5*"></ColumnDefinition>
-                              <ColumnDefinition Width="Auto"></ColumnDefinition>
-                              <ColumnDefinition Width="0.5*"></ColumnDefinition>
-                              <ColumnDefinition Width="Auto"></ColumnDefinition>
-                          </Grid.ColumnDefinitions>
-                          <Label Margin="0,0,10,0" Height="23"  VerticalAlignment="Center">Key</Label>
-                          <TextBox Grid.Column="1" Height="23" Text="{Binding Name, Mode=TwoWay}"></TextBox>
-                          <Label Grid.Column="2" Margin="10,0,10,0" Height="23"  VerticalAlignment="Center">Value</Label>
-                          <TextBox  PasswordChar="*" Height="23"  Grid.Column="3" Text="{Binding Secret, Mode=TwoWay}" ></TextBox>
-                          <Button  
-                              Grid.Column="4" 
-                              avalonia:Attached.Icon="fas fa-trash" 
-                              Margin="10,5,15,5"
-                              Height="30" 
-                              Width="30" 
-                              FontSize="18" 
-                              Command="{Binding ElementName=MainGrid, Path=DataContext.RemoveVaultEntryCommand}" 
-                              CommandParameter="{Binding }" 
-                              ToolTip.Tip="Remove entry"/>
-
-                      </Grid>
-                  </DataTemplate>
-              </ItemsRepeater.ItemTemplate>
-              <ItemsRepeater.Styles>
-                  <Style Selector="ItemsPresenter">
-                      <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
-                  </Style>
-              </ItemsRepeater.Styles>
-          </ItemsRepeater>
-      </ScrollViewer>
-    <DockPanel  Grid.Row="1" >
-      <Button  Command="{Binding AddNewVaultEntry}" Margin="20">
-        <StackPanel Orientation="Horizontal">
-          <avalonia:Icon Value="fa fa-plus" Margin="4,0"/>
-          <TextBlock Text="Add new vault entry"></TextBlock>
-        </StackPanel>
-      </Button>
-
-      <Button Margin="10" Click="CloseVaultDialog" HorizontalAlignment="Right"> Close</Button>
-
-    </DockPanel>
-
         
-   </Grid>
+        <!-- Header Section -->
+        <Border Grid.Row="0" Padding="15" Margin="15,15,15,10" 
+                BorderThickness="1" CornerRadius="3" BorderBrush="#85DFFF"
+                Background="#2B2B2B"
+                IsTabStop="False">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                    <avalonia:Icon Value="fas fa-key" FontSize="20" Margin="0,0,10,0" Foreground="#85DFFF"/>
+                    <TextBlock Classes="h2" Text="Vault Entries" VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock TextWrapping="Wrap" Foreground="#B0B0B0" FontSize="13"
+                           Text="Store and manage sensitive data securely. Keys and values are encrypted and protected."/>
+            </StackPanel>
+        </Border>
+
+        <!-- Vault Entries List -->
+        <ScrollViewer Grid.Row="1" Margin="10,0,10,10" 
+                      IsTabStop="False"
+                      TabIndex="0">
+            <ItemsRepeater ItemsSource="{Binding FilteredEntries}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:VaultEntry">
+                        <Border Margin="10,5,10,5" Padding="15" 
+                                BorderThickness="1" BorderBrush="#4E4E4E" 
+                                Background="#2B2B2B" CornerRadius="3"
+                                IsTabStop="False">
+                            <Grid KeyboardNavigation.TabNavigation="Local">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" MinWidth="80"></ColumnDefinition>
+                                    <ColumnDefinition Width="*" MinWidth="200"></ColumnDefinition>
+                                    <ColumnDefinition Width="15"></ColumnDefinition>
+                                    <ColumnDefinition Width="Auto" MinWidth="80"></ColumnDefinition>
+                                    <ColumnDefinition Width="*" MinWidth="200"></ColumnDefinition>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Key Label and Input -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" IsTabStop="False">
+                                    <avalonia:Icon Value="fas fa-tag" FontSize="14" Margin="0,0,8,0" Foreground="#85DFFF"/>
+                                    <TextBlock Text="Key" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                </StackPanel>
+                                <TextBox Grid.Column="1" 
+                                         Text="{Binding Name, Mode=TwoWay}" 
+                                         Watermark="Enter key name"
+                                         Background="#1e1e1e"
+                                         VerticalAlignment="Center"
+                                         TabIndex="0"/>
+                                
+                                <!-- Spacer -->
+                                
+                                <!-- Value Label and Input -->
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" IsTabStop="False">
+                                    <avalonia:Icon Value="fas fa-lock" FontSize="14" Margin="0,0,8,0" Foreground="#85DFFF"/>
+                                    <TextBlock Text="Value" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                </StackPanel>
+                                <TextBox Grid.Column="4" 
+                                         PasswordChar="●" 
+                                         Text="{Binding Secret, Mode=TwoWay}" 
+                                         Watermark="Enter secret value"
+                                         Background="#1e1e1e"
+                                         VerticalAlignment="Center"
+                                         TabIndex="1"/>
+                                
+                                <!-- Delete Button -->
+                                <Button Grid.Column="5" 
+                                        avalonia:Attached.Icon="fas fa-trash" 
+                                        Margin="15,0,0,0"
+                                        Height="32" 
+                                        Width="32"
+                                        Padding="0"
+                                        FontSize="14"
+                                        Background="#3D1F1F"
+                                        Command="{Binding ElementName=MainGrid, Path=DataContext.RemoveVaultEntryCommand}" 
+                                        CommandParameter="{Binding }" 
+                                        ToolTip.Tip="Remove entry"
+                                        IsTabStop="False">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                            <Setter Property="Background" Value="#7D1F1F" />
+                                        </Style>
+                                    </Button.Styles>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+                <ItemsRepeater.Styles>
+                    <Style Selector="ItemsPresenter">
+                        <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
+                    </Style>
+                </ItemsRepeater.Styles>
+            </ItemsRepeater>
+        </ScrollViewer>
+        
+        <!-- Bottom Action Bar -->
+        <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="#4E4E4E" 
+                Background="#252525" Padding="15"
+                IsTabStop="False">
+            <Grid KeyboardNavigation.TabNavigation="Local">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <Button Grid.Column="0" 
+                        Command="{Binding AddNewVaultEntry}" 
+                        HorizontalAlignment="Left"
+                        Padding="15,8"
+                        Background="#1a5c3a"
+                        Classes="primary"
+                        TabIndex="1000">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#1a7c4a" />
+                        </Style>
+                    </Button.Styles>
+                    <StackPanel Orientation="Horizontal">
+                        <avalonia:Icon Value="fa fa-plus" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="Add New Entry" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="1" 
+                        Click="CloseVaultDialog" 
+                        HorizontalAlignment="Right"
+                        Padding="20,8"
+                        MinWidth="100"
+                        TabIndex="1001" HorizontalContentAlignment="Center">
+                    <TextBlock Text="Close"/>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>
