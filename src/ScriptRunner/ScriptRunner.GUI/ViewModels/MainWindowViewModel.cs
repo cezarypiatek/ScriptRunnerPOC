@@ -480,6 +480,10 @@ public class MainWindowViewModel : ReactiveObject
         ShowNewVersionAvailable = false;
     }
 
+    public void DismissOutdatedRepositories()
+    {
+        OutOfDateConfigRepositories.Clear();
+    }
     private IEnumerable<IControlRecord> _controlRecords;
 
     //private ActionsConfig config;

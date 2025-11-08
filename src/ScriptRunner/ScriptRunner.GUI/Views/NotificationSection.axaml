@@ -27,7 +27,10 @@
         <StackPanel IsVisible="{Binding OutOfDateConfigRepositories.Count, Converter={StaticResource CountToVisibilityConverter}}">
             <Border BorderBrush="#FF0000" BorderThickness="1"  >
                 <StackPanel  Orientation="Vertical" Margin="20" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center" Text="You have some outdated repositories with script configuration files:"></TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" Text="You have some outdated repositories with script configuration files:"></TextBlock>
+                        <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding DismissOutdatedRepositories}">Dismiss</Button>
+                    </StackPanel>
                     <ItemsControl ItemsSource="{Binding OutOfDateConfigRepositories}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="backgroundTasks:OutdatedRepositoryModel">
