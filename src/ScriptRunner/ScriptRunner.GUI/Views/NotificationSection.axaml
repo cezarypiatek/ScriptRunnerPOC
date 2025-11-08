@@ -7,46 +7,170 @@
              xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
              xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
              xmlns:avalonia="clr-namespace:LoadingIndicators.Avalonia;assembly=LoadingIndicators.Avalonia"
+             xmlns:icons="https://github.com/projektanker/icons.avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="viewModels:MainWindowViewModel"
              x:Class="ScriptRunner.GUI.Views.NotificationSection">
     <UserControl.Resources>
         <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
     </UserControl.Resources>
-    <StackPanel Orientation="Vertical">
-        <StackPanel IsVisible="{Binding ShowNewVersionAvailable}" Height="75">
-            <Border BorderBrush="#FF0000" BorderThickness="1"  >
-                <StackPanel  Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center" Text="A newer version is available"></TextBlock>
-                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding CheckForUpdates}">Check release log</Button>
-                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding InstallUpdate}">Install update</Button>
-                    <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding DismissNewVersionAvailable}">Dismiss</Button>
+    <StackPanel Orientation="Vertical" Margin="10,5">
+        <!-- New Version Available Notification -->
+        <Border IsVisible="{Binding ShowNewVersionAvailable}" 
+                Background="#2B2B2B" 
+                BorderBrush="#3baced" 
+                BorderThickness="1" 
+                CornerRadius="5"
+                Padding="15,12"
+                Margin="0,5">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*">
+                <Border Grid.Column="0"
+                        Background="#3baced" 
+                        CornerRadius="3" 
+                        Width="32" 
+                        Height="32" 
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center">
+                    <icons:Icon Value="fas fa-download" 
+                                FontSize="16" 
+                                Foreground="White"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" 
+                            VerticalAlignment="Center" 
+                            Margin="0,0,15,0">
+                    <TextBlock Text="A newer version is available" 
+                               FontWeight="SemiBold" 
+                               FontSize="14"/>
+                    <TextBlock Text="Update to get the latest features and improvements" 
+                               FontSize="12" 
+                               Foreground="#B0B0B0" 
+                               Margin="0,2,0,0"/>
                 </StackPanel>
-            </Border>
-        </StackPanel>
-        <StackPanel IsVisible="{Binding OutOfDateConfigRepositories.Count, Converter={StaticResource CountToVisibilityConverter}}">
-            <Border BorderBrush="#FF0000" BorderThickness="1"  >
-                <StackPanel  Orientation="Vertical" Margin="20" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Text="You have some outdated repositories with script configuration files:"></TextBlock>
-                        <Button Margin="20,0,0,0" VerticalAlignment="Center" Command="{Binding DismissOutdatedRepositories}">Dismiss</Button>
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
+                    <Button Classes="primary" 
+                            Margin="0,0,8,0" 
+                            Command="{Binding InstallUpdate}"
+                            ToolTip.Tip="Download and install the update">
+                        <StackPanel Orientation="Horizontal">
+                            <icons:Icon Value="fas fa-rocket" FontSize="12" Margin="0,0,5,0"/>
+                            <TextBlock Text="Install Update"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Margin="0,0,8,0" 
+                            Command="{Binding CheckForUpdates}"
+                            ToolTip.Tip="View the release notes">
+                        <StackPanel Orientation="Horizontal">
+                            <icons:Icon Value="fas fa-file-alt" FontSize="12" Margin="0,0,5,0"/>
+                            <TextBlock Text="Release Notes"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding DismissNewVersionAvailable}"
+                            ToolTip.Tip="Dismiss this notification">
+                        <TextBlock Text="Dismiss"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Outdated Repositories Notification -->
+        <Border IsVisible="{Binding OutOfDateConfigRepositories.Count, Converter={StaticResource CountToVisibilityConverter}}"
+                Background="#2B2B2B" 
+                BorderBrush="#FF9800" 
+                BorderThickness="1" 
+                CornerRadius="5"
+                Padding="15,12"
+                Margin="0,5">
+            <StackPanel Orientation="Vertical">
+                <!-- Header -->
+                <Grid ColumnDefinitions="Auto,Auto,Auto,*" Margin="0,0,0,10">
+                    <Border Grid.Column="0"
+                            Background="#FF9800" 
+                            CornerRadius="3" 
+                            Width="32" 
+                            Height="32" 
+                            Margin="0,0,12,0"
+                            VerticalAlignment="Center">
+                        <icons:Icon Value="fas fa-exclamation-triangle" 
+                                    FontSize="16" 
+                                    Foreground="White"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" 
+                                VerticalAlignment="Center" 
+                                Margin="0,0,15,0">
+                        <TextBlock Text="Outdated Script Repositories" 
+                                   FontWeight="SemiBold" 
+                                   FontSize="14"/>
+                        <TextBlock Text="Updates are available for your script configuration repositories" 
+                                   FontSize="12" 
+                                   Foreground="#B0B0B0" 
+                                   Margin="0,2,0,0"/>
                     </StackPanel>
-                    <ItemsControl ItemsSource="{Binding OutOfDateConfigRepositories}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="backgroundTasks:OutdatedRepositoryModel">
-                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                    <TextBlock VerticalAlignment="Center" Text="{Binding Path}"></TextBlock>
-                                    <TextBlock VerticalAlignment="Center" Margin="5,0" Text="{Binding BranchName, StringFormat='(branch: {0})'}"></TextBlock>
-                                    <Button  Margin="20,0,0,0" VerticalAlignment="Center"  IsEnabled="{Binding !IsPulling}"
-                                            Command="{Binding DataContext.PullRepoChanges, RelativeSource={RelativeSource AncestorType={x:Type views:MainWindow}}}"
-                                            CommandParameter="{Binding}">Pull</Button>
-                                    <avalonia:LoadingIndicator  IsActive="{Binding IsPulling}" Mode="Arc" SpeedRatio="1.2" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-        </StackPanel>
+                    <Button Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Command="{Binding DismissOutdatedRepositories}"
+                            ToolTip.Tip="Dismiss all outdated repository notifications">
+                        <TextBlock Text="Dismiss"/>
+                    </Button>
+                </Grid>
+                
+                <!-- Repository List -->
+                <ItemsControl ItemsSource="{Binding OutOfDateConfigRepositories}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="backgroundTasks:OutdatedRepositoryModel">
+                            <Border Background="#1e1f22" 
+                                    BorderBrush="#4E4E4E" 
+                                    BorderThickness="1" 
+                                    CornerRadius="3"
+                                    Padding="12,10"
+                                    Margin="0,0,0,8">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <icons:Icon Grid.Column="0" 
+                                                Value="fab fa-git-alt" 
+                                                FontSize="20" 
+                                                Foreground="#FF9800"
+                                                VerticalAlignment="Center"
+                                                Margin="0,0,12,0"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Path}" 
+                                                   FontWeight="Medium" 
+                                                   FontSize="13"/>
+                                        <TextBlock Text="{Binding BranchName, StringFormat='Branch: {0}'}" 
+                                                   FontSize="11" 
+                                                   Foreground="#B0B0B0" 
+                                                   Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" 
+                                                Orientation="Horizontal" 
+                                                VerticalAlignment="Center">
+                                        <Button Classes="primary"
+                                                IsEnabled="{Binding !IsPulling}"
+                                                Command="{Binding DataContext.PullRepoChanges, RelativeSource={RelativeSource AncestorType={x:Type views:MainWindow}}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip.Tip="Pull the latest changes from this repository">
+                                            <StackPanel Orientation="Horizontal">
+                                                <icons:Icon Value="fas fa-sync-alt" FontSize="12" Margin="0,0,5,0"/>
+                                                <TextBlock Text="Pull Changes"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <avalonia:LoadingIndicator IsActive="{Binding IsPulling}" 
+                                                                   Mode="Arc" 
+                                                                   SpeedRatio="1.2" 
+                                                                   Width="24"
+                                                                   Height="24"
+                                                                   Margin="8,0,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
     </StackPanel>
 </UserControl>
