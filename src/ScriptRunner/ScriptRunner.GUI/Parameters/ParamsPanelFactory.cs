@@ -84,16 +84,15 @@ public class ParamsPanelFactory
                 bool _isResizing = false;
                 Point _lastPointerPosition = default;
                 
-                // Create toolbar
+                // Create toolbar for expand button only
                 var toolbar = new StackPanel()
                 {
                     Orientation = Orientation.Horizontal,
                     Height = 24,
                     HorizontalAlignment = HorizontalAlignment.Right,
-                    //Background = new SolidColorBrush(Color.FromArgb(50, 128, 128, 128)),
                     Spacing = 5,
                     ZIndex = 1,
-                    Margin = new Thickness(0,-25,0,0),
+                    Margin = new Thickness(0,0,10,-35),
                 };
                 
                 // Expand button to open overlay
@@ -133,15 +132,21 @@ public class ParamsPanelFactory
                     }
                 };
                 
-                // Resize handle
+                toolbar.Children.Add(expandButton);
+
+                // Create a grid to overlay the resize handle on the editor
+                var grid = new Grid();
+                grid.Children.Add(controlRecord.Control);
+                
+                // Resize handle positioned at bottom right of editor
                 var resizeHandle = new Border()
                 {
-                    Width = 24,
-                    Height = 24,
                     Background = Brushes.Transparent,
                     Cursor = new Cursor(StandardCursorType.BottomRightCorner),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(2,5,0,0),
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Margin = new Thickness(0,0,5,0),
+                    ZIndex = 10
                 };
                 
                 var resizeIcon = new Icon()
@@ -186,15 +191,14 @@ public class ParamsPanelFactory
                     _isResizing = false;
                 };
 
-                toolbar.Children.Add(expandButton);
-                toolbar.Children.Add(resizeHandle);
+                grid.Children.Add(resizeHandle);
 
                 var panel = new StackPanel()
                 {
                     Orientation = Orientation.Vertical
                 };
-                panel.Children.Add(controlRecord.Control);
                 panel.Children.Add(toolbar);
+                panel.Children.Add(grid);
                 controlForEdit = panel;
 
 
@@ -535,34 +539,18 @@ public class ParamsPanelFactory
                     UncheckedValue =  p.GetPromptSettings("uncheckedValue", out var uncheckedValue)? uncheckedValue: defaultUnchecked,
                 };
             case PromptType.Multilinetext:
-                if (p.GetPromptSettings("syntax", out var syntax) && !string.IsNullOrWhiteSpace(syntax))
-                {
-                    return new TextControl
-                    {
-                        Control = CreateAvaloniaEdit(value, index, syntax)
-                    };
-                }
-
-                // Use regular TextBox without syntax highlighting
+                p.GetPromptSettings("syntax", out var syntax);
+                syntax ??= "txt";
                 return new TextControl
                 {
-                    Control = new TextBox
-                    {
-                        TextWrapping = TextWrapping.Wrap,
-                        AcceptsReturn = true,
-                        Height = 100,
-                        Text = value,
-                        TabIndex = index,
-                        IsTabStop = true,
-                        Width = 500,
-                    }
+                    Control = CreateAvaloniaEdit(value, index, syntax)
                 };
+               
             case PromptType.FileContent:
                 if (string.IsNullOrWhiteSpace(value) == false && Path.IsPathRooted(value) == false)
                 {
                     value = Path.GetFullPath(value, scriptConfig.WorkingDirectory);
                 }
-                
                 
                 var templateText  = p.GetPromptSettings("templateText", out var rawTemplate)? rawTemplate: "";
                 var textForControl = File.Exists(value) ? File.ReadAllText(value) : templateText;
