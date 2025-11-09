@@ -213,18 +213,35 @@ Interactive inputs let you display predefined buttons with replies whenever the 
 Example:
 
 ```json
-"interactiveInputs": [
+ "interactiveInputs": [
   {
-    "whenMatched": "Type YES to continue",
-    "inputs": [
-      { "label": "Confirm deployment", "value": "YES" },
-      { "label": "Abort", "value": "NO" }
-    ]
+      "whenMatched": "Delete this directory?",
+      "inputs": [
+          {
+              "label": "Yes",
+              "value": "Y"
+          },
+          {
+              "label": "Yes to All",
+              "value": "A"
+          },
+          {
+              "label": "Skip",
+              "value": "S"
+          },
+          {
+              "label": "Abort",
+              "value": "X"
+          }
+      ]
   }
 ]
 ```
 
-Whenever the command prints “Type YES to continue”, ScriptRunner shows the “Confirm deployment” and “Abort” buttons; pressing it sends the selected value followed by a newline to the process.
+Whenever the command prints “Delete this directory?”, ScriptRunner shows extra buttons representing predefined responses. After pressing selected button, corresponding value followed by a newline is sent to the process.
+
+![alt text](image-4.png)
+
 
 ## Troubleshooting alerts
 
