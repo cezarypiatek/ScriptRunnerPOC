@@ -113,17 +113,25 @@ This field points to the JSON schema that validates the manifest file. It ensure
 
 This is an array of action objects. Each action defines a specific script or command-line program that the UI will execute. 
 
-### Action Object
+## Action Object
 
-Each action object has the following properties:
+Each action object describes how a single automation should be rendered and executed:
 
-- `name`: A unique name for the action.
-- `description`: A brief description of what the action does.
-- `command`: The command or script to be executed. A command can contains placeholders in curly brackets that should match names from `params` section.
-- `installCommand`: (Optional) A command to install necessary dependencies for the script.
-- `categories`: An array of categories to which this action belongs.
-- `autoParameterBuilderStyle`: Specifies the style for automatic parameter generation (e.g., `powershell`).
-- `params`: An array of parameter objects that define the inputs required by the command.
+- `name` / `description`: Title and subtitle shown in ScriptRunner (names must be unique per source).
+- `command` *(required)*: CLI command template. Use `{paramName}` placeholders for parameter values. Relative paths are resolved against the JSON file.
+- `useSystemShell`: Launches command via the OS shell instead of embedded console.
+- `runCommandAsAdmin`: Blocks execution unless ScriptRunner is running elevated (Windows) or `sudo` capable.
+- `workingDirectory`: Overrides the default (folder that contains the manifest) for the main command.
+- `installCommand`, `installCommandWorkingDirectory`, `runInstallCommandAsAdmin`: Optional setup command shown as “Install”.
+- `categories`: Labels used to group/search actions in the UI.
+- `docs`: Path to a markdown file displayed alongside the action.
+- `environmentVariables`: Key/value map (values can embed `{paramName}` placeholders) injected into the spawned process.
+- `autoParameterBuilderStyle` / `autoParameterBuilderPattern`: Configure how parameters are appended to the command automatically.
+- `predefinedArgumentSets` + optional `predefinedArgumentSetsOrdering`: Named presets that pre-fill parameter values (ScriptRunner always adds a `<default>` set, but you can add more).
+- `params`: Array of parameter definitions (see the next section).
+- `interactiveInputs`: Map console output patterns to quick-reply buttons that feed text back to STDIN.
+- `troubleshooting` / `installTroubleshooting`: Regex-driven alerts displayed when the main or install command writes matching output.
+
 
 ## Parameters
 
@@ -142,6 +150,104 @@ Each parameter object can shape both the UI control and how ScriptRunner constru
 ### Prompt Types
 
 The `prompt` property determines which control ScriptRunner renders for a parameter (text box, dropdown, checkbox, file picker, etc.) and which `promptSettings` are available. For the full catalog of controls, supported settings, and sample JSON snippets, see the dedicated [Prompt Types guide](docs/PromptTypes.md).
+
+
+## Environment variables
+
+`environmentVariables` lets you set additional process variables without touching the global shell. Values support `{paramName}` substitution, so you can easily reference values of other parameters:
+
+```json
+"environmentVariables": {
+  "AWS_PROFILE": "{profile}",
+  "VAULT_TOKEN": "{vaultToken}"
+}
+```
+
+## Markdown docs
+
+Add `docs: "path/to/file.md"` to show instructions, diagrams, or runbooks next to the action. ScriptRunner resolves the path relative to the manifest and automatically loads referenced assets (images, attachments) from the same folder.
+
+## Auto parameter builder
+
+If most of your commands follow a pattern how parameters are passed to executed action, set one of the builders instead of concatenating strings manually:
+
+```json
+"autoParameterBuilderStyle": "powershell"
+```
+
+The PowerShell builder emits `-ParamName 'Value'` for every parameter unless `skipFromAutoParameterBuilder` is true. For other CLIs you can provide a custom template:
+
+```json
+"autoParameterBuilderPattern": "--{name} \"{{{name}}}\""
+```
+
+You can still override the pattern per parameter via `autoParameterBuilderPattern`.
+
+## Predefined argument sets
+
+Bundle common parameter combinations into named presets so teammates can run frequent scenarios with one click:
+
+```json
+"predefinedArgumentSets": [
+  {
+    "description": "Production",
+    "fallbackToDefault": true,
+    "arguments": {
+      "subscription": "prod-sub",
+      "resourceGroup": "rg-prod-shared"
+    }
+  }
+],
+"predefinedArgumentSetsOrdering": "Descending"
+```
+
+`fallbackToDefault` fills in any missing parameters from the automatically generated `<default>` set.
+
+## Interactive inputs
+
+Interactive inputs let you display predefined buttons with replies whenever the running script prints a prompt you recognize. Each entry consists of:
+
+- `whenMatched`: Regex evaluated against live STDOUT (ANSI codes are stripped automatically).
+- `inputs`: A list of `{ label, value }` pairs rendered as buttons; clicking a button writes `value` to the process STDIN, so you can automate those “Type YES” confirmations.
+
+Example:
+
+```json
+"interactiveInputs": [
+  {
+    "whenMatched": "Type YES to continue",
+    "inputs": [
+      { "label": "Confirm deployment", "value": "YES" },
+      { "label": "Abort", "value": "NO" }
+    ]
+  }
+]
+```
+
+Whenever the command prints “Type YES to continue”, ScriptRunner shows the “Confirm deployment” and “Abort” buttons; pressing it sends the selected value followed by a newline to the process.
+
+## Troubleshooting alerts
+
+`troubleshooting` (and `installTroubleshooting` for the install command) let you transform noisy logs into actionable hints. Each rule has:
+
+- `whenMatched`: Regex that runs against sanitized STDOUT/STDERR.
+- `alertMessage`: Text displayed in the UI (supports `${namedGroup}` replacements from the regex).
+- `severity`: One of `error`, `warning`, `info`, `success` which controls styling.
+
+Example:
+
+```json
+"troubleshooting": [
+  {
+    "whenMatched": "Missing secret (?<name>\\w+)",
+    "alertMessage": "Secret ${name} is missing. Open the vault and add it.",
+    "severity": "warning"
+  }
+]
+```
+
+When the output contains `Missing secret API_TOKEN`, ScriptRunner raises a yellow banner with the message above, helping teammates recover faster. Pair these alerts with markdown docs for a more guided troubleshooting flow.
+
 
 ## Generate action definition from `PowerShell` script
 

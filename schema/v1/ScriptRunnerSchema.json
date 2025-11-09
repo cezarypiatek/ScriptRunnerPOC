@@ -92,6 +92,14 @@
                             }
                         }
                     },
+                    "predefinedArgumentSetsOrdering":{
+                        "type":"string",
+                        "description":"Optional alphabetical ordering for the presets displayed in the combo box.",
+                        "enum":[
+                            "Ascending",
+                            "Descending"
+                        ]
+                    },
                     "environmentVariables":{
                         "type":"object",
                         "description":"Environment variables that are passed to the spawned process. Values can also include {paramName} placeholders which are replaced before execution.",
