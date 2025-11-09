@@ -3,8 +3,8 @@
     "$id": "ScriptRunnerSchema",
     "title": "Product",
     "description": "ScriptRunnerSchema",
-    "type": "object",    
-    "properties": {        
+    "type": "object",
+    "properties": {
         "actions": {
             "description": "A list of available actions",
             "type": "array",
@@ -14,67 +14,90 @@
                 "required": ["name", "command"],
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Human-readable action name shown in the launcher and used to match execution history/installs."
                     },
                     "categories":{
                         "type":"array",
+                        "description":"Optional grouping tags shown in the launcher; the reader also injects the source name so each value should be a user-facing category label.",
                         "items": {
-                            "type":"string"
+                            "type":"string",
+                            "description":"Single category label."
                         }
                     },
                     "description": {
-                        "type": "string"
+                        "type": "string",
+                        "description":"Optional subtitle rendered together with the action name inside the UI."
                     },
                     "command": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Command line template that runs when the action is executed. Relative paths (starting with .) are resolved against the config file and {paramName} placeholders are replaced with collected parameter values before launching."
                     },
                     "useSystemShell": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "When true the job is started through the OS shell (UseShellExecute) so the system handles windowing/URL opening instead of ScriptRunner capturing the output."
                     },
                     "runCommandAsAdmin":{
-                      "type":"boolean"  
+                      "type":"boolean",
+                      "description":"Indicates that the action must be run from an elevated ScriptRunner process; execution is blocked with a warning if the app lacks administrator rights."
                     },
                     "workingDirectory": {
-                        "type": "string"
+                        "type": "string",
+                        "description":"Optional working directory for the main command. Relative values are expanded against the config file folder; defaults to that folder when omitted."
                     },
                     "installCommand":{
-                        "type": "string"
+                        "type": "string",
+                        "description":"Optional setup command surfaced through the Install button. It uses the same placeholder replacement rules as the main command."
                     },
                     "runInstallCommandAsAdmin":{
-                        "type":"boolean"  
+                        "type":"boolean",
+                        "description":"Requires elevated rights before the install command can be executed."
                     },
                     "installCommandWorkingDirectory":{
-                        "type": "string"
+                        "type": "string",
+                        "description":"Working directory for the install command. Defaults to the config file folder and honours relative paths."
                     },
                     "autoParameterBuilderPattern":{
-                        "type": "string"
+                        "type": "string",
+                        "description":"Custom template (using {name} and {value}) that controls how parameters are auto-appended to the command when no predefined builder style is selected."
                     },
                     "autoParameterBuilderStyle":{
                         "type":"string",
+                        "description":"Shortcut for built-in auto parameter builders (currently only PowerShell-style -Name 'Value' emission).",
                         "enum": [
                             "powershell"
                         ]
                     },
                     "predefinedArgumentSets":{
                         "type": "array",
+                        "description":"Collection of named parameter presets surfaced in the UI drop-down (a \"<default>\" set is always injected at runtime).",
                         "items": {
                             "type": "object",
                             "properties": {
                                 "description": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description":"Display name of the preset shown to the user."
                                 },
                                 "fallbackToDefault":{
-                                    "type":"boolean"
+                                    "type":"boolean",
+                                    "description":"When true any missing parameter values inherit from the auto-generated default set."
                                 },
                                 "arguments":{
-                                    "type":"object"
+                                    "type":"object",
+                                    "description":"Map of parameter name to the value that should be pre-filled when this preset is selected.",
+                                    "additionalProperties":{
+                                        "type":"string"
+                                    }
                                 }
                             }
                         }
                     },
                     "environmentVariables":{
                         "type":"object",
-                        "additionalProperties": true
+                        "description":"Environment variables that are passed to the spawned process. Values can also include {paramName} placeholders which are replaced before execution.",
+                        "additionalProperties": {
+                            "type":"string"
+                        }
                     },
                     "docs":{
                         "type":"string",
@@ -82,33 +105,42 @@
                     },
                     "params": {
                         "type": "array",
+                        "description":"Ordered list of parameter prompts that ScriptRunner renders before launching the command.",
                         "items": {
                             "type": "object",
                             "additionalProperties": true,
                             "properties": {
                                 "name": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description":"Identifier used in {paramName} placeholders, preset dictionaries and environment-variable substitutions."
                                 },
                                 "description": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description":"Helper text shown next to the control; falls back to the parameter name when not provided."
                                 },
                                 "default": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description":"Initial value for the control and the default argument set."
                                 },
                                 "autoParameterBuilderPattern":{
-                                    "type": "string"
+                                    "type": "string",
+                                    "description":"Overrides the action-level autoParameterBuilderPattern for this parameter only."
                                 },
                                 "valueGeneratorCommand":{
-                                    "type": "string"
+                                    "type": "string",
+                                    "description":"Optional helper command that ScriptRunner executes on demand to populate the field (relative paths are resolved from the config directory)."
                                 },
                                 "valueGeneratorLabel":{
-                                    "type": "string"
+                                    "type": "string",
+                                    "description":"Custom tooltip/label for the auto-fill button shown when valueGeneratorCommand is set."
                                 },
                                 "skipFromAutoParameterBuilder":{
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description":"Prevents this parameter from being appended automatically to the command when auto parameter builders run."
                                 },
                                 "prompt": {
                                     "type":"string",
+                                    "description":"Selects the UI control type that will be rendered for the parameter and determines which promptSettings apply.",
                                     "enum": [
                                         "text",
                                         "multilineText",
@@ -135,24 +167,31 @@
                                         "promptSettings": {
                                             "type": "object",
                                             "additionalProperties": false,
+                                            "description":"Tuning for the date picker control.",
                                             "properties": {
                                               "format": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description":"Custom date format string applied when reading/writing the value."
                                               },
                                               "yearVisible": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description":"\"true\"/\"false\" toggle that hides or shows the year selector."
                                               },
                                               "monthVisible": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description":"\"true\"/\"false\" toggle that hides or shows the month selector."
                                               },
                                               "dayVisible": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description":"\"true\"/\"false\" toggle that hides or shows the day selector."
                                               },
                                               "todayAsDefault": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description":"\"true\" sets the default date to today when no stored value exists."
                                               },
                                               "culture": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description":"Culture name passed to DateTime parsing/formatting (e.g. en-US)."
                                               }
                                           }
                                         }
@@ -167,9 +206,11 @@
                                         "promptSettings": {
                                             "type": "object",
                                             "additionalProperties": false,
+                                            "description":"Tuning for the time picker control.",
                                             "properties": {
                                                 "format": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"Custom time format string applied when serializing the value."
                                                 }
                                             }
                                         }
@@ -183,8 +224,10 @@
                                         },
                                         "promptSettings": {
                                             "type": "object",
+                                            "description":"Configuration for dropdown prompts.",
                                             "properties": {
                                                 "options": {
+                                                    "description":"Static options as a comma-delimited string, array of values, or array of {label,value} objects.",
                                                     "oneOf": [
                                                         {
                                                             "type": "string"
@@ -213,15 +256,18 @@
                                                     ]
                                                 },
                                                 "searchable": {
-                                                    "type": "boolean"
+                                                    "type": "boolean",
+                                                    "description":"Switches the control to the SearchableComboBox implementation."
                                                 },
                                                 "optionsGeneratorCommand":
                                                 {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"Command executed on demand to refresh the available options."
                                                 },
                                                 "delimiter":
                                                 {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"Separator used when parsing string-based option lists."
                                                 }
                                             }
                                         }
@@ -235,8 +281,10 @@
                                         },
                                         "promptSettings": {
                                             "type": "object",
+                                            "description":"Configuration for checkbox-style multi-select prompts.",
                                             "properties": {
                                                 "options": {
+                                                    "description":"Static options as a comma-delimited string, array of values, or array of {label,value} objects.",
                                                     "oneOf": [
                                                         {
                                                             "type": "string"
@@ -265,7 +313,8 @@
                                                     ]
                                                 },
                                                 "delimiter": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"Separator applied when storing multiple selected values."
                                                 }
                                             }
                                         }
@@ -279,12 +328,15 @@
                                         },
                                         "promptSettings": {
                                             "type": "object",
+                                            "description":"Optional overrides for checkbox prompts.",
                                             "properties": {
                                                 "checkedValue": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"String that will be written when the box is checked (defaults to $true/true depending on autoParameterBuilderStyle)."
                                                 },
                                                 "uncheckedValue": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"String that will be written when the box is unchecked."
                                                 }
                                             }
                                         }
@@ -298,15 +350,19 @@
                                         },
                                         "promptSettings": {
                                             "type": "object",
+                                            "description":"Bounds for numeric prompts.",
                                             "properties": {
                                                 "min": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"Minimum allowed value."
                                                 },
                                                 "max": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"Maximum allowed value."
                                                 },
                                                 "step": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"Increment applied when clicking the spinner."
                                                 }
                                             }
                                         }
@@ -320,12 +376,15 @@
                                         },
                                         "promptSettings": {
                                             "type": "object",
+                                            "description":"Editor-specific settings for inline file content prompts.",
                                             "properties": {
                                                 "extension": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"Extension (without leading dot) used for syntax highlighting and when exporting the buffer."
                                                 },
                                                 "templateText" : {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"Default text placed into the editor when the referenced file does not exist yet."
                                                 }
                                             }
                                         }
@@ -339,9 +398,11 @@
                                         },
                                         "promptSettings": {
                                             "type": "object",
+                                            "description":"Settings for the multi-line text editor.",
                                             "properties": {
                                                 "syntax": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "description":"Language identifier used to pick the TextMate grammar (e.g. json, ps1, sh)."
                                                 }
                                             }
                                         }
@@ -352,7 +413,7 @@
                                     "properties": {
                                         "prompt": {
                                             "enum": [
-                                                "text",                                                
+                                                "text",
                                                 "password",
                                                 "filePicker",
                                                 "directoryPicker"
@@ -366,22 +427,27 @@
                     },
                     "interactiveInputs":{
                         "type":"array",
+                        "description":"Regex-triggered quick actions that appear while a command is running and push canned input back to STDIN.",
                         "items": {
                             "type":"object",
                             "properties": {
                                 "whenMatched":{
-                                    "type":"string"
+                                    "type":"string",
+                                    "description":"Regular expression evaluated against the live console output."
                                 },
                                 "inputs":{
                                     "type":"array",
+                                    "description":"Buttons to display when the regex matches.",
                                     "items": {
                                         "type":"object",
                                         "properties": {
                                             "label":{
-                                                "type":"string"
+                                                "type":"string",
+                                                "description":"Button label rendered in the UI."
                                             },
                                             "value":{
-                                                "type":"string"
+                                                "type":"string",
+                                                "description":"Raw text that will be sent to the process input stream when the button is clicked."
                                             }
                                         }
                                     }
@@ -391,17 +457,21 @@
                     },
                     "troubleshooting":{
                         "type":"array",
+                        "description":"Patterns that raise contextual alerts while the main command runs.",
                         "items": {
                             "type":"object",
                             "properties": {
                                 "whenMatched":{
-                                    "type":"string"
+                                    "type":"string",
+                                    "description":"Regular expression matched against sanitized console output."
                                 },
                                 "alertMessage":{
-                                    "type":"string"
+                                    "type":"string",
+                                    "description":"Message shown to the user; regex capture groups can be referenced via ${name}."
                                 },
                                 "severity": {
                                     "type":"string",
+                                    "description":"Visual style for the alert.",
                                     "enum": [
                                         "error",
                                         "warning",
@@ -415,17 +485,21 @@
                     },
                     "installTroubleshooting":{
                         "type":"array",
+                        "description":"Same as troubleshooting but evaluated when running the installCommand.",
                         "items": {
                             "type":"object",
                             "properties": {
                                 "whenMatched":{
-                                    "type":"string"
+                                    "type":"string",
+                                    "description":"Regular expression matched against the install command output."
                                 },
                                 "alertMessage":{
-                                    "type":"string"
+                                    "type":"string",
+                                    "description":"Message shown to the user; regex capture groups can be referenced via ${name}."
                                 },
                                 "severity": {
                                     "type":"string",
+                                    "description":"Visual style for the alert.",
                                     "enum": [
                                         "error",
                                         "warning",

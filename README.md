@@ -1,6 +1,6 @@
 # ScriptRunner - Create a simple UI for your favorite scripts and command line tools without any coding.
 
-![image](https://github.com/user-attachments/assets/e837bba2-1754-4c1e-9d69-31e5f84d5f8c)
+![alt text](image-3.png)
 
 
 ## Overview
@@ -38,7 +38,7 @@ After successful installation, simply type `ScriptRunnerGUI` in the console to r
 ![image](https://github.com/user-attachments/assets/6bb2e684-3dc4-4c4a-a9d8-c7c8be0060ff)
 
 
-### How to use it
+## How to use it
 
 Prepare a manifest for your action and save it as a json file. The recommended way is to use an editor like VSCode and include the schema reference available at:
 [ScriptRunnerSchema.json](https://raw.githubusercontent.com/cezarypiatek/ScriptRunnerPOC/main/schema/v1/ScriptRunnerSchema.json) Thanks to the power of VSCode and JSON schema, you will get intellisense and semantic validation.
@@ -49,12 +49,12 @@ A sample manifest that allows to run docker container can look as follows:
 {
     "$schema": "https://raw.githubusercontent.com/cezarypiatek/ScriptRunnerPOC/main/schema/v1/ScriptRunnerSchema.json",
     "actions": [
-        {
-            "name": "SqlServerDocker",
+       {
+            "name": "Run SQL Server Docker Container",
             "description": "Run a Docker container with Microsoft SQL Server",
-            "command": "docker run -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD={MSSQL_SA_PASSWORD} -e MSSQL_PID={MSSQL_PID} -p {HOST_PORT}:1433 --name {CONTAINER_NAME} mcr.microsoft.com/mssql/server:latest",
+            "command": "docker run -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD={MSSQL_SA_PASSWORD} -e MSSQL_PID={MSSQL_PID} -p {HOST_PORT}:1433 -v {DATA_DIR}:/var/opt/mssql/data --name {CONTAINER_NAME} mcr.microsoft.com/mssql/server:latest",
             "installCommand": "docker pull mcr.microsoft.com/mssql/server:latest",
-            "categories": ["Docker", "SQL Server"],
+            "categories": ["docker", "SQL Server"],
             "params": [
                 {
                     "name": "MSSQL_PID",
@@ -62,7 +62,7 @@ A sample manifest that allows to run docker container can look as follows:
                     "description": "Product Edition",
                     "default": "Developer",
                     "promptSettings": {
-                        "options": "Developer,Express,Standard,Enterprise"
+                        "options": ["Developer", "Express", "Standard", "Enterprise"]
                     }
                 },
                 {
@@ -81,6 +81,11 @@ A sample manifest that allows to run docker container can look as follows:
                     "prompt": "text",
                     "description": "Name for the container",
                     "default": "sqlserver"
+                },
+                {
+                    "name": "DATA_DIR",
+                    "description": "Data directory",
+                    "prompt": "directoryPicker"
                 }
             ]
         }
@@ -90,23 +95,23 @@ A sample manifest that allows to run docker container can look as follows:
 ```
 Add a file or directory with your action manifest to `Action Sources`
 
-![img_1.png](img_1.png)
+![alt text](image.png)
 
 
 Using script list locate your action
 
-![img_2.png](img_2.png)
+![alt text](image-2.png)
 
 
 ## Components of the Manifest File
 
 ### `$schema`
 
-This field points to the JSON schema that validates the manifest file. It ensures that the file adheres to the required structure and formats and provides intellisense in editors like VSCode.
+This field points to the JSON schema that validates the manifest file. It ensures that the file adheres to the required structure and formats and provides intellisense in editors like VSCode. Should be set to `https://raw.githubusercontent.com/cezarypiatek/ScriptRunnerPOC/main/schema/v1/ScriptRunnerSchema.json`
 
 ### `actions`
 
-This is an array of action objects. Each action defines a specific script or command-line program that the UI will execute.
+This is an array of action objects. Each action defines a specific script or command-line program that the UI will execute. 
 
 ### Action Object
 
@@ -122,115 +127,21 @@ Each action object has the following properties:
 
 ## Parameters
 
-Each parameter object has the following properties:
+Each parameter object can shape both the UI control and how ScriptRunner constructs the final command. The most common properties are:
 
-- `name`: The name of the parameter.
-- `prompt`: The type of prompt (e.g., `numeric`, `datePicker`, `filePicker`, `text`).
-- `promptSettings`: (Optional) Additional settings for the prompt (e.g., date format, culture).
-- `description`: (Optional) A description of the parameter.
-- `default`: (Optional) A default value for the parameter.
+- `name` *(required)*: Identifier used for placeholders (`{name}`), predefined argument sets, and environment-variable substitutions.
+- `description`: Text shown next to the control; falls back to `name` when omitted.
+- `default`: Value pre-populated in the UI and stored in the automatically generated `<default>` argument set.
+- `prompt` *(required)*: Chooses the control type (text box, dropdown, checkbox, etc.). See [Prompt Types](docs/PromptTypes.md).
+- `promptSettings`: Control-specific settings (date format, dropdown options, file template, etc.).
+- `autoParameterBuilderPattern`: Overrides the action-level pattern when auto-appending this parameter to the command.
+- `valueGeneratorCommand`: Optional helper command that runs on demand and fills the control with its stdout (relative paths are resolved from the action file).
+- `valueGeneratorLabel`: Custom tooltip/label for the auto-fill button triggered by `valueGeneratorCommand`.
+- `skipFromAutoParameterBuilder`: When `true`, excludes the parameter from `auto parameter builder` (useful when parameter is used only in `value generators` of other parameters).
 
 ### Prompt Types
 
-## text
-
-A single line text input.
-
-### Prompt Settings
-- **minLength** (integer): Minimum length of the text.
-- **maxLength** (integer): Maximum length of the text.
-
-
-## multilineText
-
-A multi-line text input.
-
-### Prompt Settings
-- **minLines** (integer): Minimum number of lines.
-- **maxLines** (integer): Maximum number of lines.
-
-
-## password
-
-A password input.
-
-### Prompt Settings
-- **minLength** (integer): Minimum length of the password.
-- **maxLength** (integer): Maximum length of the password.
-
-
-## checkbox
-
-A checkbox input.
-### Prompt Settings
-- **checkedValue** (string): Value when checkbox checked.
-- **uncheckedValue** (string): Value when checkbox unchecked.
-
-
-## dropdown
-
-A dropdown selection input.
-### Prompt Settings
-- **options** (string): Comma separated list of values.
-
-
-
-
-## multiSelect
-
-A multi-select input.
-
-### Prompt Settings
-- **options** (string): Comma separated list of values.
-- **delimiter** (string): Delimiter for merging selected values.
-
-## filePicker
-
-A file picker input.
-
-## directoryPicker
-
-A directory picker input.
-
-
-## fileContent
-
-A file content input. An input content will be save to temporary dir and pass as a file path to executed action.
-
-
-
-## datePicker
-**Type**: object
-
-A date picker input.
-
-### Prompt Settings
-- **format**  (string)
-- **yearVisible** (boolean)
-- **monthVisible** (boolean)
-- **dayVisible** (boolean)
-- **todayAsDefault** (boolean)
-- **culture** (string)
-
-
-## numeric
-
-A numeric input.
-
-### Prompt Settings
-- **min** (number): Minimum value.
-- **max** (number): Maximum value.
-- **step** (number): Step value.
-
-
-## timePicker
-
-A time picker input.
-
-### Prompt Settings
-- **format** (string): Time format (e.g., HH:mm).
-
-
+The `prompt` property determines which control ScriptRunner renders for a parameter (text box, dropdown, checkbox, file picker, etc.) and which `promptSettings` are available. For the full catalog of controls, supported settings, and sample JSON snippets, see the dedicated [Prompt Types guide](docs/PromptTypes.md).
 
 ## Generate action definition from `PowerShell` script
 
