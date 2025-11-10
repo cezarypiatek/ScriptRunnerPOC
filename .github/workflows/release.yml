@@ -22,16 +22,17 @@ jobs:
         ContinuousIntegrationBuild: true
     steps:
     - uses: actions/checkout@v2
+    - name: Set version
+      shell: pwsh
+      run: |
+        $year = Get-Date -Format "yyyy"
+        $month = (Get-Date -Format "MM").TrimStart('0')
+        $version = "$year.$month.${{ github.run_number }}"
+        echo "Version=$version" >> $env:GITHUB_ENV
     - name: Setup .NET Core 6
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0.108'
-    - name: Calculate next version
-      uses: cezarypiatek/NextVersionGeneratorAction@0.4
-      with:
-        minor-pattern: '.*'
-        major-pattern: 'BREAKING CHANGES'
-        output-to-env-variable: 'Version'
     - name: Restore dependencies
       run: |
         dotnet nuget locals all --clear
