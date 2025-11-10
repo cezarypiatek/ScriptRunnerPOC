@@ -2,6 +2,7 @@ using Avalonia.Threading;
 using CliWrap;
 using ReactiveUI;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -390,8 +391,8 @@ public class RunningJobViewModel : ViewModelBase
         }
     }
 
-    private Dictionary<string, Regex> troubleShootingPatternCache = new();
-    private Dictionary<string, Regex> inputPatternCache = new();
+    private ConcurrentDictionary<string, Regex> troubleShootingPatternCache = new();
+    private ConcurrentDictionary<string, Regex> inputPatternCache = new();
     
     private void AppendToOutput(string? s, ConsoleOutputLevel level)
     {
