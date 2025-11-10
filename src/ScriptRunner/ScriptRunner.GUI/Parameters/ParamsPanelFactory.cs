@@ -556,7 +556,8 @@ public class ParamsPanelFactory
                 var textForControl = File.Exists(value) ? File.ReadAllText(value) : templateText;
 
                 var fileExtension = p.GetPromptSettings("extension", out var extension)?extension:"dat";
-                return new FileContent(fileExtension)
+                var useWslPathForFileContent = p.GetPromptSettings("useWslPathFormat", bool.Parse, false);
+                return new FileContent(fileExtension, useWslPathForFileContent)
                 {
                     Control = CreateAvaloniaEdit(textForControl, index, fileExtension.TrimStart('.'))
                 };
@@ -566,8 +567,8 @@ public class ParamsPanelFactory
                 {
                     value = Path.GetFullPath(value, scriptConfig.WorkingDirectory);
                 }
-                
-                return new FilePickerControl
+                var useWslPathForFilePicker = p.GetPromptSettings("useWslPathFormat", bool.Parse, false);
+                return new FilePickerControl(useWslPathForFilePicker)
                 {
                     Control = new FilePicker
                     {
@@ -582,7 +583,8 @@ public class ParamsPanelFactory
                 {
                     value = Path.GetFullPath(value, scriptConfig.WorkingDirectory);
                 }
-                return new DirectoryPickerControl
+                var useWslPathForDirPicker = p.GetPromptSettings("useWslPathFormat", bool.Parse, false);
+                return new DirectoryPickerControl(useWslPathForDirPicker)
                 {
                     Control = new DirectoryPicker
                     {

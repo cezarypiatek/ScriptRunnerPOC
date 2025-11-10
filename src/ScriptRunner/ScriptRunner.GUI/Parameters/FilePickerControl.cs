@@ -5,11 +5,18 @@ namespace ScriptRunner.GUI;
 
 public class FilePickerControl : IControlRecord
 {
+    private readonly bool _useWslPathFormat;
     public Control Control { get; set; }
+
+    public FilePickerControl(bool useWslPathFormat)
+    {
+        _useWslPathFormat = useWslPathFormat;
+    }
 
     public string GetFormattedValue()
     {
-        return ((FilePicker)Control).FilePath;
+        var path = ((FilePicker)Control).FilePath;
+        return _useWslPathFormat ? WslPathConverter.ConvertToWslPath(path) : path;
     }
 
     public string Name { get; set; }

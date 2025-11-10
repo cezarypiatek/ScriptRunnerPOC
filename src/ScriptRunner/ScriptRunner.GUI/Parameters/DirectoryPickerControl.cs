@@ -5,11 +5,19 @@ namespace ScriptRunner.GUI;
 
 public class DirectoryPickerControl : IControlRecord
 {
+    private readonly bool _useWslPathForDirPicker;
+
+    public DirectoryPickerControl(bool useWslPathForDirPicker)
+    {
+        _useWslPathForDirPicker = useWslPathForDirPicker;
+    }
+
     public Control Control { get; set; }
 
     public string GetFormattedValue()
     {
-        return ((DirectoryPicker)Control).DirPath;
+        var path = ((DirectoryPicker)Control).DirPath;
+        return _useWslPathForDirPicker ? WslPathConverter.ConvertToWslPath(path) : path;
     }
 
     public string Name { get; set; }

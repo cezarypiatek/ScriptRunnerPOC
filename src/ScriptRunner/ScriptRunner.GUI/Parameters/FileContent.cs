@@ -10,12 +10,14 @@ namespace ScriptRunner.GUI;
 public class FileContent : IControlRecord
 {
     private readonly string _extension;
+    private readonly bool _useWslPath;
     public Control Control { get; set; }
     public string FileName { get; set; }
 
-    public FileContent(string extension)
+    public FileContent(string extension, bool useWslPath)
     {
         _extension = extension;
+        _useWslPath = useWslPath;
         FileName = Path.GetTempFileName() + "." + extension;
     }
 
@@ -30,9 +32,11 @@ public class FileContent : IControlRecord
         var hash = string.IsNullOrWhiteSpace(fileContent)? "EMPTY" : ComputeSHA256(fileContent).Substring(0,10);
         FileName = Path.Combine(Path.GetTempPath(), hash + "." + _extension);
         File.WriteAllText(FileName, fileContent, Encoding.UTF8);
-        return FileName;
+        return _useWslPath ? WslPathConverter.ConvertToWslPath(FileName) : FileName;
     }
-    
+
+   
+
     static string ComputeSHA256(string input)
     {
         using var sha256 = SHA256.Create();
@@ -43,4 +47,14 @@ public class FileContent : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+}
+
+public static class WslPathConverter
+{
+    public static string ConvertToWslPath(string fileName)
+    {
+        var driveLetter = char.ToLower(fileName[0]);
+        var pathWithoutDrive = fileName.Substring(2).Replace('\\', '/');
+        return $"/mnt/host/{driveLetter}{pathWithoutDrive}";
+    }
 }
