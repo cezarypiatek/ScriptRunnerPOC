@@ -1,0 +1,157 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cezarypiatek/ScriptRunnerPOC/main/schema/v1/ScriptRunnerSchema.json",
+  "actions": [
+    {
+      "name": "PowerShell Hello Prompt",
+      "description": "Demonstrates stdin buttons and troubleshooting with a PowerShell script.",
+      "command": "pwsh -NoProfile -Command ./powershell/HelloPrompt.ps1",
+      "autoParameterBuilderStyle": "powershell",
+      "categories": ["powershell"],
+      "params": [
+        {
+          "name": "Text",
+          "description": "Text value passed to the script",
+          "default": "ScriptRunner",
+          "prompt": "text"
+        },
+        {
+          "name": "FilePath",
+          "description": "File whose content can be displayed",
+          "default": "./sample-data/hello.txt",
+          "prompt": "fileContent"
+        }
+      ],
+      "interactiveInputs": [
+        {
+          "whenMatched": "QUESTION: Display the file content\\?",
+          "inputs": [
+            { "label": "Yes", "value": "Yes" },
+            { "label": "No", "value": "No" },
+            { "label": "Maybe", "value": "Maybe" }
+          ]
+        }
+      ],
+      "troubleshooting": [
+        {
+          "whenMatched": "MAYBE_SELECTED",
+          "alertMessage": "The user selected Maybe. Follow up before accepting this result.",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "name": "Python Hello Prompt",
+      "description": "Same scenario implemented in Python.",
+      "command": "python -u ./python/hello_prompt.py \"{textArgument}\" \"{filePath}\"",
+      "categories": ["python"],
+      "params": [
+        {
+          "name": "textArgument",
+          "description": "Text value passed to the script",
+          "default": "ScriptRunner",
+          "prompt": "text"
+        },
+        {
+          "name": "filePath",
+          "description": "File whose content can be displayed",
+          "default": "./sample-data/hello.txt",
+          "prompt": "fileContent"
+        }
+      ],
+      "interactiveInputs": [
+        {
+          "whenMatched": "QUESTION: Display the file content\\?",
+          "inputs": [
+            { "label": "Yes", "value": "Yes" },
+            { "label": "No", "value": "No" },
+            { "label": "Maybe", "value": "Maybe" }
+          ]
+        }
+      ],
+      "troubleshooting": [
+        {
+          "whenMatched": "MAYBE_SELECTED",
+          "alertMessage": "The Python script reported a Maybe selection. Investigate before continuing.",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "name": "WSL Bash Hello Prompt",
+      "description": "Runs the Bash implementation inside WSL",
+      "command": "wsl -e sh ./bash/hello_prompt.sh \"{textArgument}\" \"{filePath}\"",
+      "categories": ["bash", "wsl"],
+      "params": [
+        {
+          "name": "textArgument",
+          "description": "Text value passed to the script",
+          "default": "ScriptRunner",
+          "prompt": "text"
+        },
+        {
+          "name": "filePath",
+          "description": "File whose content can be displayed",
+          "default": "./sample-data/hello.txt",
+          "prompt": "fileContent",
+          "promptSettings": {
+            "useWslPathFormat" : "true"
+          }
+        }
+      ],
+      "interactiveInputs": [
+        {
+          "whenMatched": "QUESTION: Display the file content\\?",
+          "inputs": [
+            { "label": "Yes", "value": "Yes" },
+            { "label": "No", "value": "No" },
+            { "label": "Maybe", "value": "Maybe" }
+          ]
+        }
+      ],
+      "troubleshooting": [
+        {
+          "whenMatched": "MAYBE_SELECTED",
+          "alertMessage": "The Bash script reported a Maybe selection. Double-check with the requester.",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "name": "C# Hello Prompt",
+      "description": "Uses dotnet run on the HelloPromptApp console project.",
+      "command": "dotnet run --project ./dotnet/HelloPromptApp/HelloPromptApp.csproj -- \"{textArgument}\" \"{filePath}\"",
+      "categories": ["dotnet"],
+      "params": [
+        {
+          "name": "textArgument",
+          "description": "Text value passed to the app",
+          "default": "ScriptRunner",
+          "prompt": "text"
+        },
+        {
+          "name": "filePath",
+          "description": "File whose content can be displayed",
+          "default": "./sample-data/hello.txt",
+          "prompt": "fileContent"
+        }
+      ],
+      "interactiveInputs": [
+        {
+          "whenMatched": "QUESTION: Display the file content\\?",
+          "inputs": [
+            { "label": "Yes", "value": "Yes" },
+            { "label": "No", "value": "No" },
+            { "label": "Maybe", "value": "Maybe" }
+          ]
+        }
+      ],
+      "troubleshooting": [
+        {
+          "whenMatched": "MAYBE_SELECTED",
+          "alertMessage": "The .NET app reported a Maybe selection.",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

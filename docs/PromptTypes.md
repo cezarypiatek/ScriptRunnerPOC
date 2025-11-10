@@ -308,6 +308,7 @@ Because the hash is content-based, repeated runs with the same text reuse the sa
 | --- | --- | --- |
 | `extension` | string | File extension (without dot) used for syntax highlighting and downloads. |
 | `templateText` | string | Initial text when the file does not exist. |
+| `useWslPathFormat` | boolean | When true, ScriptRunner rewrites the generated temp path to `/mnt/host/<drive>/...` so WSL/bash scripts can consume it without extra conversions. |
 
 **Example**
 
@@ -329,9 +330,11 @@ Selecting a predefined argument set can point to different manifest files, and S
 
 ## `filePicker`
 
-Browse for a file path. Relative selections are rewritten as full paths rooted at the action’s working directory.
+Browse for a file path. Relative selections are rewritten as full paths rooted at the action's working directory.
 
-**Prompt settings**: _none_
+| Setting | Type | Description |
+| --- | --- | --- |
+| `useWslPathFormat` | boolean | Converts the chosen Windows path to the `/mnt/host/<drive>/...` format before substitution, which is handy when the command executes through WSL. |
 
 **Example**
 
@@ -347,9 +350,11 @@ Browse for a file path. Relative selections are rewritten as full paths rooted a
 
 ## `directoryPicker`
 
-Folder browser. Paths are expanded relative to the action’s working directory.
+Folder browser. Paths are expanded relative to the action's working directory.
 
-**Prompt settings**: _none_
+| Setting | Type | Description |
+| --- | --- | --- |
+| `useWslPathFormat` | boolean | Outputs the directory using `/mnt/host/<drive>/...` so bash/WSL commands can consume it directly. |
 
 **Example**
 

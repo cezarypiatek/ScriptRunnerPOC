@@ -393,6 +393,10 @@
                                                 "templateText" : {
                                                     "type": "string",
                                                     "description":"Default text placed into the editor when the referenced file does not exist yet."
+                                                },
+                                                "useWslPathFormat" : {
+                                                    "type": "string",
+                                                    "description":"When true (and running on Windows) the file path is converted to WSL format before being passed to the script."
                                                 }
                                             }
                                         }
@@ -420,11 +424,63 @@
                                 {
                                     "properties": {
                                         "prompt": {
+                                            "const": "filePicker"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "description":"Settings for the file picker.",
+                                            "properties": {
+                                                 "useWslPathFormat" : {
+                                                    "type": "string",
+                                                    "description":"When true (and running on Windows) the file path is converted to WSL format before being passed to the script."
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "const": "filePicker"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "description":"Settings for the file picker.",
+                                            "properties": {
+                                                 "useWslPathFormat" : {
+                                                    "type": "string",
+                                                    "description":"When true (and running on Windows) the file path is converted to WSL format before being passed to the script."
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "const": "directoryPicker"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "description":"Settings for the directory picker.",
+                                            "properties": {
+                                                 "useWslPathFormat" : {
+                                                    "type": "string",
+                                                    "description":"When true (and running on Windows) the file path is converted to WSL format before being passed to the script."
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
                                             "enum": [
                                                 "text",
-                                                "password",
-                                                "filePicker",
-                                                "directoryPicker"
+                                                "password"
                                             ]
                                         }
                                     },

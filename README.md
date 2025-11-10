@@ -7,6 +7,22 @@
 
 ScriptRunner is a UI application designed to act as a shell for any command line program or script. The main idea behind ScriptRunner is to allow users to define actions in a JSON file, specifying the parameters for the programs/scripts. ScriptRunner automatically generates a UI form for entering these parameters, making it easy to run the desired script. This document provides a complete guide to using ScriptRunner, including the structure of the manifest file, an example, and a detailed explanation of its components.
 
+## Table of contents
+
+- [Key features](#key-features)
+- [How to install](#how-to-install)
+- [How to use it](#how-to-use-it)
+- [Ready-to-run examples](#ready-to-run-examples)
+  - [PowerShell hello prompt](#powershell-hello-prompt)
+  - [Python hello prompt](#python-hello-prompt)
+  - [WSL Bash hello prompt](#wsl-bash-hello-prompt)
+  - [.NET hello prompt](#net-hello-prompt)
+- [Schema](#schema)
+- [Predefined argument sets](#predefined-argument-sets)
+- [Interactive inputs](#interactive-inputs)
+- [Troubleshooting alerts](#troubleshooting-alerts)
+- [Generate action definition from `PowerShell` script](#generate-action-definition-from-powershell-script)
+
 ## Key features
 
 - ✅ Provides an easy-to-use interface for CLI tools and scripts
@@ -202,6 +218,114 @@ Bundle common parameter combinations into named presets so teammates can run fre
 ```
 
 `fallbackToDefault` fills in any missing parameters from the automatically generated `<default>` set.
+
+## Ready-to-run examples
+
+The repository ships with `examples/ScriptRunnerExamples.json`, a manifest that contains four minimal actions showcasing how to wrap PowerShell, Python, Bash (via WSL), and .NET console apps. Import that file from **Settings ➜ Config sources** and you will get the following definitions (interactive inputs and troubleshooting rules are omitted here for brevity):
+
+### PowerShell hello prompt
+
+```json
+{
+  "name": "PowerShell Hello Prompt",
+  "description": "Demonstrates stdin buttons and troubleshooting with a PowerShell script.",
+  "command": "pwsh -NoProfile -Command ./examples/powershell/HelloPrompt.ps1",
+  "autoParameterBuilderStyle": "powershell",
+  "categories": ["powershell"],
+  "params": [
+    {
+      "name": "textArgument",
+      "description": "Text value passed to the script",
+      "default": "ScriptRunner",
+      "prompt": "text"
+    },
+    {
+      "name": "filePath",
+      "description": "File whose content can be displayed",
+      "default": "./examples/sample-data/hello.txt",
+      "prompt": "filePicker"
+    }
+  ]
+}
+```
+
+### Python hello prompt
+
+```json
+{
+  "name": "Python Hello Prompt",
+  "description": "Same scenario implemented in Python.",
+  "command": "python -u ./examples/python/hello_prompt.py \"{textArgument}\" \"{filePath}\"",
+  "categories": ["python"],
+  "params": [
+    {
+      "name": "textArgument",
+      "description": "Text value passed to the script",
+      "default": "ScriptRunner",
+      "prompt": "text"
+    },
+    {
+      "name": "filePath",
+      "description": "File whose content can be displayed",
+      "default": "./examples/sample-data/hello.txt",
+      "prompt": "filePicker"
+    }
+  ]
+}
+```
+
+### WSL Bash hello prompt
+
+```json
+{
+  "name": "WSL Bash Hello Prompt",
+  "description": "Runs the Bash implementation inside WSL",
+  "command": "wsl -e sh ./bash/hello_prompt.sh \"{textArgument}\" \"{filePath}\"",
+  "categories": ["bash", "wsl"],
+  "params": [
+    {
+      "name": "textArgument",
+      "description": "Text value passed to the script",
+      "default": "ScriptRunner",
+      "prompt": "text"
+    },
+    {
+      "name": "filePath",
+      "description": "File whose content can be displayed",
+      "default": "./examples/sample-data/hello.txt",
+      "prompt": "filePicker",
+      "promptSettings": {
+        "useWslPathFormat": true
+      }
+    }
+  ]
+}
+```
+
+### .NET hello prompt
+
+```json
+{
+  "name": "C# Hello Prompt",
+  "description": "Uses dotnet run on the HelloPromptApp console project.",
+  "command": "dotnet run --project ./examples/dotnet/HelloPromptApp/HelloPromptApp.csproj -- \"{textArgument}\" \"{filePath}\"",
+  "categories": ["dotnet"],
+  "params": [
+    {
+      "name": "textArgument",
+      "description": "Text value passed to the app",
+      "default": "ScriptRunner",
+      "prompt": "text"
+    },
+    {
+      "name": "filePath",
+      "description": "File whose content can be displayed",
+      "default": "./examples/sample-data/hello.txt",
+      "prompt": "filePicker"
+    }
+  ]
+}
+```
 
 ## Interactive inputs
 
