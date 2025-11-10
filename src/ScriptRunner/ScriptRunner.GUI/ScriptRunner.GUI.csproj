@@ -60,9 +60,8 @@
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="6.0.0" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(SkipInstallerBuild)' == ''">
     <ProjectReference Include="..\AppInstaller\AppInstaller.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
