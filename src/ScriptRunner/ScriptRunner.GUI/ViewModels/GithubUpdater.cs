@@ -101,23 +101,23 @@ public class GithubUpdater
                     WindowStyle = ProcessWindowStyle.Normal,
                     Arguments = "AppInstaller.dll dotnet-tool --packageName scriptrunnergui"
                 });
+                currentProcess.Kill();
             }
             else
             {
-                Process.Start(new ProcessStartInfo("dotnet")
-                {
-                    WorkingDirectory = Path.Combine(installerPath, "AppInstaller"),
-                    UseShellExecute = true,
-                    CreateNoWindow = false,
-                    WindowStyle = ProcessWindowStyle.Normal,
-                    Arguments = $"AppInstaller.dll download-zip --startingProcess \"{currentProcess.MainModule?.FileName}\" --downloadPath \"{LatestVersionDownloadLink}\"",
-
-                });
+                //TODO: figure out how to handle auto-update for non-dotnet-tool installations
+                OpenLatestReleaseLog();
+                // Process.Start(new ProcessStartInfo("dotnet")
+                // {
+                //     WorkingDirectory = Path.Combine(installerPath, "AppInstaller"),
+                //     UseShellExecute = true,
+                //     CreateNoWindow = false,
+                //     WindowStyle = ProcessWindowStyle.Normal,
+                //     Arguments = $"AppInstaller.dll download-zip --startingProcess \"{currentProcess.MainModule?.FileName}\" --downloadPath \"{LatestVersionDownloadLink}\"",
+                //
+                // });
             }
-            
-            currentProcess.Kill();
         }
-        
     }
 
     public static void ExtractArchiveFile(Assembly assembly, string resourceName, string installationPath)
