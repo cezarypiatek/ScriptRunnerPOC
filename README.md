@@ -17,6 +17,7 @@ ScriptRunner is a UI application designed to act as a shell for any command line
   - [Python hello prompt](#python-hello-prompt)
   - [WSL Bash hello prompt](#wsl-bash-hello-prompt)
   - [.NET hello prompt](#net-hello-prompt)
+  - [TypeScript Node hello prompt](#typescript-node-hello-prompt)
 - [Schema](#schema)
 - [Predefined argument sets](#predefined-argument-sets)
 - [Interactive inputs](#interactive-inputs)
@@ -243,7 +244,7 @@ The repository ships with `examples/ScriptRunnerExamples.json`, a manifest that 
       "name": "filePath",
       "description": "File whose content can be displayed",
       "default": "./examples/sample-data/hello.txt",
-      "prompt": "filePicker"
+      "prompt": "fileContent",
     }
   ]
 }
@@ -268,7 +269,7 @@ The repository ships with `examples/ScriptRunnerExamples.json`, a manifest that 
       "name": "filePath",
       "description": "File whose content can be displayed",
       "default": "./examples/sample-data/hello.txt",
-      "prompt": "filePicker"
+      "prompt": "fileContent",
     }
   ]
 }
@@ -293,7 +294,7 @@ The repository ships with `examples/ScriptRunnerExamples.json`, a manifest that 
       "name": "filePath",
       "description": "File whose content can be displayed",
       "default": "./examples/sample-data/hello.txt",
-      "prompt": "filePicker",
+      "prompt": "fileContent",
       "promptSettings": {
         "useWslPathFormat": true
       }
@@ -321,7 +322,34 @@ The repository ships with `examples/ScriptRunnerExamples.json`, a manifest that 
       "name": "filePath",
       "description": "File whose content can be displayed",
       "default": "./examples/sample-data/hello.txt",
-      "prompt": "filePicker"
+      "prompt": "fileContent"
+    }
+  ]
+}
+```
+
+### TypeScript Node hello prompt
+
+
+```json
+{
+  "name": "TypeScript Hello Prompt",
+  "description": "Runs the TypeScript version via ts-node.",
+  "installCommand": "npm i -D tsx",
+  "command": "npx tsx ./examples/node/tsconfig.json ./examples/node/hello_prompt.ts \"{textArgument}\" \"{filePath}\"",
+  "categories": ["node", "typescript"],
+  "params": [
+    {
+      "name": "textArgument",
+      "description": "Text value passed to the script",
+      "default": "ScriptRunner",
+      "prompt": "text"
+    },
+    {
+      "name": "filePath",
+      "description": "File whose content can be displayed",
+      "default": "./examples/sample-data/hello.txt",
+      "prompt": "fileContent"
     }
   ]
 }

@@ -152,6 +152,44 @@
           "severity": "warning"
         }
       ]
+    },
+    {
+      "name": "TypeScript Hello Prompt",
+      "description": "Runs the TypeScript version via ts-node.",
+      "command": "npx tsx ./node/hello_prompt.ts \"{textArgument}\" \"{filePath}\"",
+      "categories": ["node", "typescript"],
+      "installCommand": "npm i -D tsx",
+      "params": [
+        {
+          "name": "textArgument",
+          "description": "Text value passed to the script",
+          "default": "ScriptRunner",
+          "prompt": "text"
+        },
+        {
+          "name": "filePath",
+          "description": "File whose content can be displayed",
+          "default": "./sample-data/hello.txt",
+          "prompt": "fileContent"
+        }
+      ],
+      "interactiveInputs": [
+        {
+          "whenMatched": "QUESTION: Display the file content\\?",
+          "inputs": [
+            { "label": "Yes", "value": "Yes" },
+            { "label": "No", "value": "No" },
+            { "label": "Maybe", "value": "Maybe" }
+          ]
+        }
+      ],
+      "troubleshooting": [
+        {
+          "whenMatched": "MAYBE_SELECTED",
+          "alertMessage": "The TypeScript app reported a Maybe selection.",
+          "severity": "warning"
+        }
+      ]
     }
   ]
 }
