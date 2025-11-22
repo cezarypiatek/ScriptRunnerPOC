@@ -248,7 +248,8 @@ public class StatisticsViewModel : ReactiveObject
             {
                 ActionName = g.Key.Name,
                 Source = g.Key.Source,
-                ExecutionCount = g.Count()
+                ExecutionCount = g.Count(),
+                LastUsed = g.Max(x => x.Timestamp)
             })
             .OrderByDescending(x => x.ExecutionCount)
             .Select((item, index) => 
@@ -287,4 +288,6 @@ public class TopActionItem
     public string ActionName { get; set; } = "";
     public string Source { get; set; } = "";
     public int ExecutionCount { get; set; }
+    public DateTime LastUsed { get; set; }
+    public string LastUsedFormatted => LastUsed.ToString("yyyy-MM-dd");
 }
