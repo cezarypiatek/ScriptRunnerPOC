@@ -309,7 +309,7 @@ public class StatisticsViewModel : ReactiveObject
         // Group by date and count executions
         var executionsByDate = yearData
             .GroupBy(x => x.Timestamp.Date)
-            .ToDictionary(x => x.Key, x => x.Count());
+            .ToDictionary(x => x.Key, x => x.ToList());
 
         var heatmapDays = new List<HeatmapDay>();
         var monthLabels = new List<string>();
@@ -337,10 +337,23 @@ public class StatisticsViewModel : ReactiveObject
             // Only count executions if date is within the actual range
             var count = 0;
             var isInRange = currentDate >= startDate && currentDate <= endDate;
+            List<DayActionDetail> actionDetails = new();
             
-            if (isInRange)
+            if (isInRange && executionsByDate.TryGetValue(currentDate, out var dayExecutions))
             {
-                count = executionsByDate.TryGetValue(currentDate, out var c) ? c : 0;
+                count = dayExecutions.Count;
+                
+                // Group actions by name and source, count executions
+                actionDetails = dayExecutions
+                    .GroupBy(x => new { x.Source, x.Name })
+                    .Select(g => new DayActionDetail
+                    {
+                        ActionName = g.Key.Name,
+                        Source = g.Key.Source,
+                        ExecutionCount = g.Count()
+                    })
+                    .OrderByDescending(x => x.ExecutionCount)
+                    .ToList();
             }
             
             var intensity = GetIntensityLevel(count);
@@ -357,7 +370,8 @@ public class StatisticsViewModel : ReactiveObject
                 DayOfWeek = (int)currentDate.DayOfWeek,
                 WeekIndex = weekIndex,
                 ToolTip = $"{currentDate:MMM dd, yyyy}: {count} execution{(count != 1 ? "s" : "")}",
-                IsOutOfRange = !isInRange
+                IsOutOfRange = !isInRange,
+                ActionDetails = actionDetails
             });
 
             // Track month changes for labels (only for months in the actual range)
@@ -455,6 +469,14 @@ public class HeatmapDay
     public int WeekIndex { get; set; }
     public string ToolTip { get; set; } = "";
     public bool IsOutOfRange { get; set; }
+    public List<DayActionDetail> ActionDetails { get; set; } = new();
+}
+
+public class DayActionDetail
+{
+    public string ActionName { get; set; } = "";
+    public string Source { get; set; } = "";
+    public int ExecutionCount { get; set; }
 }
 
 public class YearOption
