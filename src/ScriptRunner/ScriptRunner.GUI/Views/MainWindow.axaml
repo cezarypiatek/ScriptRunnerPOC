@@ -50,7 +50,18 @@
       <Grid Grid.Row="2"  ColumnDefinitions="Auto,*">
           
           <views:SideMenu ></views:SideMenu>
-          <views:ContentWithSidebar Grid.Column="1" IsSidebarOpen="{Binding IsSideBoxVisible}" SidebarPosition="Left" SidebarWidth="300">
+          
+          <!-- Statistics displayed in full width instead of ContentWithSidebar -->
+          <Panel Grid.Column="1" IsVisible="{Binding IsStatisticsVisible}">
+              <views:Statistics DataContext="{Binding Statistics}"/>
+          </Panel>
+          
+          <!-- ContentWithSidebar for Scripts and Recent executions -->
+          <views:ContentWithSidebar Grid.Column="1" 
+                                    IsSidebarOpen="{Binding IsSideBoxVisible}" 
+                                    SidebarPosition="Left" 
+                                    SidebarWidth="300"
+                                    IsVisible="{Binding !IsStatisticsVisible}">
               <views:ContentWithSidebar.Sidebar>
                   <Panel>
                       <views:ActionsList Name="ActionsList"  IsVisible="{Binding IsScriptListVisible}" ></views:ActionsList>
@@ -59,9 +70,6 @@
                                                   Items="{Binding ExecutionLog}"
                                                   SelectedItem="{Binding SelectedRecentExecution, Mode=TwoWay}"
                                                   ShowDatePicker="True"/>
-                      </Panel>
-                      <Panel IsVisible="{Binding IsStatisticsVisible}">
-                          <views:Statistics DataContext="{Binding Statistics}"/>
                       </Panel>
                   </Panel>
               </views:ContentWithSidebar.Sidebar>
