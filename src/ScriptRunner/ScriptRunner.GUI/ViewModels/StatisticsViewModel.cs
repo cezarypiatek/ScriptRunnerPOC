@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows.Input;
 using ReactiveUI;
 
 namespace ScriptRunner.GUI.ViewModels;
@@ -9,10 +10,18 @@ namespace ScriptRunner.GUI.ViewModels;
 public class StatisticsViewModel : ReactiveObject
 {
     private readonly ObservableCollection<ExecutionLogAction> _executionLog;
+    private List<TopActionItem> _allActions = new();
+    private const int PageSize = 10;
 
     public StatisticsViewModel(ObservableCollection<ExecutionLogAction> executionLog)
     {
         _executionLog = executionLog;
+        
+        // Initialize commands
+        NextPageCommand = ReactiveCommand.Create(NextPage, this.WhenAnyValue(x => x.CanGoNext));
+        PreviousPageCommand = ReactiveCommand.Create(PreviousPage, this.WhenAnyValue(x => x.CanGoPrevious));
+        GoToPageCommand = ReactiveCommand.Create<int>(GoToPage);
+        
         RefreshStatistics();
     }
 
@@ -49,6 +58,78 @@ public class StatisticsViewModel : ReactiveObject
     {
         get => _maxWeek;
         set => this.RaiseAndSetIfChanged(ref _maxWeek, value);
+    }
+
+    private int _currentPage = 1;
+    public int CurrentPage
+    {
+        get => _currentPage;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _currentPage, value);
+            this.RaisePropertyChanged(nameof(CanGoNext));
+            this.RaisePropertyChanged(nameof(CanGoPrevious));
+            this.RaisePropertyChanged(nameof(PageInfo));
+            UpdatePagedActions();
+        }
+    }
+
+    private int _totalPages = 1;
+    public int TotalPages
+    {
+        get => _totalPages;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _totalPages, value);
+            this.RaisePropertyChanged(nameof(CanGoNext));
+            this.RaisePropertyChanged(nameof(PageInfo));
+        }
+    }
+
+    private int _totalActions = 0;
+    public int TotalActions
+    {
+        get => _totalActions;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _totalActions, value);
+            this.RaisePropertyChanged(nameof(PageInfo));
+        }
+    }
+
+    public bool CanGoNext => CurrentPage < TotalPages;
+    public bool CanGoPrevious => CurrentPage > 1;
+    
+    public string PageInfo => TotalActions > 0 
+        ? $"Page {CurrentPage} of {TotalPages} ({TotalActions} total actions)"
+        : "No actions found";
+
+    public ICommand NextPageCommand { get; }
+    public ICommand PreviousPageCommand { get; }
+    public ICommand GoToPageCommand { get; }
+
+    private void NextPage()
+    {
+        if (CanGoNext)
+        {
+            CurrentPage++;
+        }
+    }
+
+    private void PreviousPage()
+    {
+        if (CanGoPrevious)
+        {
+            CurrentPage--;
+        }
+    }
+
+    private void GoToPage(int pageNumber)
+    {
+        if (pageNumber >= 1 && pageNumber <= TotalPages)
+        {
+            CurrentPage = pageNumber;
+        }
     }
 
     public void RefreshStatistics()
@@ -161,7 +242,7 @@ public class StatisticsViewModel : ReactiveObject
 
     private void GenerateTopActions(List<ExecutionLogAction> yearData)
     {
-        var topActions = yearData
+        _allActions = yearData
             .GroupBy(x => new { x.Source, x.Name })
             .Select(g => new TopActionItem
             {
@@ -170,7 +251,6 @@ public class StatisticsViewModel : ReactiveObject
                 ExecutionCount = g.Count()
             })
             .OrderByDescending(x => x.ExecutionCount)
-            .Take(10)
             .Select((item, index) => 
             {
                 item.Rank = (index + 1).ToString();
@@ -178,7 +258,16 @@ public class StatisticsViewModel : ReactiveObject
             })
             .ToList();
 
-        TopActions = topActions;
+        TotalActions = _allActions.Count;
+        TotalPages = TotalActions > 0 ? (int)Math.Ceiling((double)TotalActions / PageSize) : 1;
+        CurrentPage = 1;
+        UpdatePagedActions();
+    }
+
+    private void UpdatePagedActions()
+    {
+        var skip = (CurrentPage - 1) * PageSize;
+        TopActions = _allActions.Skip(skip).Take(PageSize).ToList();
     }
 }
 

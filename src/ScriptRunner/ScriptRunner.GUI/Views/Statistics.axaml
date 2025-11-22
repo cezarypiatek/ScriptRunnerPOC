@@ -134,7 +134,7 @@
             
             <!-- Top 10 Actions Section -->
             <StackPanel Spacing="10">
-                <TextBlock Text="Top 10 Most Executed Actions" 
+                <TextBlock Text="Most Executed Actions" 
                            FontSize="18" 
                            FontWeight="SemiBold"/>
                 
@@ -212,6 +212,33 @@
                         </ItemsControl>
                     </Grid>
                 </Border>
+                
+                <!-- Pagination Controls -->
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,10,0,0">
+                    <!-- Previous Button -->
+                    <Button Grid.Column="0" 
+                            Content="Previous"
+                            Command="{Binding PreviousPageCommand}"
+                            IsEnabled="{Binding CanGoPrevious}"
+                            Padding="15,8"
+                            Margin="0,0,10,0"/>
+                    
+                    <!-- Page Info -->
+                    <TextBlock Grid.Column="1" 
+                               Text="{Binding PageInfo}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               FontSize="13"
+                               Foreground="#A0A0A0"/>
+                    
+                    <!-- Next Button -->
+                    <Button Grid.Column="2" 
+                            Content="Next"
+                            Command="{Binding NextPageCommand}"
+                            IsEnabled="{Binding CanGoNext}"
+                            Padding="15,8"
+                            Margin="10,0,0,0"/>
+                </Grid>
             </StackPanel>
             
         </StackPanel>
