@@ -145,7 +145,7 @@
                     <Grid RowDefinitions="Auto,*">
                         <!-- Table Header -->
                         <Grid Grid.Row="0" 
-                              ColumnDefinitions="50,*,200,150"
+                              ColumnDefinitions="50,*,200,120,120"
                               Margin="5"
                               Height="30">
                             <TextBlock Grid.Column="0" 
@@ -164,6 +164,12 @@
                                        Foreground="#858585"
                                        VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="3" 
+                                       Text="Last Used" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#858585"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="4" 
                                        Text="Executions" 
                                        FontWeight="SemiBold" 
                                        Foreground="#858585"
@@ -179,7 +185,7 @@
                                     <Border BorderBrush="#2E2E30" 
                                             BorderThickness="0,1,0,0"
                                             Padding="5">
-                                        <Grid ColumnDefinitions="50,*,200,150" Height="35">
+                                        <Grid ColumnDefinitions="50,*,200,120,120" Height="35">
                                             <TextBlock Grid.Column="0" 
                                                        Text="{Binding Rank}"
                                                        VerticalAlignment="Center"
@@ -195,7 +201,12 @@
                                                        Foreground="#A0A0A0"
                                                        TextTrimming="CharacterEllipsis"
                                                        ToolTip.Tip="{Binding Source}"/>
-                                            <StackPanel Grid.Column="3" 
+                                            <TextBlock Grid.Column="3" 
+                                                       Text="{Binding LastUsedFormatted}"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"
+                                                       Foreground="#B0B0B0"/>
+                                            <StackPanel Grid.Column="4" 
                                                         Orientation="Horizontal" 
                                                         HorizontalAlignment="Right"
                                                         VerticalAlignment="Center"
