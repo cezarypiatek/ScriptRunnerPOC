@@ -55,9 +55,25 @@
             
             <!-- Heatmap Section -->
             <StackPanel Spacing="10">
-                <TextBlock Text="Execution Frequency (Last Year)" 
-                           FontSize="18" 
-                           FontWeight="SemiBold"/>
+                <!-- Header with Year Selector -->
+                <StackPanel Orientation="Horizontal" Spacing="15">
+                    <TextBlock Text="Execution Frequency" 
+                               FontSize="18" 
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                    
+                    <ComboBox ItemsSource="{Binding YearOptions}"
+                              SelectedItem="{Binding SelectedYearOption}"
+                              MinWidth="120"
+                              VerticalAlignment="Center">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+                
                 <StackPanel Spacing="5">
                     <!-- Day labels -->
                     <Grid ColumnDefinitions="30,*">
