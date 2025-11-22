@@ -89,7 +89,28 @@
                 </TextBlock>
 
               </StackPanel>
-              <SelectableTextBlock  TextWrapping="Wrap"  Classes="consoleOutput"  Inlines="{Binding SelectedAction.CommandFormatted}" ></SelectableTextBlock>
+              
+              <!-- Command Section -->
+              <StackPanel Margin="0,10,0,0">
+                <TextBlock FontWeight="SemiBold" Margin="0,0,0,5">Command:</TextBlock>
+                <SelectableTextBlock TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding SelectedAction.CommandFormatted}" />
+              </StackPanel>
+              
+              <!-- Install Command Section (only shown if InstallCommand exists) -->
+              <StackPanel Margin="0,10,0,0" IsVisible="{Binding SelectedAction.InstallCommand, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,5">
+                  <TextBlock Grid.Column="0" FontWeight="SemiBold" VerticalAlignment="Center">Install Command:</TextBlock>
+                  <Button Grid.Column="1" 
+                          Command="{Binding InstallScript}" 
+                          avalonia:Attached.Icon="fas fa-download"
+                          Padding="8,4"
+                          Margin="0,0,15,0"
+                          ToolTip.Tip="Run install command">
+                    Install
+                  </Button>
+                </Grid>
+                <SelectableTextBlock TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding SelectedAction.InstallCommandFormatted}" />
+              </StackPanel>
             </StackPanel>
           </Expander>
               
