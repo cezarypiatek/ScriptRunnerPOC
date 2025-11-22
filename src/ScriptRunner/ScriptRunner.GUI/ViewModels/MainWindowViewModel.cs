@@ -499,9 +499,13 @@ public class MainWindowViewModel : ReactiveObject
             ? SampleScripts
             : appSettings.ConfigScripts;
         var actions = new List<ScriptConfig>();
-        foreach (var action in  sources.SelectMany(x=> ScriptConfigReader.Load(x, appSettings)).OrderBy(x=>x.SourceName).ThenBy(x=>x.Name))
+        var allCorruptedFiles = new List<string>();
+        
+        foreach (var source in sources)
         {
-            actions.Add(action);
+            var result = ScriptConfigReader.LoadWithErrorTracking(source, appSettings);
+            actions.AddRange(result.Configs.OrderBy(x => x.SourceName).ThenBy(x => x.Name));
+            allCorruptedFiles.AddRange(result.CorruptedFiles);
         }
 
         Actions = actions;
@@ -528,8 +532,29 @@ public class MainWindowViewModel : ReactiveObject
         }
         ExecutionLog.Clear();
         ExecutionLog.AddRange(AppSettingsService.LoadExecutionLog());
+        
+        if (allCorruptedFiles.Count > 0)
+        {
+            ShowCorruptedFilesDialog(allCorruptedFiles);
+        }
     }
-
+    
+    private async void ShowCorruptedFilesDialog(List<string> corruptedFiles)
+    {
+        var fileList = string.Join("\n", corruptedFiles.Select(f => $"• {f}"));
+        var message = $"The following configuration files are corrupted and were skipped:\n\n{fileList}\n\nPlease check these files for JSON syntax errors.";
+        var messageBox = MessageBoxManager.GetMessageBoxStandard(
+            "Corrupted Configuration Files", 
+            message, 
+            icon: MsBox.Avalonia.Enums.Icon.Warning,
+            windowStartupLocation: WindowStartupLocation.CenterOwner);
+        
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            await messageBox.ShowWindowDialogAsync(desktop.MainWindow);
+        }
+    }
+    
     private static List<ConfigScriptEntry> SampleScripts => new()
     {
         new ConfigScriptEntry

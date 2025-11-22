@@ -16,7 +16,6 @@
   </PropertyGroup>
   <ItemGroup>
 	<AvaloniaResource Include="Assets\**" />
-    <Folder Include="ScriptReader\" />
     <None Remove=".gitignore" />
     <None Remove="Themes\DarkTheme.xaml" />
   </ItemGroup>
