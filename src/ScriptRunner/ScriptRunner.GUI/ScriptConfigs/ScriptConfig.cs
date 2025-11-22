@@ -39,6 +39,7 @@ public class ScriptConfig
     public List<TroubleshootingItem> Troubleshooting { get; set; } = new();
     public List<TroubleshootingItem> InstallTroubleshooting { get; set; } = new();
     public InlineCollection CommandFormatted { get; set; } = new();
+    public InlineCollection InstallCommandFormatted { get; set; } = new();
 }
 
 public class TroubleshootingItem
@@ -154,4 +155,3 @@ public class InteractiveInputItem
     public string Label { get; set; }
     public string Value { get; set; }
 }
-
