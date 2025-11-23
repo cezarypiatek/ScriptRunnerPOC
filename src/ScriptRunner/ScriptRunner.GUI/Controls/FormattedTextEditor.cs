@@ -46,6 +46,10 @@ public class FormattedTextEditor : TextEditor
         Padding = new Thickness(15);
         TextArea.TextView.LinkTextForegroundBrush = Brushes.LightBlue;
         TextArea.TextView.ElementGenerators.Add(new FilePathElementGenerator());
+        
+        // Add context menu
+        ContextMenu = CreateContextMenu();
+        
         // Subscribe to scroll changes
         this.Loaded += (_, _) =>
         {
@@ -58,6 +62,83 @@ public class FormattedTextEditor : TextEditor
                 scrollViewer.ScrollChanged += OnScrollChanged;
             }
         };
+    }
+
+    private ContextMenu CreateContextMenu()
+    {
+        var contextMenu = new ContextMenu();
+        
+        var copySelectedItem = new MenuItem
+        {
+            Header = "Copy Selected"
+        };
+        copySelectedItem.Click += (_, _) =>
+        {
+            if (!string.IsNullOrEmpty(SelectedText))
+            {
+                CopyToClipboard(SelectedText);
+            }
+        };
+        
+        var copyAllItem = new MenuItem
+        {
+            Header = "Copy All"
+        };
+        copyAllItem.Click += (_, _) =>
+        {
+            if (Document != null)
+            {
+                CopyToClipboard(Document.Text);
+            }
+        };
+        
+        var selectAllItem = new MenuItem
+        {
+            Header = "Select All"
+        };
+        selectAllItem.Click += (_, _) =>
+        {
+            if (Document != null)
+            {
+                SelectionStart = 0;
+                SelectionLength = Document.TextLength;
+            }
+        };
+        
+        var searchItem = new MenuItem
+        {
+            Header = "Search (Ctrl+F)"
+        };
+        searchItem.Click += (_, _) =>
+        {
+            // Trigger the built-in search functionality
+            var searchPanel = AvaloniaEdit.Search.SearchPanel.Install(this);
+            searchPanel?.Open();
+        };
+        
+        contextMenu.Items.Add(copySelectedItem);
+        contextMenu.Items.Add(copyAllItem);
+        contextMenu.Items.Add(selectAllItem);
+        contextMenu.Items.Add(new Separator());
+        contextMenu.Items.Add(searchItem);
+        
+        // Update menu items based on selection when opening
+        contextMenu.Opening += (_, _) =>
+        {
+            copySelectedItem.IsEnabled = !string.IsNullOrEmpty(SelectedText);
+            copyAllItem.IsEnabled = Document != null && !string.IsNullOrEmpty(Document.Text);
+        };
+        
+        return contextMenu;
+    }
+
+    private async void CopyToClipboard(string text)
+    {
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard != null)
+        {
+            await clipboard.SetTextAsync(text);
+        }
     }
 
     private void OnScrollChanged(object? sender, ScrollChangedEventArgs e)
