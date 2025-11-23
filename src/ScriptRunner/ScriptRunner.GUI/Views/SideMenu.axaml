@@ -26,7 +26,17 @@
         <ToggleButton i:Attached.Icon="fas fa-clock" IsChecked="{Binding IsRecentListVisible}"  ToolTip.Tip="Recently executed"/>
         <ToggleButton i:Attached.Icon="fas fa-chart-bar" IsChecked="{Binding IsStatisticsVisible}"  ToolTip.Tip="Statistics"/>
         <Button i:Attached.Icon="fas fa-cog" Command="{Binding OpenSettingsWindow}"   ToolTip.Tip="Configure actions sources"/>
-        <Button i:Attached.Icon="fas fa-sync" Command="{Binding ForceRefresh}"   ToolTip.Tip="Refresh actions" />
+        <Button Command="{Binding ForceRefresh}" ToolTip.Tip="Refresh actions" Margin="5" Width="50" Height="35">
+            <Grid>
+                <i:Icon Value="fas fa-sync" FontSize="18"/>
+                <ProgressBar IsIndeterminate="True" 
+                             IsVisible="{Binding IsAnyRefreshInProgress}"
+                             Height="3" 
+                             VerticalAlignment="Bottom"
+                             ZIndex="1"
+                             Margin="0,0,0,-5"/>
+            </Grid>
+        </Button>
         <Button i:Attached.Icon="fas fa-lock" Command="{Binding OpenVaultWindow}"   ToolTip.Tip="Open Vault" />
         <Button i:Attached.Icon="fas fa-search" Click="OpenSearchBox" HotKey="{Binding SearchBoxHotKey}"  ToolTip.Tip="Open Search Box (Ctrl+P)" />
     </StackPanel>

@@ -289,48 +289,7 @@ public static class ScriptConfigReader
                     }
                 }
 
-                var withMarkers = action.Params.Aggregate
-                (
-                    seed: action.Command,
-                    func: (string accumulate, ScriptParam source) =>
-                        accumulate.Replace("{" + source.Name + "}", "[!@#]{" + source.Name + "}[!@#]")
-                );
-
-                action.CommandFormatted.AddRange(withMarkers.Split("[!@#]").Select(x =>
-                {
-                    var inline = new Run(x);
-                    if (x.StartsWith("{"))
-                    {
-
-                        inline.Foreground = Brushes.LightGreen;
-                        inline.FontWeight = FontWeight.ExtraBold;
-                    }
-
-                    return inline;
-                }));
-
-                // Format InstallCommand if it exists
-                if (!string.IsNullOrWhiteSpace(action.InstallCommand))
-                {
-                    var installWithMarkers = action.Params.Aggregate
-                    (
-                        seed: action.InstallCommand,
-                        func: (string accumulate, ScriptParam source) =>
-                            accumulate.Replace("{" + source.Name + "}", "[!@#]{" + source.Name + "}[!@#]")
-                    );
-
-                    action.InstallCommandFormatted.AddRange(installWithMarkers.Split("[!@#]").Select(x =>
-                    {
-                        var inline = new Run(x);
-                        if (x.StartsWith("{"))
-                        {
-                            inline.Foreground = Brushes.LightGreen;
-                            inline.FontWeight = FontWeight.ExtraBold;
-                        }
-
-                        return inline;
-                    }));
-                }
+               
                 
                 result.Configs.Add(action);
             }

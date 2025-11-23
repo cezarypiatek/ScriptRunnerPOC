@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Windows.Input;
 using ReactiveUI;
 
@@ -21,17 +24,20 @@ public class StatisticsViewModel : ReactiveObject
         NextPageCommand = ReactiveCommand.Create(NextPage, this.WhenAnyValue(x => x.CanGoNext));
         PreviousPageCommand = ReactiveCommand.Create(PreviousPage, this.WhenAnyValue(x => x.CanGoPrevious));
         GoToPageCommand = ReactiveCommand.Create<int>(GoToPage);
-        
-        // Initialize available years
-        InitializeAvailableYears();
-        
-        // Listen to changes in the execution log and refresh year options
-        _executionLog.CollectionChanged += (sender, args) =>
-        {
-            InitializeAvailableYears();
-        };
-        
-        RefreshStatistics();
+
+        Observable
+            .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
+                h => _executionLog.CollectionChanged += h,
+                h => _executionLog.CollectionChanged -= h)
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .Select(_ => Unit.Default)
+            .StartWith(Unit.Default)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(unit =>
+            {
+                InitializeAvailableYears();
+                RefreshStatistics();
+            });
     }
 
     private List<HeatmapDay> _heatmapDays = new();
@@ -238,7 +244,7 @@ public class StatisticsViewModel : ReactiveObject
         // Only set selected year option if it's not already set
         if (_selectedYearOption == null || !yearOptions.Contains(_selectedYearOption))
         {
-            _selectedYearOption = yearOptions[0]; // Select "Last Year" by default
+            SelectedYearOption = yearOptions[0]; // Select "Last Year" by default
         }
     }
 

@@ -12,8 +12,10 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media;
 using Avalonia.Threading;
 using CliWrap;
 using DynamicData;
@@ -56,6 +58,55 @@ public class MainWindowViewModel : ReactiveObject
     }
 
     private bool _isStatisticsVisible;
+
+    public bool IsLoadingConfig
+    {
+        get => _isLoadingConfig;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isLoadingConfig, value);
+            UpdateIsAnyRefreshInProgress();
+        }
+    }
+
+    private bool _isLoadingConfig;
+
+    public bool IsRefreshingAppUpdates
+    {
+        get => _isRefreshingAppUpdates;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isRefreshingAppUpdates, value);
+            UpdateIsAnyRefreshInProgress();
+        }
+    }
+
+    private bool _isRefreshingAppUpdates;
+
+    public bool IsRefreshingRepositories
+    {
+        get => _isRefreshingRepositories;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isRefreshingRepositories, value);
+            UpdateIsAnyRefreshInProgress();
+        }
+    }
+
+    private bool _isRefreshingRepositories;
+
+    public bool IsAnyRefreshInProgress
+    {
+        get => _isAnyRefreshInProgress;
+        private set => this.RaiseAndSetIfChanged(ref _isAnyRefreshInProgress, value);
+    }
+
+    private bool _isAnyRefreshInProgress;
+
+    private void UpdateIsAnyRefreshInProgress()
+    {
+        IsAnyRefreshInProgress = IsRefreshingAppUpdates || IsRefreshingRepositories || IsLoadingConfig;
+    }
 
     public StatisticsViewModel Statistics { get; private set; }
 
@@ -318,6 +369,7 @@ public class MainWindowViewModel : ReactiveObject
             .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
                 h => this.ExecutionLog.CollectionChanged += h,
                 h => this.ExecutionLog.CollectionChanged -= h)
+            .Throttle(TimeSpan.FromMilliseconds(500))
             .Select(_ => Unit.Default) // We don't care about the event args; we just want to know something changed.
             .StartWith(Unit.Default) // To ensure initial population.
             .CombineLatest(
@@ -352,6 +404,7 @@ public class MainWindowViewModel : ReactiveObject
             .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
                 h => this.ExecutionLog.CollectionChanged += h,
                 h => this.ExecutionLog.CollectionChanged -= h)
+            .Throttle(TimeSpan.FromMilliseconds(500))
             .Select(_ => Unit.Default)
             .StartWith(Unit.Default)
             .Select(_ =>
@@ -383,6 +436,7 @@ public class MainWindowViewModel : ReactiveObject
             .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
                 h => this.ExecutionLog.CollectionChanged += h,
                 h => this.ExecutionLog.CollectionChanged -= h)
+            .Throttle(TimeSpan.FromMilliseconds(500))
             .Select(_ => Unit.Default)
             .StartWith(Unit.Default)
             .Select(_ =>
@@ -444,24 +498,40 @@ public class MainWindowViewModel : ReactiveObject
     
     private async Task RefreshInfoAbouAppUpdates()
     {
-        var isNewerVersion = await appUpdater.CheckIsNewerVersionAvailable();
-        if (isNewerVersion)
+        IsRefreshingAppUpdates = true;
+        try
         {
-            Dispatcher.UIThread.Post(() =>
+            var isNewerVersion = await appUpdater.CheckIsNewerVersionAvailable();
+            if (isNewerVersion)
             {
-                ShowNewVersionAvailable = true;
-            });
+                Dispatcher.UIThread.Post(() =>
+                {
+                    ShowNewVersionAvailable = true;
+                });
+            }
+        }
+        finally
+        {
+            IsRefreshingAppUpdates = false;
         }
     }
 
     private async Task RefreshInfoAboutRepositories()
     {
-        var outOfDateRepos = await _configRepositoryUpdater.CheckAllRepositories();
-        Dispatcher.UIThread.Post(() =>
+        IsRefreshingRepositories = true;
+        try
         {
-            OutOfDateConfigRepositories.Clear();
-            OutOfDateConfigRepositories.AddRange(outOfDateRepos);
-        });
+            var outOfDateRepos = await _configRepositoryUpdater.CheckAllRepositories();
+            Dispatcher.UIThread.Post(() =>
+            {
+                OutOfDateConfigRepositories.Clear();
+                OutOfDateConfigRepositories.AddRange(outOfDateRepos);
+            });
+        }
+        finally
+        {
+            IsRefreshingRepositories = false;
+        }
     }
 
     public void CheckForUpdates()
@@ -493,50 +563,107 @@ public class MainWindowViewModel : ReactiveObject
 
     private void BuildUi()
     {
-        var selectedActionName = SelectedAction?.Name;
-        var appSettings = AppSettingsService.Load();
-        var sources = appSettings.ConfigScripts == null || appSettings.ConfigScripts.Count == 0
-            ? SampleScripts
-            : appSettings.ConfigScripts;
-        var actions = new List<ScriptConfig>();
-        var allCorruptedFiles = new List<string>();
-        
-        foreach (var source in sources)
+        IsLoadingConfig = true;
+        Task.Run(() =>
         {
-            var result = ScriptConfigReader.LoadWithErrorTracking(source, appSettings);
-            actions.AddRange(result.Configs.OrderBy(x => x.SourceName).ThenBy(x => x.Name));
-            allCorruptedFiles.AddRange(result.CorruptedFiles);
-        }
+            var selectedActionName = SelectedAction?.Name;
+            var appSettings = AppSettingsService.Load();
+            var sources = appSettings.ConfigScripts == null || appSettings.ConfigScripts.Count == 0
+                ? SampleScripts
+                : appSettings.ConfigScripts;
+            var actions = new List<ScriptConfig>();
+            var allCorruptedFiles = new List<string>();
 
-        Actions = actions;
-
-        if (string.IsNullOrWhiteSpace(selectedActionName) == false && Actions.FirstOrDefault(x => x.Name == selectedActionName) is { } previouslySelected)
-        {
-            SelectedAction = previouslySelected;
-        }
-        else if (appSettings.Recent?.OrderByDescending(x => x.Value.Timestamp).FirstOrDefault() is { } recent && Actions.FirstOrDefault(a =>
-                         a.Name == recent.Value?.ActionId.ActionName &&
-                         a.SourceName == recent.Value.ActionId.SourceName) is
-                     { } existingRecent)
-        {
-            SelectedAction = existingRecent;
-            if (existingRecent.PredefinedArgumentSets.FirstOrDefault(p =>
-                    p.Description == recent.Value.ActionId.ParameterSet) is { } ps)
+            var results = sources.Select(source => ScriptConfigReader.LoadWithErrorTracking(source, appSettings)).ToList();
+            var el = AppSettingsService.LoadExecutionLog();
+            Dispatcher.UIThread.Post(() =>
             {
-                SelectedArgumentSet = ps;
-            }
-        }
-        else if(Actions.FirstOrDefault() is { } firstAction)
-        {
-            SelectedAction = firstAction;
-        }
-        ExecutionLog.Clear();
-        ExecutionLog.AddRange(AppSettingsService.LoadExecutionLog());
-        
-        if (allCorruptedFiles.Count > 0)
-        {
-            ShowCorruptedFilesDialog(allCorruptedFiles);
-        }
+                foreach (var result in results)
+                {
+            
+                    actions.AddRange(result.Configs.OrderBy(x => x.SourceName).ThenBy(x => x.Name));
+                    allCorruptedFiles.AddRange(result.CorruptedFiles);
+                }
+
+
+                foreach (var action in actions)
+                {
+                    var withMarkers = action.Params.Aggregate
+                    (
+                        seed: action.Command,
+                        func: (string accumulate, ScriptParam source) =>
+                            accumulate.Replace("{" + source.Name + "}", "[!@#]{" + source.Name + "}[!@#]")
+                    );
+
+                    action.CommandFormatted.AddRange(withMarkers.Split("[!@#]").Select(x =>
+                    {
+                        var inline = new Run(x);
+                        if (x.StartsWith("{"))
+                        {
+
+                            inline.Foreground = Brushes.LightGreen;
+                            inline.FontWeight = FontWeight.ExtraBold;
+                        }
+
+                        return inline;
+                    }));
+
+                    // Format InstallCommand if it exists
+                    if (!string.IsNullOrWhiteSpace(action.InstallCommand))
+                    {
+                        var installWithMarkers = action.Params.Aggregate
+                        (
+                            seed: action.InstallCommand,
+                            func: (string accumulate, ScriptParam source) =>
+                                accumulate.Replace("{" + source.Name + "}", "[!@#]{" + source.Name + "}[!@#]")
+                        );
+
+                        action.InstallCommandFormatted.AddRange(installWithMarkers.Split("[!@#]").Select(x =>
+                        {
+                            var inline = new Run(x);
+                            if (x.StartsWith("{"))
+                            {
+                                inline.Foreground = Brushes.LightGreen;
+                                inline.FontWeight = FontWeight.ExtraBold;
+                            }
+
+                            return inline;
+                        }));
+                    }
+                }
+                
+                Actions = actions;
+
+                if (string.IsNullOrWhiteSpace(selectedActionName) == false && Actions.FirstOrDefault(x => x.Name == selectedActionName) is { } previouslySelected)
+                {
+                    SelectedAction = previouslySelected;
+                }
+                else if (appSettings.Recent?.OrderByDescending(x => x.Value.Timestamp).FirstOrDefault() is { } recent && Actions.FirstOrDefault(a =>
+                                 a.Name == recent.Value?.ActionId.ActionName &&
+                                 a.SourceName == recent.Value.ActionId.SourceName) is
+                             { } existingRecent)
+                {
+                    SelectedAction = existingRecent;
+                    if (existingRecent.PredefinedArgumentSets.FirstOrDefault(p =>
+                            p.Description == recent.Value.ActionId.ParameterSet) is { } ps)
+                    {
+                        SelectedArgumentSet = ps;
+                    }
+                }
+                else if(Actions.FirstOrDefault() is { } firstAction)
+                {
+                    SelectedAction = firstAction;
+                }
+                ExecutionLog.Clear();
+            
+                ExecutionLog.AddRange(el);
+                IsLoadingConfig = false;
+                if (allCorruptedFiles.Count > 0)
+                {
+                    ShowCorruptedFilesDialog(allCorruptedFiles);
+                }
+            });
+        });
     }
     
     private async void ShowCorruptedFilesDialog(List<string> corruptedFiles)
@@ -714,8 +841,14 @@ public class MainWindowViewModel : ReactiveObject
 
     public void ForceRefresh()
     {
-        _ = RefreshInfoAbouAppUpdates();
-        _ = RefreshInfoAboutRepositories();
+        Task.Run(async () =>
+        {
+            await RefreshInfoAbouAppUpdates();
+        });
+        Task.Run(async () =>
+        {
+            await RefreshInfoAboutRepositories();
+        });
         BuildUi();
     }
     public void RefreshSettings() => BuildUi();
