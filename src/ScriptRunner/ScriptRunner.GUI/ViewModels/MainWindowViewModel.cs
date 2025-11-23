@@ -120,6 +120,7 @@ public class MainWindowViewModel : ReactiveObject
 
     public IReactiveCommand SaveAsPredefinedCommand { get; set; }
 
+    public ReactiveCommand<TaggedScriptConfig, Unit> SelectActionCommand { get; set; }
 
     private readonly ParamsPanelFactory _paramsPanelFactory;
     private readonly VaultProvider _vaultProvider;
@@ -151,6 +152,25 @@ public class MainWindowViewModel : ReactiveObject
     }
 
     private string _actionFilter;
+
+    public string SelectedCategoryFilter
+    {
+        get => _selectedCategoryFilter;
+        set => this.RaiseAndSetIfChanged(ref _selectedCategoryFilter, value);
+    }
+
+    private string _selectedCategoryFilter = "All";
+
+    private readonly ObservableAsPropertyHelper<IEnumerable<string>> _availableCategories;
+    public IEnumerable<string> AvailableCategories => _availableCategories.Value;
+
+    public bool IsTreeViewMode
+    {
+        get => _isTreeViewMode;
+        set => this.RaiseAndSetIfChanged(ref _isTreeViewMode, value);
+    }
+
+    private bool _isTreeViewMode = false;
 
     private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfigGroupWrapper>> _filteredActionList;
     public IEnumerable<ScriptConfigGroupWrapper> FilteredActionList => _filteredActionList.Value;
@@ -288,6 +308,15 @@ public class MainWindowViewModel : ReactiveObject
         }));
         IsScriptListVisible = true;
         SaveAsPredefinedCommand = ReactiveCommand.Create(() => { });
+        SelectActionCommand = ReactiveCommand.Create<TaggedScriptConfig, Unit>(taggedScriptConfig =>
+        {
+            if (taggedScriptConfig.Config is { } scriptConfig)
+            {
+                SelectedAction = scriptConfig;
+            }
+
+            return Unit.Default;
+        });
         _paramsPanelFactory = paramsPanelFactory;
         _vaultProvider = vaultProvider;
         this.appUpdater = new GithubUpdater();
@@ -336,14 +365,50 @@ public class MainWindowViewModel : ReactiveObject
                 Statistics.RefreshStatistics();
             });
         
-        this.WhenAnyValue(x => x.ActionFilter, x => x.Actions)
+        // Build available categories list
+        this.WhenAnyValue(x => x.Actions)
+            .Select(actions =>
+            {
+                var categories = new List<string> { "All" };
+                var allCategories = actions
+                    .SelectMany(a => a.Categories ?? Enumerable.Empty<string>())
+                    .Where(c => !string.IsNullOrWhiteSpace(c))
+                    .Distinct()
+                    .OrderBy(c => c);
+                categories.AddRange(allCategories);
+                if (actions.Any(a => a.Categories == null || a.Categories.Count == 0))
+                {
+                    categories.Add("(No Category)");
+                }
+                return categories.AsEnumerable();
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.AvailableCategories, out _availableCategories);
+        
+        this.WhenAnyValue(x => x.ActionFilter, x => x.SelectedCategoryFilter, x => x.Actions)
             .Throttle(TimeSpan.FromMilliseconds(200))
             .DistinctUntilChanged()
-            .Select((pair, cancellationToken) =>
+            .Select((tuple, cancellationToken) =>
             {
+                var (textFilter, categoryFilter, actions) = tuple;
                 
-                var configs = string.IsNullOrWhiteSpace(pair.Item1)? pair.Item2:pair.Item2.Where(x => x.Name.Contains(pair.Item1, StringComparison.InvariantCultureIgnoreCase));
-
+                // Apply text filter
+                var configs = string.IsNullOrWhiteSpace(textFilter) 
+                    ? actions 
+                    : actions.Where(x => x.Name.Contains(textFilter, StringComparison.InvariantCultureIgnoreCase));
+                
+                // Apply category filter (AND operator with text filter)
+                if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != "All")
+                {
+                    if (categoryFilter == "(No Category)")
+                    {
+                        configs = configs.Where(x => x.Categories == null || x.Categories.Count == 0);
+                    }
+                    else
+                    {
+                        configs = configs.Where(x => x.Categories != null && x.Categories.Contains(categoryFilter));
+                    }
+                }
 
                 IEnumerable<ScriptConfigGroupWrapper> scriptConfigGroupWrappers = configs.SelectMany(c =>
                     {
@@ -360,8 +425,6 @@ public class MainWindowViewModel : ReactiveObject
                         Children = x.Select(p=> new TaggedScriptConfig(x.Key, p.script.Name, p.script)).OrderBy(x=>x.Name)
                     });
                 return scriptConfigGroupWrappers;
-                
-                
             })
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
