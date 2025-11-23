@@ -36,7 +36,7 @@ public static class ScriptConfigReader
                 return result;
             }
 
-            LoadFileSourceWithTracking(source.Path, appSettings, result, source.Name);
+            LoadFileSourceWithTracking(source.Path, appSettings, result, source.Name, source.Path);
             return result;
         }
 
@@ -49,80 +49,11 @@ public static class ScriptConfigReader
 
             foreach (var file in Directory.EnumerateFiles(source.Path, "*.json", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
-                LoadFileSourceWithTracking(file, appSettings, result, source.Name);
+                LoadFileSourceWithTracking(file, appSettings, result, source.Name, source.Path);
             }
         }
         
         return result;
-    }
-
-    public static IEnumerable<ScriptConfig> Load(ConfigScriptEntry source,
-        ScriptRunnerAppSettings appSettings)
-    {
-        if (string.IsNullOrWhiteSpace(source.Path))
-        {
-            yield break;
-        }
-        
-        if (source.Type == ConfigScriptType.File)
-        {
-            if (File.Exists(source.Path) == false)
-            {
-                yield break;
-            }
-
-            foreach (var scriptConfig in LoadFileSource(source.Path, appSettings))
-            {
-                scriptConfig.SourceName = source.Name;
-                scriptConfig.Categories ??= new List<string>();
-
-                var mainCategory = string.IsNullOrWhiteSpace(scriptConfig.SourceName) == false
-                    ? scriptConfig.SourceName
-                    : Path.GetFileName(source.Path);
-                if (string.IsNullOrWhiteSpace(mainCategory) == false)
-                {
-                    scriptConfig.Categories.Add(mainCategory);
-
-                    if (mainCategory != source.Name)
-                    {
-                        source.Name = mainCategory;
-                    }
-                }
-                yield return scriptConfig;
-            }
-            yield break;
-        }
-
-        if (source.Type == ConfigScriptType.Directory)
-        {
-            if (Directory.Exists(source.Path) == false)
-            {
-                yield break;
-            }
-
-            foreach (var file in Directory.EnumerateFiles(source.Path, "*.json", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
-            {
-                foreach (var scriptConfig in LoadFileSource(file, appSettings))
-                {
-                    scriptConfig.SourceName = source.Name;
-                    scriptConfig.Categories ??= new List<string>();
-
-                    var mainCategory = string.IsNullOrWhiteSpace(scriptConfig.SourceName) == false
-                        ? scriptConfig.SourceName
-                        :   Path.GetFileName(source.Path);
-                    if (string.IsNullOrWhiteSpace(mainCategory) == false)
-                    {
-                        scriptConfig.Categories.Add(mainCategory);
-
-                        if (mainCategory != source.Name)
-                        {
-                            source.Name = mainCategory;
-                        }
-                    }
-                    yield return scriptConfig;
-                }
-            }
-        }
     }
 
     private static IAutoParameterBuilder CreateBuilder(ScriptConfig scriptConfig)
@@ -140,8 +71,7 @@ public static class ScriptConfigReader
         return EmptyAutoParameterBuilder.Instance;
     }
 
-    private static void LoadFileSourceWithTracking(string fileName,
-        ScriptRunnerAppSettings appSettings, ConfigLoadResult result, string sourceName)
+    private static void LoadFileSourceWithTracking(string fileName, ScriptRunnerAppSettings appSettings, ConfigLoadResult result, string sourceName, string sourcePath)
     {
         if (!File.Exists(fileName)) return;
 
@@ -166,14 +96,19 @@ public static class ScriptConfigReader
                 action.Source = fileName;
                 action.SourceName = sourceName;
                 action.Categories ??= new List<string>();
-
-                var mainCategory = string.IsNullOrWhiteSpace(action.SourceName) == false
-                    ? action.SourceName
-                    : Path.GetFileName(fileName);
-                if (string.IsNullOrWhiteSpace(mainCategory) == false)
+                if (string.IsNullOrWhiteSpace(action.SourceName) == false)
                 {
-                    action.Categories.Add(mainCategory);
+                    action.Categories.Add(action.SourceName);
                 }
+                else
+                {
+                    var dir =  Path.GetDirectoryName(sourcePath)?.Split(new[]{'\\','/'}).Last();
+                    if (string.IsNullOrWhiteSpace(dir) == false)
+                    {
+                        action.Categories.Add(dir);
+                    }
+                }
+                NormalizeCategories(action.Categories);
 
                 var parameterBuilder = CreateBuilder(action);
 
@@ -298,6 +233,23 @@ public static class ScriptConfigReader
         {
             result.CorruptedFiles.Add(fileName);
         }
+    }
+
+    private static readonly Dictionary<string, string> NormalizeCategoriesCache = new();
+    private static void NormalizeCategories(List<string> actionCategories)
+    {
+        var normalize = actionCategories.Select(cat =>
+        {
+            var key = cat.Trim().ToLowerInvariant().Replace(" ", "").Replace("-", "").Replace("_", "");
+            if (NormalizeCategoriesCache.TryGetValue(key, out var normalized))
+            {
+                return normalized;
+            }
+            return NormalizeCategoriesCache[key] = cat.Trim();
+            
+        }).Distinct().ToList();
+        actionCategories.Clear();
+        actionCategories.AddRange(normalize);
     }
 
     private static IEnumerable<ScriptConfig> LoadFileSource(string fileName,
