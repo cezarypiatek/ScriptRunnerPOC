@@ -274,6 +274,7 @@ public class MainWindowViewModel : ReactiveObject
                     Tile = $"Update repository",
                     ExecutedCommand = $"{command.Command} {command.Parameters}",
                 };
+                job.ExecutedCommandFormatted.AddRange(CreateSimpleFormattedCommand($"{command.Command} {command.Parameters}"));
                 this.RunningJobs.Add(job);
                 SelectedRunningJob = job;
 
@@ -797,6 +798,7 @@ public class MainWindowViewModel : ReactiveObject
                 ExecutedCommand = installCommand,
                 EnvironmentVariables = new Dictionary<string, string?>()
             };
+            job.ExecutedCommandFormatted.AddRange(CreateSimpleFormattedCommand(installCommand));
             job.ExecutionCompleted += (sender, eventArgs) =>
             {
                 SelectedActionInstalled = true;
@@ -1113,12 +1115,22 @@ public class MainWindowViewModel : ReactiveObject
         var (commandPath, args) = SplitCommandAndArgs(command);
         var envVariables = new Dictionary<string, string?>(selectedAction.EnvironmentVariables);
         var maskedArgs = args;
+        
+        // Track parameter replacements for formatting with descriptions
+        var parameterReplacements = new List<(string paramName, string value, bool masked, string description)>();
+        
         foreach (var controlRecord in _controlRecords)
         {
             var controlValue = controlRecord.GetFormattedValue()?.Trim();
             args = args.Replace($"{{{controlRecord.Name}}}", controlValue);
             commandPath = commandPath.Replace($"{{{controlRecord.Name}}}", controlValue);
-            maskedArgs = maskedArgs.Replace($"{{{controlRecord.Name}}}", controlRecord.MaskingRequired? "*****": controlValue);
+            var displayValue = controlRecord.MaskingRequired ? "*****" : controlValue;
+            maskedArgs = maskedArgs.Replace($"{{{controlRecord.Name}}}", displayValue);
+            
+            // Find the parameter description from the action's Params
+            var paramDescription = selectedAction.Params.FirstOrDefault(p => p.Name == controlRecord.Name)?.Description ?? string.Empty;
+            
+            parameterReplacements.Add((controlRecord.Name, displayValue, controlRecord.MaskingRequired, paramDescription));
 
             foreach (var (key, val) in envVariables)
             {
@@ -1127,12 +1139,39 @@ public class MainWindowViewModel : ReactiveObject
             }
         }
 
+        var executedCommand = $"{commandPath} {maskedArgs}";
+        
+        // Create formatted version with highlighted parameter values
+        var formattedCommand = executedCommand;
+        foreach (var (paramName, value, masked, description) in parameterReplacements)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                formattedCommand = formattedCommand.Replace(value, $"[!@#]{value}[!@#]");
+            }
+        }
+        
+        var executedCommandFormatted = formattedCommand.Split("[!@#]").Select(x =>
+        {
+            var inline = new Run(x);
+            // Check if this is a parameter value (not the original text)
+            var matchingParam = parameterReplacements.FirstOrDefault(p => p.value == x && !string.IsNullOrWhiteSpace(x));
+            if (matchingParam != default)
+            {
+                inline.Foreground = Brushes.LightGreen;
+                inline.FontWeight = FontWeight.ExtraBold;
+            }
+            return inline;
+        }).ToList();
+
         var job = new RunningJobViewModel
         {
             Tile = $"#{jobCounter++} {title ?? selectedAction.Name}",
-            ExecutedCommand = $"{commandPath} {maskedArgs}",
+            ExecutedCommand = executedCommand,
             EnvironmentVariables = envVariables
         };
+        job.ExecutedCommandFormatted.AddRange(executedCommandFormatted);
+        
         this.RunningJobs.Add(job);
         SelectedRunningJob = job;
 
@@ -1281,6 +1320,13 @@ public class MainWindowViewModel : ReactiveObject
         }
 
         return command.Split(' ', 2);
+    }
+    
+    private static InlineCollection CreateSimpleFormattedCommand(string command)
+    {
+        var collection = new InlineCollection();
+        collection.Add(new Run(command));
+        return collection;
     }
 }
 
