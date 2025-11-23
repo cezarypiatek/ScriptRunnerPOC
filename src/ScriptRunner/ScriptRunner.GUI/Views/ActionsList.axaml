@@ -5,31 +5,258 @@
              xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
              xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
              xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
+             xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="viewModels:MainWindowViewModel"
              x:Class="ScriptRunner.GUI.Views.ActionsList">
-    <TreeView x:Name="ActionTree" Background="#1e1e1e" Classes="actionsMenu" Grid.Row="0" ItemsSource="{Binding FilteredActionList }" SelectedItem="{Binding SelectedActionOrGroup, Mode=TwoWay}">
-        <TreeView.Styles>
-            <Style Selector="TreeViewItem:empty Panel#PART_ExpandCollapseChevronContainer">
-                <Setter Property="IsVisible" Value="False"></Setter>
-            </Style>
-            <Style Selector="TreeViewItem:empty Grid#PART_Header">
-                <Setter Property="Margin" Value="35,0,0,0"></Setter>
-            </Style>
-        </TreeView.Styles>
-        <TreeView.DataTemplates>
-            <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="viewModels:ScriptConfigGroupWrapper">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <avalonia:Icon Value="fa-folder" FontSize="16" Foreground="#ffd700" />
-                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                </StackPanel>
-            </TreeDataTemplate>
-            <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <avalonia:Icon Value="fa-file-code" FontSize="16" Foreground="#3baced" />
-                    <TextBlock Text="{Binding  Name}" VerticalAlignment="Center" />
-                </StackPanel>
-            </DataTemplate>
-        </TreeView.DataTemplates>
-    </TreeView>
+    <UserControl.Resources>
+        <converters:CategoryToColorConverter x:Key="CategoryToColorConverter"/>
+    </UserControl.Resources>
+    
+    <UserControl.Styles>
+        <!-- Styles for list view tiles -->
+        <Style Selector="Border.actionTile">
+            <Setter Property="Background" Value="#252525"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0,0,0,0"/>
+        </Style>
+        
+        <Style Selector="Border.actionTile:pointerover">
+            <Setter Property="Background" Value="#2d2d2d"/>
+            <Setter Property="BorderBrush" Value="#3baced"/>
+            <Setter Property="BorderThickness" Value="3,0,0,0"/>
+        </Style>
+        
+        <Style Selector="Border.actionTile.selected">
+            <Setter Property="Background" Value="#2a4a5a"/>
+            <Setter Property="BorderBrush" Value="#3baced"/>
+            <Setter Property="BorderThickness" Value="3,0,0,0"/>
+        </Style>
+        
+        <Style Selector="Border.actionTile.selected:pointerover">
+            <Setter Property="Background" Value="#336a7f"/>
+            <Setter Property="BorderBrush" Value="#3baced"/>
+            <Setter Property="BorderThickness" Value="3,0,0,0"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+        <!-- View Mode Tabs -->
+        <Border Grid.Row="0" Background="#252526" BorderBrush="#3f3f46" BorderThickness="0,0,0,1" Padding="10,5">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <RadioButton GroupName="ViewMode" IsChecked="{Binding IsTreeViewMode}" Padding="12,6">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <avalonia:Icon Value="fa-solid fa-folder-tree" FontSize="14"/>
+                        <TextBlock Text="Tree" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton GroupName="ViewMode" IsChecked="{Binding !IsTreeViewMode}" Padding="12,6">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <avalonia:Icon Value="fa-solid fa-list" FontSize="14"/>
+                        <TextBlock Text="List" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </RadioButton>
+            </StackPanel>
+        </Border>
+        
+        <!-- Search Box -->
+        <Border Grid.Row="1" Background="#1e1e1e" Padding="10" BorderBrush="#3f3f46" BorderThickness="0,0,0,1">
+            <TextBox x:Name="SearchTextBox"
+                     Text="{Binding ActionFilter}" 
+                     Watermark="Search actions..."
+                     BorderThickness="1"
+                     BorderBrush="#3f3f46"
+                     Background="#252526"
+                     Padding="8,6,35,6">
+                <TextBox.InnerLeftContent>
+                    <avalonia:Icon Value="fa-search" FontSize="14" Foreground="#888888" Margin="8,0,0,0"/>
+                </TextBox.InnerLeftContent>
+                <TextBox.InnerRightContent>
+                    <Button Classes="clearButton"
+                            Width="24"
+                            Height="24"
+                            Padding="0"
+                            Margin="0,0,4,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            IsVisible="{Binding ActionFilter, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                            Click="ClearSearch_Click">
+                        <avalonia:Icon Value="fa-times-circle" FontSize="14" Foreground="#888888"/>
+                    </Button>
+                </TextBox.InnerRightContent>
+            </TextBox>
+        </Border>
+        
+        <!-- Category Filter -->
+        <Border Grid.Row="2" Background="#1e1e1e" Padding="10,5" BorderBrush="#3f3f46" BorderThickness="0,0,0,1">
+            <ItemsControl ItemsSource="{Binding AvailableCategories}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{Binding Converter={StaticResource CategoryToColorConverter}}" 
+                                CornerRadius="3" 
+                                Padding="8,4" 
+                                Margin="0,0,4,4"
+                                Cursor="Hand"
+                                Classes="categoryBadge"
+                                Classes.selected="{Binding $parent[UserControl].((viewModels:MainWindowViewModel)DataContext).SelectedCategoryFilter, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={Binding}}"
+                                Tapped="CategoryBadge_OnTapped"
+                                Name="CategoryBadgeBorder">
+                            <Border.Styles>
+                                <Style Selector="Border.categoryBadge">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </Style>
+                                <Style Selector="Border.categoryBadge.grayed">
+                                    <Setter Property="Opacity" Value="0.3"/>
+                                </Style>
+                                <Style Selector="Border.categoryBadge:pointerover">
+                                    <Setter Property="Opacity" Value="0.8"/>
+                                </Style>
+                                <Style Selector="Border.categoryBadge.selected">
+                                    <Setter Property="BorderBrush" Value="White"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                    <Setter Property="Opacity" Value="1"/>
+                                </Style>
+                                <Style Selector="Border.categoryBadge.selected:pointerover">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </Style>
+                            </Border.Styles>
+                            <TextBlock Text="{Binding}" 
+                                       FontSize="11" 
+                                       FontWeight="SemiBold"
+                                       Foreground="White"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+        
+        <!-- Content Area: Tree or List View -->
+        <Panel Grid.Row="3">
+            <!-- Tree View -->
+            <TreeView x:Name="ActionTree" 
+                      Background="#1e1e1e" 
+                      Classes="actionsMenu" 
+                      ItemsSource="{Binding FilteredActionList}" 
+                      SelectedItem="{Binding SelectedActionOrGroup, Mode=TwoWay}"
+                      IsVisible="{Binding IsTreeViewMode}">
+                <TreeView.Styles>
+                    <Style Selector="TreeViewItem:empty Panel#PART_ExpandCollapseChevronContainer">
+                        <Setter Property="IsVisible" Value="False"></Setter>
+                    </Style>
+                    <Style Selector="TreeViewItem:empty Grid#PART_Header">
+                        <Setter Property="Margin" Value="35,0,0,0"></Setter>
+                    </Style>
+                </TreeView.Styles>
+                <TreeView.DataTemplates>
+                    <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="viewModels:ScriptConfigGroupWrapper">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <avalonia:Icon Value="fa-folder" FontSize="16" Foreground="#ffd700" />
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </TreeDataTemplate>
+                    <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <avalonia:Icon Value="fa-file-code" FontSize="16" Foreground="#3baced" />
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </DataTemplate>
+                </TreeView.DataTemplates>
+            </TreeView>
+            
+            <!-- List View with Tiles -->
+            <ScrollViewer IsVisible="{Binding !IsTreeViewMode}" 
+                          Background="#1e1e1e"
+                          VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding FilteredActionList}" Margin="10">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:ScriptConfigGroupWrapper">
+                            <StackPanel Margin="0,0,0,15">
+                                <!-- Category Header -->
+                                <Border Background="#252526" 
+                                        CornerRadius="4"
+                                        Padding="12,8"
+                                        Margin="0,0,0,8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <avalonia:Icon Value="fa-folder" FontSize="16" Foreground="#ffd700" />
+                                        <TextBlock Text="{Binding Name}" 
+                                                   FontWeight="SemiBold" 
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <!-- Action Tiles -->
+                                <ItemsControl ItemsSource="{Binding Children}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
+                                            <Border CornerRadius="4"
+                                                    Padding="16,12"
+                                                    Margin="4,2"
+                                                    Cursor="Hand"
+                                                    Classes="actionTile"
+                                                    Tapped="ActionTile_OnTapped">
+                                                <Grid RowDefinitions="Auto,Auto,Auto">
+                                                    <!-- Action Name with Icon -->
+                                                    <StackPanel Orientation="Horizontal" Spacing="10" Grid.Row="0">
+                                                        <avalonia:Icon Value="fa-file-code" FontSize="20" Foreground="#3baced" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                                                        <TextBlock Text="{Binding Name}" 
+                                                                   FontSize="15"
+                                                                   FontWeight="SemiBold"
+                                                                   TextWrapping="Wrap"
+                                                                   VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    
+                                                    <!-- Description -->
+                                                    <TextBlock Grid.Row="1"
+                                                               Text="{Binding Config.Description}" 
+                                                               Foreground="#b0b0b0"
+                                                               FontSize="12"
+                                                               TextWrapping="Wrap"
+                                                               Margin="30,6,0,0"
+                                                               MaxHeight="40"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               IsVisible="{Binding Config.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                    
+                                                    <!-- Category Badges -->
+                                                    <ItemsControl Grid.Row="2"
+                                                                  ItemsSource="{Binding Config.Categories}" 
+                                                                  Margin="30,8,0,0"
+                                                                  IsVisible="{Binding Config.Categories.Count}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel Orientation="Horizontal"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Background="{Binding Converter={StaticResource CategoryToColorConverter}}" 
+                                                                        CornerRadius="3" 
+                                                                        Padding="6,2" 
+                                                                        Margin="0,0,4,4">
+                                                                    <TextBlock Text="{Binding}" 
+                                                                               FontSize="10" 
+                                                                               FontWeight="SemiBold"
+                                                                               Foreground="White"/>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Panel>
+    </Grid>
 </UserControl>
