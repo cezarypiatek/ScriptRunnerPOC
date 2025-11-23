@@ -410,20 +410,39 @@ public class MainWindowViewModel : ReactiveObject
                     }
                 }
 
-                IEnumerable<ScriptConfigGroupWrapper> scriptConfigGroupWrappers = configs.SelectMany(c =>
+                IEnumerable<ScriptConfigGroupWrapper> scriptConfigGroupWrappers;
+                
+                // When a specific category is filtered, show each action only once under that category
+                if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != "All")
+                {
+                    scriptConfigGroupWrappers = new[]
                     {
-                        if (c.Categories is {Count: > 0})
+                        new ScriptConfigGroupWrapper
                         {
-                            return c.Categories.DistinctBy(x=>x).Select((cat) => (category: cat, script: c));
+                            Name = categoryFilter,
+                            Children = configs.Select(c => new TaggedScriptConfig(categoryFilter, c.Name, c)).OrderBy(x => x.Name)
                         }
+                    };
+                }
+                else
+                {
+                    // When no filter or "All" is selected, show actions grouped by all their categories
+                    scriptConfigGroupWrappers = configs.SelectMany(c =>
+                        {
+                            if (c.Categories is {Count: > 0})
+                            {
+                                return c.Categories.DistinctBy(x=>x).Select((cat) => (category: cat, script: c));
+                            }
 
-                        return new[] {(category: "(No Category)", script: c)};
-                    }).GroupBy(x => x.category).OrderBy(x=>x.Key)
-                    .Select(x=> new ScriptConfigGroupWrapper
-                    {
-                        Name = x.Key,
-                        Children = x.Select(p=> new TaggedScriptConfig(x.Key, p.script.Name, p.script)).OrderBy(x=>x.Name)
-                    });
+                            return new[] {(category: "(No Category)", script: c)};
+                        }).GroupBy(x => x.category).OrderBy(x=>x.Key)
+                        .Select(x=> new ScriptConfigGroupWrapper
+                        {
+                            Name = x.Key,
+                            Children = x.Select(p=> new TaggedScriptConfig(x.Key, p.script.Name, p.script)).OrderBy(x=>x.Name)
+                        });
+                }
+                
                 return scriptConfigGroupWrappers;
             })
             .ObserveOn(RxApp.MainThreadScheduler)
