@@ -56,6 +56,7 @@ public class RunningJobViewModel : ViewModelBase
     }
 
     public string ExecutedCommand { get; set; }
+    public InlineCollection ExecutedCommandFormatted { get; set; } = new();
     public void CancelExecution()
     {
         GracefulCancellation.Cancel();

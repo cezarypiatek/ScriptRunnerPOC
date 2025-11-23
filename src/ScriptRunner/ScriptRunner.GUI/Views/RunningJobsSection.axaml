@@ -42,14 +42,16 @@
               <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
             
-              <TextBox Height="30" 
-                       GotFocus="InputElement_OnGotFocus"
-                       LostFocus="InputElement_OnLostFocus"
-                       Text="{Binding ExecutedCommand}" 
-                       Background="#474747" 
-                       CornerRadius="0" 
-                       BorderBrush="#6e6e6e" 
-                       Padding="5"  Margin="0, 5,5, 10" BorderThickness="1" IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Stretch"></TextBox>
+              <Border Background="#474747" 
+                      CornerRadius="0" 
+                      BorderBrush="#6e6e6e" 
+                      Padding="5" 
+                      Margin="0, 5,5, 10" 
+                      BorderThickness="1">
+                <SelectableTextBlock TextWrapping="Wrap" 
+                                     Classes="consoleOutput" 
+                                     Inlines="{Binding ExecutedCommandFormatted}" />
+              </Border>
               <Panel Grid.Row="1" IsVisible="{Binding CurrentTroubleshootingMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{Binding CurrentTroubleShootingSeverity, Converter={x:Static viewModels:TroubleShootingSeverityToBrushConverter.Instance}}" Opacity="0.5" ZIndex="10"></Panel>
               <ScrollViewer Grid.Row="1" IsVisible="{Binding CurrentTroubleshootingMessage, Converter={x:Static ObjectConverters.IsNotNull}}" ZIndex="11">
                   <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
