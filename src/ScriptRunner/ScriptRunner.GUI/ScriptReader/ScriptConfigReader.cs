@@ -36,7 +36,7 @@ public static class ScriptConfigReader
                 return result;
             }
 
-            LoadFileSourceWithTracking(source.Path, appSettings, result, source.Name, source.Path);
+            LoadFileSourceWithTracking(source.Path, appSettings, result, source);
             return result;
         }
 
@@ -49,7 +49,7 @@ public static class ScriptConfigReader
 
             foreach (var file in Directory.EnumerateFiles(source.Path, "*.json", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
-                LoadFileSourceWithTracking(file, appSettings, result, source.Name, source.Path);
+                LoadFileSourceWithTracking(file, appSettings, result, source);
             }
         }
         
@@ -71,7 +71,7 @@ public static class ScriptConfigReader
         return EmptyAutoParameterBuilder.Instance;
     }
 
-    private static void LoadFileSourceWithTracking(string fileName, ScriptRunnerAppSettings appSettings, ConfigLoadResult result, string sourceName, string sourcePath)
+    private static void LoadFileSourceWithTracking(string fileName, ScriptRunnerAppSettings appSettings, ConfigLoadResult result, ConfigScriptEntry source)
     {
         if (!File.Exists(fileName)) return;
 
@@ -94,7 +94,7 @@ public static class ScriptConfigReader
             foreach (var action in scriptConfig.Actions)
             {
                 action.Source = fileName;
-                action.SourceName = sourceName;
+                action.SourceName = source.Name;
                 action.Categories ??= new List<string>();
                 if (string.IsNullOrWhiteSpace(action.SourceName) == false)
                 {
@@ -102,12 +102,17 @@ public static class ScriptConfigReader
                 }
                 else
                 {
-                    var dir =  Path.GetDirectoryName(sourcePath)?.Split(new[]{'\\','/'}).Last();
+                    var dir =  Path.GetDirectoryName(source.Path)?.Split(new[]{'\\','/'}).LastOrDefault();
                     if (string.IsNullOrWhiteSpace(dir) == false)
                     {
                         action.Categories.Add(dir);
                     }
+
+                    var alternativeName = Path.GetFileName(source.Path);
+                    action.SourceName = string.IsNullOrWhiteSpace(alternativeName) == false ? alternativeName : dir;
                 }
+                
+                
                 NormalizeCategories(action.Categories);
 
                 var parameterBuilder = CreateBuilder(action);
