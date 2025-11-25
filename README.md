@@ -1,5 +1,13 @@
 # ScriptRunner - Create a simple UI for your favorite scripts and command line tools without any coding.
 
+[![GitHub stars](https://img.shields.io/github/stars/cezarypiatek/ScriptRunnerPOC?style=social)](https://github.com/cezarypiatek/ScriptRunnerPOC/stargazers)
+[![NuGet](https://img.shields.io/nuget/dt/ScriptRunnerGUI.svg)](https://www.nuget.org/packages/ScriptRunnerGUI)
+
+
+**Stop copying CLI commands. Stop writing parameter docs. Stop forcing teammates to memorize flags.**
+
+Prepare manifest for your script in JSON and get a professional GUI automatically — with password fields, file pickers, dropdowns, and more.
+
 ![alt text](image-3.png)
 
 
@@ -39,6 +47,14 @@ ScriptRunner is a UI application designed to act as a shell for any command line
 - ✅ Provides an intuitive browsing experience for your script library (tags, search, etc.)
 - ✅ Displays markdown documentation for your scripts
 
+
+### **When Should You Use It?**
+
+✅ **DevOps teams** sharing deployment scripts  
+✅ **Data engineers** running ETL pipelines  
+✅ **Sysadmins** automating maintenance tasks  
+✅ **Support teams** running diagnostic scripts  
+✅ **Anyone** tired of writing `--help` documentation 
   
 ## How to install
 
