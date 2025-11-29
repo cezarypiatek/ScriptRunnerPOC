@@ -29,90 +29,123 @@
         <ColumnDefinition Width="*" MinWidth="350"/>
       </Grid.ColumnDefinitions>
       <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Margin="20, 10"  IsVisible="{Binding IsActionSelected, Mode=OneWay}">
-          <Expander HorizontalAlignment="Stretch">
-            <Expander.Styles>
-              <Style Selector="Expander /template/ ToggleButton">
-                <Setter Property="Background" Value="#1e1f22"/>
-                <Setter Property="Padding" Value="10,0,0,0" />
-              </Style>
-            </Expander.Styles>
-            <Expander.Header >
-              <StackPanel Orientation="Vertical" Margin="0,10">
-                <StackPanel Orientation="Horizontal" Margin="5,0,0,0" >
-                  <Button avalonia:Attached.Icon="fas fa-cog" Width="35" Height="35">
-                    <Button.Flyout>
-                      <MenuFlyout Placement="BottomEdgeAlignedLeft" >
-                        <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
-                        <MenuItem Header="Reset default settings"  Command="{Binding ResetDefaults}" />
-                        <MenuItem Header="Open containing dir in VSCode"  Command="{Binding OpenDirInVsCode}" />
-                        <MenuItem Header="Open definition in VSCode"  Command="{Binding OpenDefinitionInVsCode}" />
-                      </MenuFlyout>
-                    </Button.Flyout>
-                  </Button>
-                  <TextBlock Classes="h1" Margin="10,0" TextWrapping="Wrap" Text="{Binding SelectedAction.Name}" />
-                  
-                </StackPanel>
-                <ItemsControl Margin="5,10,5,0" ItemsSource="{Binding SelectedAction.Categories}" IsVisible="{Binding SelectedAction.Categories.Count, Converter={StaticResource CountToVisibilityConverter}}">
-                  <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                      <WrapPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                  </ItemsControl.ItemsPanel>
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                      <Border Background="{Binding Converter={StaticResource CategoryToColorConverter}}" 
-                              CornerRadius="3" 
-                              Padding="8,3" 
-                              Margin="0,0,5,5">
-                        <TextBlock Text="{Binding}" 
-                                   FontSize="11" 
-                                   FontWeight="SemiBold"
-                                   Foreground="White"/>
-                      </Border>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <TextBlock Margin="5,5,5,0" IsVisible="{Binding SelectedAction.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
-              </StackPanel>
-            </Expander.Header>
+          <!-- Custom collapsible header section -->
+          <Border Background="#1e1f22" CornerRadius="4">
             <StackPanel>
-              <StackPanel Orientation="Horizontal">
-                <Label VerticalAlignment="Center">Loaded from: </Label>
-
-                <TextBlock FontWeight="Bold" Margin="10, 0" TextWrapping="Wrap" VerticalAlignment="Center">
-                  <TextBlock.Text>
-                    <MultiBinding StringFormat="{}{0} [{1}]">
-                      <Binding Path="SelectedAction.SourceName" />
-                      <Binding Path="SelectedAction.Source" />
-                    </MultiBinding>
-                  </TextBlock.Text>
-                </TextBlock>
-
-              </StackPanel>
+              <!-- Header that's always visible -->
+              <Grid>
+                <StackPanel Orientation="Vertical" Margin="0,10">
+                  <StackPanel Orientation="Horizontal" Margin="5,0,0,0" >
+                    <Button avalonia:Attached.Icon="fas fa-cog" Width="35" Height="35">
+                      <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedLeft" >
+                          <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
+                          <MenuItem Header="Reset default settings"  Command="{Binding ResetDefaults}" />
+                          <MenuItem Header="Open containing dir in VSCode"  Command="{Binding OpenDirInVsCode}" />
+                          <MenuItem Header="Open definition in VSCode"  Command="{Binding OpenDefinitionInVsCode}" />
+                        </MenuFlyout>
+                      </Button.Flyout>
+                    </Button>
+                    <TextBlock Classes="h1" Margin="10,0" TextWrapping="Wrap" Text="{Binding SelectedAction.Name}" />
+                    
+                  </StackPanel>
+                  <ItemsControl Margin="5,10,5,0" ItemsSource="{Binding SelectedAction.Categories}" IsVisible="{Binding SelectedAction.Categories.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Border Background="{Binding Converter={StaticResource CategoryToColorConverter}}" 
+                                CornerRadius="3" 
+                                Padding="8,3" 
+                                Margin="0,0,5,5">
+                          <TextBlock Text="{Binding}" 
+                                     FontSize="11" 
+                                     FontWeight="SemiBold"
+                                     Foreground="White"/>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Margin="5,5,5,0" IsVisible="{Binding SelectedAction.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
+                </StackPanel>
+                
+                <!-- Custom toggle button in bottom-right corner -->
+                <Button 
+                  HorizontalAlignment="Right" 
+                  VerticalAlignment="Bottom"
+                  Margin="0,0,10,10"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  Padding="8,4"
+                  Foreground="#4A9EFF"
+                  FontWeight="SemiBold"
+                  Cursor="Hand"
+                  Click="ToggleDetailsButton_Click">
+                  <Button.Styles>
+                    <Style Selector="Button:pointerover">
+                      <Setter Property="Background" Value="#1A4A9EFF" />
+                    </Style>
+                    <Style Selector="Button:pressed">
+                      <Setter Property="Background" Value="#334A9EFF" />
+                    </Style>
+                  </Button.Styles>
+                  <TextBlock x:Name="ToggleDetailsText" Text="Show details" />
+                </Button>
+              </Grid>
               
-              <!-- Command Section -->
-              <StackPanel Margin="0,10,0,0">
-                <TextBlock FontWeight="SemiBold" Margin="0,0,0,5">Command:</TextBlock>
-                <SelectableTextBlock TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding SelectedAction.CommandFormatted}" />
-              </StackPanel>
-              
-              <!-- Install Command Section (only shown if InstallCommand exists) -->
-              <StackPanel Margin="0,10,0,0" IsVisible="{Binding SelectedAction.InstallCommand, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,5">
-                  <TextBlock Grid.Column="0" FontWeight="SemiBold" VerticalAlignment="Center">Install Command:</TextBlock>
-                  <Button Grid.Column="1" 
-                          Command="{Binding InstallScript}" 
-                          avalonia:Attached.Icon="fas fa-download"
-                          Padding="8,4"
-                          Margin="0,0,15,0"
-                          ToolTip.Tip="Run install command">
-                    Install
-                  </Button>
-                </Grid>
-                <SelectableTextBlock TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding SelectedAction.InstallCommandFormatted}" />
-              </StackPanel>
+              <!-- Collapsible details section -->
+              <Border x:Name="DetailsSection" 
+                      MaxHeight="0" 
+                      ClipToBounds="True"
+                      Opacity="0">
+                <Border.Transitions>
+                  <Transitions>
+                    <DoubleTransition Property="MaxHeight" Duration="0:0:0.3" Easing="CubicEaseInOut"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="CubicEaseInOut"/>
+                  </Transitions>
+                </Border.Transitions>
+                <StackPanel Margin="10,0,10,10">
+                  <StackPanel Orientation="Horizontal">
+                    <Label VerticalAlignment="Center">Loaded from: </Label>
+
+                    <TextBlock FontWeight="Bold" Margin="10, 0" TextWrapping="Wrap" VerticalAlignment="Center">
+                      <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0} [{1}]">
+                          <Binding Path="SelectedAction.SourceName" />
+                          <Binding Path="SelectedAction.Source" />
+                        </MultiBinding>
+                      </TextBlock.Text>
+                    </TextBlock>
+                  </StackPanel>
+                  
+                  <!-- Command Section -->
+                  <StackPanel Margin="0,10,0,0">
+                    <TextBlock FontWeight="SemiBold" Margin="0,0,0,5">Command:</TextBlock>
+                    <SelectableTextBlock TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding SelectedAction.CommandFormatted}" />
+                  </StackPanel>
+                  
+                  <!-- Install Command Section (only shown if InstallCommand exists) -->
+                  <StackPanel Margin="0,10,0,0" IsVisible="{Binding SelectedAction.InstallCommand, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,5">
+                      <TextBlock Grid.Column="0" FontWeight="SemiBold" VerticalAlignment="Center">Install Command:</TextBlock>
+                      <Button Grid.Column="1" 
+                              Command="{Binding InstallScript}" 
+                              avalonia:Attached.Icon="fas fa-download"
+                              Padding="8,4"
+                              Margin="0,0,15,0"
+                              ToolTip.Tip="Run install command">
+                        Install
+                      </Button>
+                    </Grid>
+                    <SelectableTextBlock TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding SelectedAction.InstallCommandFormatted}" />
+                  </StackPanel>
+                </StackPanel>
+              </Border>
             </StackPanel>
-          </Expander>
+          </Border>
               
           <Button Grid.Row="1"  Margin="0,10,0,0" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
              
