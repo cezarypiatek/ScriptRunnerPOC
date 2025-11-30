@@ -49,6 +49,7 @@
                       Margin="0, 5,5, 10" 
                       BorderThickness="1">
                 <SelectableTextBlock TextWrapping="Wrap" 
+                                     Margin="0"
                                      Classes="consoleOutput" 
                                      Inlines="{Binding ExecutedCommandFormatted}" />
               </Border>

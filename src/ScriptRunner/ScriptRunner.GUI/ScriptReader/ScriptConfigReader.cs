@@ -408,9 +408,7 @@ public static class ScriptConfigReader
                     var inline = new Run(x);
                     if (x.StartsWith("{"))
                     {
-
-                        inline.Foreground = Brushes.LightGreen;
-                        inline.FontWeight = FontWeight.ExtraBold;
+                        inline.Foreground = new SolidColorBrush(new Color(0, 52, 215, 153));
                     }
 
                     return inline;
@@ -431,8 +429,7 @@ public static class ScriptConfigReader
                         var inline = new Run(x);
                         if (x.StartsWith("{"))
                         {
-                            inline.Foreground = Brushes.LightGreen;
-                            inline.FontWeight = FontWeight.ExtraBold;
+                            inline.Foreground = new SolidColorBrush(new Color(0, 52, 215, 153));
                         }
 
                         return inline;

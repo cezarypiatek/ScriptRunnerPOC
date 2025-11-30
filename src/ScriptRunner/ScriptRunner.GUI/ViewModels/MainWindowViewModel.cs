@@ -33,6 +33,7 @@ namespace ScriptRunner.GUI.ViewModels;
 
 public class MainWindowViewModel : ReactiveObject
 {
+    private static readonly SolidColorBrush ParameterBrush = new SolidColorBrush(new Color(255, 52, 215, 153));
 
     public bool IsScriptListVisible
     {
@@ -684,8 +685,7 @@ public class MainWindowViewModel : ReactiveObject
                         if (x.StartsWith("{"))
                         {
 
-                            inline.Foreground = Brushes.LightGreen;
-                            inline.FontWeight = FontWeight.ExtraBold;
+                            inline.Foreground = ParameterBrush;
                         }
 
                         return inline;
@@ -706,8 +706,7 @@ public class MainWindowViewModel : ReactiveObject
                             var inline = new Run(x);
                             if (x.StartsWith("{"))
                             {
-                                inline.Foreground = Brushes.LightGreen;
-                                inline.FontWeight = FontWeight.ExtraBold;
+                                inline.Foreground = ParameterBrush;
                             }
 
                             return inline;
@@ -1240,8 +1239,7 @@ public class MainWindowViewModel : ReactiveObject
             var matchingParam = parameterReplacements.FirstOrDefault(p => p.value == x && !string.IsNullOrWhiteSpace(x));
             if (matchingParam != default)
             {
-                inline.Foreground = Brushes.LightGreen;
-                inline.FontWeight = FontWeight.ExtraBold;
+                inline.Foreground = ParameterBrush;
             }
             return inline;
         }).ToList();
