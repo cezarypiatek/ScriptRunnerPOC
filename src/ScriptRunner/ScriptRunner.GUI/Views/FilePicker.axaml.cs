@@ -39,7 +39,7 @@ namespace ScriptRunner.GUI.Views
                 var sourceWindow = (sender as Control)?.GetVisualRoot() as Window ?? desktop.MainWindow;
 
                 var dialog = new OpenFileDialog();
-                if (string.IsNullOrWhiteSpace(FilePath) == false && Path.GetDirectoryName(FilePath) is { } dir)
+                if (string.IsNullOrWhiteSpace(FilePath) == false && Path.GetDirectoryName(FilePath) is { } dir && Directory.Exists(dir))
                 {
                     dialog.Directory = dir;
                     dialog.InitialFileName = Path.GetFileName(FilePath);
