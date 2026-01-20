@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -18,7 +18,7 @@ public class FileContent : IControlRecord
     {
         _extension = extension;
         _useWslPath = useWslPath;
-        FileName = Path.GetTempFileName() + "." + extension;
+        FileName = GetFileContentStoragePath("temp." + extension);
     }
 
     public string GetFormattedValue()
@@ -30,12 +30,21 @@ public class FileContent : IControlRecord
             _ => ((TextBox)Control).Text
         };
         var hash = string.IsNullOrWhiteSpace(fileContent)? "EMPTY" : ComputeSHA256(fileContent).Substring(0,10);
-        FileName = Path.Combine(Path.GetTempPath(), hash + "." + _extension);
+        FileName = GetFileContentStoragePath(hash + "." + _extension);
         File.WriteAllText(FileName, fileContent, Encoding.UTF8);
         return _useWslPath ? WslPathConverter.ConvertToWslPath(FileName) : FileName;
     }
 
    
+    private static string GetFileContentStoragePath(string fileName)
+    {
+        var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ScriptRunner", "FileContentStorage");
+        if (Directory.Exists(appDataPath) == false)
+        {
+            Directory.CreateDirectory(appDataPath);
+        }
+        return Path.Combine(appDataPath, fileName);
+    }
 
     static string ComputeSHA256(string input)
     {
