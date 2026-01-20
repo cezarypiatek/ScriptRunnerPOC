@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls.Documents;
+using Avalonia.Controls.Documents;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -53,6 +53,7 @@ public class ArgumentSet
 {
     public string Description { get; set; }
     public bool FallbackToDefault { get; set; }
+    public bool FallbackToExisting { get; set; }
     public Dictionary<string, string> Arguments { get; set; } = new();
 }
 

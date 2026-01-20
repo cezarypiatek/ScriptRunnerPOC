@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Diagnostics.CodeAnalysis;
@@ -181,6 +181,11 @@ public static class ScriptConfigReader
                     {
                         if (set.Arguments.ContainsKey(key) == false)
                         {
+                            // If fallbackToExisting is true, only set the value if the default value exists (is not null or empty)
+                            if (set.FallbackToExisting && string.IsNullOrEmpty(val))
+                            {
+                                continue;
+                            }
                             set.Arguments[key] = val;
                         }
                     }
@@ -348,6 +353,11 @@ public static class ScriptConfigReader
                     {
                         if (set.Arguments.ContainsKey(key) == false)
                         {
+                            // If fallbackToExisting is true, only set the value if the default value exists (is not null or empty)
+                            if (set.FallbackToExisting && string.IsNullOrEmpty(val))
+                            {
+                                continue;
+                            }
                             set.Arguments[key] = val;
                         }
                     }

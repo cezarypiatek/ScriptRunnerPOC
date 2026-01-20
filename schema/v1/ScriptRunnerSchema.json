@@ -82,6 +82,10 @@
                                     "type":"boolean",
                                     "description":"When true any missing parameter values inherit from the auto-generated default set."
                                 },
+                                "fallbackToExisting":{
+                                    "type":"boolean",
+                                    "description":"When true preserves current field values when switching to this set if the set doesn't define a value or has an empty value for a parameter. Works with fallbackToDefault."
+                                },
                                 "arguments":{
                                     "type":"object",
                                     "description":"Map of parameter name to the value that should be pre-filled when this preset is selected.",

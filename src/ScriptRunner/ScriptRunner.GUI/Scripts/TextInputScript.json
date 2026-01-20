@@ -28,6 +28,57 @@
       ]
     },
     {
+      "name": "FallbackToExisting Demo",
+      "description": "Demonstrates the fallbackToExisting feature",
+      "command": "echo Server: {server}, Port: {port}, Username: {username}",
+      "params": [
+        {
+          "name": "server",
+          "description": "Server address",
+          "prompt": "text",
+          "default": "localhost"
+        },
+        {
+          "name": "port",
+          "description": "Port number",
+          "prompt": "text",
+          "default": ""
+        },
+        {
+          "name": "username",
+          "description": "Username",
+          "prompt": "text",
+          "default": ""
+        }
+      ],
+      "predefinedArgumentSets": [
+        {
+          "description": "Production Server Only",
+          "fallbackToDefault": true,
+          "fallbackToExisting": true,
+          "arguments": {
+            "server": "prod.example.com"
+          }
+        },
+        {
+          "description": "Dev Server (clears other fields)",
+          "fallbackToDefault": true,
+          "arguments": {
+            "server": "dev.example.com"
+          }
+        },
+        {
+          "description": "Full Production Config",
+          "fallbackToDefault": true,
+          "arguments": {
+            "server": "prod.example.com",
+            "port": "443",
+            "username": "admin"
+          }
+        }
+      ]
+    },
+    {
       "name": "AllControlsTest",
       "description": "Demo of all available controls",
       "command": "pwsh.exe -NoProfile -Command Write-Host '{p1} {p2} {p3} {p4} {p5} {p6} {p7} {p8} {p9} {p10} {p11} {p12}'",
