@@ -236,6 +236,8 @@ Bundle common parameter combinations into named presets so teammates can run fre
 
 `fallbackToDefault` fills in any missing parameters from the automatically generated `<default>` set.
 
+`fallbackToExisting` (optional, works with `fallbackToDefault`) prevents clearing field values when switching to this argument set if the set doesn't define a value for a parameter (or has an empty value). When set to `true`, existing values in the form are preserved instead of being cleared or overwritten with empty defaults. This is useful when you want to change only specific parameters while keeping others unchanged.
+
 ## Ready-to-run examples
 
 The repository ships with `examples/ScriptRunnerExamples.json`, a manifest that contains four minimal actions showcasing how to wrap PowerShell, Python, Bash (via WSL), and .NET console apps. Import that file from **Settings ➜ Config sources** and you will get the following definitions (interactive inputs and troubleshooting rules are omitted here for brevity):

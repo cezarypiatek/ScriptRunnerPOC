@@ -794,6 +794,34 @@ public class MainWindowViewModel : ReactiveObject
                     }
                 }
 
+                // Handle fallbackToExisting: preserve current values when new set has empty values
+                if (_selectedArgumentSet.FallbackToExisting && _controlRecords != null)
+                {
+                    // Harvest current parameter values from UI controls
+                    var currentValues = new Dictionary<string, string>();
+                    foreach (var controlRecord in _controlRecords)
+                    {
+                        var controlValue = controlRecord.GetFormattedValue()?.Trim();
+                        if (!string.IsNullOrEmpty(controlValue))
+                        {
+                            currentValues[controlRecord.Name] = controlValue;
+                        }
+                    }
+
+                    // Merge: use new set's values if non-empty, otherwise preserve current values
+                    arguments = new Dictionary<string, string>(arguments);
+                    foreach (var param in selectedAction.Params)
+                    {
+                        // If the new set doesn't have this parameter or has an empty value
+                        if ((!arguments.ContainsKey(param.Name) || string.IsNullOrEmpty(arguments[param.Name])) 
+                            && currentValues.ContainsKey(param.Name))
+                        {
+                            // Preserve the current value
+                            arguments[param.Name] = currentValues[param.Name];
+                        }
+                    }
+                }
+
                 RenderParameterForm(selectedAction, arguments);
             }
         }
