@@ -10,62 +10,73 @@
                           
                            x:Class="ScriptRunner.GUI.Views.SearchBox"
                            x:DataType="viewModels:SearchBoxViewModel">
-    <StackPanel Width="550" >
-      <Border BorderThickness="1"   BorderBrush="#3baced"  Background="#212121" CornerRadius="5" >
-          <StackPanel Orientation="Vertical"  Margin="15,10">
-              <TextBox TabIndex="1" Name="SearchBoxInput" Text="{Binding SearchFilter }" CornerRadius="5">
-                  <TextBox.InnerLeftContent>
-                      <avalonia:Icon Value="fas fa-search" Margin="10,0,0,0" />
-                  </TextBox.InnerLeftContent>
-              </TextBox>
-              <ListBox Margin="0,10,0,0" Background="Transparent" ItemsSource="{Binding FilteredActionList}" Name="FilteredItems"  MaxHeight="400" PointerReleased="ClickOnItem">
+    <StackPanel Width="600">
+      <Border BorderThickness="1" BorderBrush="#454545" Background="#1e1e1e" CornerRadius="12" BoxShadow="0 10 40 0 #99000000">
+          <StackPanel Orientation="Vertical" Margin="0">
+              
+              <!-- Header / Search Area -->
+              <Border Padding="16" Background="#252525" CornerRadius="12 12 0 0">
+                  <TextBox TabIndex="1" Name="SearchBoxInput" Text="{Binding SearchFilter}" Watermark="Type to search..." CornerRadius="8" BorderThickness="0" Background="#333333">
+                      <TextBox.InnerLeftContent>
+                          <avalonia:Icon Value="fas fa-search" Margin="12,0,4,0" Foreground="#888888" />
+                      </TextBox.InnerLeftContent>
+                  </TextBox>
+              </Border>
+
+              <ListBox Margin="0" Background="Transparent" ItemsSource="{Binding FilteredActionList}" Name="FilteredItems" MaxHeight="450" PointerReleased="ClickOnItem" Padding="8">
+                  <ListBox.Styles>
+                      <Style Selector="ListBoxItem">
+                          <Setter Property="CornerRadius" Value="6" />
+                          <Setter Property="Padding" Value="12,8" />
+                          <Setter Property="Margin" Value="0,2" />
+                      </Style>
+                  </ListBox.Styles>
                   <ListBox.ItemTemplate>
                       <DataTemplate>
                           <StackPanel>
-                              <StackPanel Orientation="Horizontal">
-                                  <avalonia:Icon Value="fas fa-scroll" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                  <TextBlock Text="{Binding ActionName}" VerticalAlignment="Center" ></TextBlock>
+                              <StackPanel Orientation="Horizontal" Spacing="10">
+                                  <avalonia:Icon Value="fas fa-scroll" FontSize="14" VerticalAlignment="Center" Opacity="0.7" />
+                                  <TextBlock Text="{Binding ActionName}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" />
                               </StackPanel>
-                                <TextBlock Text="{Binding SourceName}" FontSize="10" Foreground="#6e6e6e"></TextBlock>
+                                <TextBlock Text="{Binding SourceName}" FontSize="12" Foreground="#888888" Margin="24,2,0,0" />
                           </StackPanel> 
-                          
                       </DataTemplate>
                   </ListBox.ItemTemplate>
               </ListBox>
               
               <!-- Keyboard Shortcuts Footer -->
-              <Border Margin="0,10,0,0" Padding="8,6" Background="#1a1a1a" CornerRadius="3">
-                  <StackPanel Orientation="Horizontal" Spacing="15">
-                      <StackPanel Orientation="Horizontal" Spacing="5">
-                          <Border Background="#2d2d2d" Padding="4,2" CornerRadius="2">
-                              <TextBlock Text="↑↓" FontSize="10" Foreground="#a0a0a0" />
+              <Border Padding="12,8" Background="#252525" CornerRadius="0 0 12 12" BorderThickness="0,1,0,0" BorderBrush="#333333">
+                  <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                          <Border Background="#333333" Padding="6,4,6,2" CornerRadius="4" BorderThickness="1" BorderBrush="#444444">
+                              <TextBlock Text="↑↓" FontSize="11" Foreground="#cccccc" FontFamily="Consolas, Monospace" VerticalAlignment="Center" />
                           </Border>
-                          <TextBlock Text="Navigate" FontSize="10" Foreground="#a0a0a0" VerticalAlignment="Center" />
+                          <TextBlock Text="Navigate" FontSize="11" Foreground="#999999" VerticalAlignment="Center" />
                       </StackPanel>
                       
-                      <StackPanel Orientation="Horizontal" Spacing="5">
-                          <Border Background="#2d2d2d" Padding="4,2" CornerRadius="2">
-                              <TextBlock Text="Enter" FontSize="10" Foreground="#a0a0a0" />
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                          <Border Background="#333333" Padding="6,4,6,2" CornerRadius="4" BorderThickness="1" BorderBrush="#444444">
+                              <TextBlock Text="Enter" FontSize="11" Foreground="#cccccc" FontFamily="Consolas, Monospace" VerticalAlignment="Center" />
                           </Border>
-                          <TextBlock Text="Open" FontSize="10" Foreground="#a0a0a0" VerticalAlignment="Center" />
+                          <TextBlock Text="Open" FontSize="11" Foreground="#999999" VerticalAlignment="Center" />
                       </StackPanel>
                       
-                      <StackPanel Orientation="Horizontal" Spacing="5">
-                          <Border Background="#2d2d2d" Padding="4,2" CornerRadius="2">
-                              <TextBlock Text="Ctrl+Enter" FontSize="10" Foreground="#a0a0a0" />
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                          <Border Background="#333333" Padding="6,4,6,2" CornerRadius="4" BorderThickness="1" BorderBrush="#444444">
+                              <TextBlock Text="Ctrl+Enter" FontSize="11" Foreground="#cccccc" FontFamily="Consolas, Monospace" VerticalAlignment="Center" />
                           </Border>
-                          <TextBlock Text="Auto Launch" FontSize="10" Foreground="#a0a0a0" VerticalAlignment="Center" />
+                          <TextBlock Text="Run" FontSize="11" Foreground="#999999" VerticalAlignment="Center" />
                       </StackPanel>
                       
-                      <StackPanel Orientation="Horizontal" Spacing="5">
-                          <Border Background="#2d2d2d" Padding="4,2" CornerRadius="2">
-                              <TextBlock Text="Ctrl+Click" FontSize="10" Foreground="#a0a0a0" />
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                          <Border Background="#333333" Padding="6,4,6,2" CornerRadius="4" BorderThickness="1" BorderBrush="#444444">
+                              <TextBlock Text="Ctrl+Click" FontSize="11" Foreground="#cccccc" FontFamily="Consolas, Monospace" VerticalAlignment="Center" />
                           </Border>
-                          <TextBlock Text="Auto Launch" FontSize="10" Foreground="#a0a0a0" VerticalAlignment="Center" />
+                          <TextBlock Text="Run" FontSize="11" Foreground="#999999" VerticalAlignment="Center" />
                       </StackPanel>
                   </StackPanel>
               </Border>
           </StackPanel>
       </Border>
-  </StackPanel>
+    </StackPanel>
 </reactiveUi:ReactiveUserControl>
