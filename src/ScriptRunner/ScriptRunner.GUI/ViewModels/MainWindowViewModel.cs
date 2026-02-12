@@ -176,6 +176,10 @@ public class MainWindowViewModel : ReactiveObject
     private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfigGroupWrapper>> _filteredActionList;
     public IEnumerable<ScriptConfigGroupWrapper> FilteredActionList => _filteredActionList.Value;
 
+    private readonly ObservableAsPropertyHelper<int> _actionCount;
+    public int ActionCount => _actionCount.Value;
+
+
 
     
     public ObservableCollection<RunningJobViewModel> RunningJobs { get; set; } = new();
@@ -487,6 +491,11 @@ public class MainWindowViewModel : ReactiveObject
             })
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
+
+        this.WhenAnyValue(x => x.Actions)
+            .Select(list => list?.Count ?? 0)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.ActionCount, out _actionCount);
             
         Observable
             .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
