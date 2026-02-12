@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -33,7 +33,8 @@ namespace ScriptRunner.GUI.ViewModels
                 ArgumentSet = p,
                 FullName = p.Description == "<default>"? x.FullName : $"{x.FullName} - {p.Description}",
                 ActionName =  p.Description == "<default>"? x.Name : $"{x.Name} - {p.Description}",
-                SourceName = x.SourceName
+                SourceName = x.SourceName,
+                IconColor = p.Description == "<default>" ? "#3baced" : "#ff8c00"
             })).ToList();
 
             var intial = true;
@@ -105,6 +106,7 @@ namespace ScriptRunner.GUI.ViewModels
         public string FullName { get; set; }
         public string ActionName { get; set; }
         public string SourceName { get; set; }
+        public string IconColor { get; set; }
         
     }
 }

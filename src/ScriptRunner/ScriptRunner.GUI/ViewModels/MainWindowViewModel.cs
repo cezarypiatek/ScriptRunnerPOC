@@ -215,9 +215,13 @@ public class MainWindowViewModel : ReactiveObject
         set
         {
             this.RaiseAndSetIfChanged(ref _selectedActionOrGroup, value);
-            if (value is TaggedScriptConfig {Config: var scriptConfig})
+            if (value is TaggedScriptConfig {Config: var scriptConfig, ArgumentSet: var argumentSet})
             {
                 SelectedAction = scriptConfig;
+                if (argumentSet != null)
+                {
+                    SelectedArgumentSet = argumentSet;
+                }
             }
         }
     }
@@ -393,12 +397,8 @@ public class MainWindowViewModel : ReactiveObject
             {
                 var (textFilter, categoryFilter, actions) = tuple;
                 
-                // Apply text filter
-                var configs = string.IsNullOrWhiteSpace(textFilter) 
-                    ? actions 
-                    : actions.Where(x => x.Name.Contains(textFilter, StringComparison.InvariantCultureIgnoreCase));
-                
-                // Apply category filter (AND operator with text filter)
+                // Apply category filter first
+                IEnumerable<ScriptConfig> configs = actions;
                 if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != "All")
                 {
                     if (categoryFilter == "(No Category)")
@@ -416,19 +416,39 @@ public class MainWindowViewModel : ReactiveObject
                 // When a specific category is filtered, show each action only once under that category
                 if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != "All")
                 {
-                    scriptConfigGroupWrappers = new[]
+                    var expandedEntries = configs.SelectMany(c => 
+                        c.PredefinedArgumentSets.Select(p => new TaggedScriptConfig(
+                            categoryFilter, 
+                            p.Description == "<default>" ? c.Name : $"{c.Name} - {p.Description}", 
+                            c,
+                            p
+                        ))
+                    );
+                    
+                    // Apply text filter to expanded entries
+                    if (!string.IsNullOrWhiteSpace(textFilter))
                     {
-                        new ScriptConfigGroupWrapper
+                        expandedEntries = expandedEntries.Where(x => x.Name.Contains(textFilter, StringComparison.InvariantCultureIgnoreCase));
+                    }
+                    
+                    var children = expandedEntries.OrderBy(x => x.Name).ToList();
+                    
+                    // Only create group if it has children
+                    scriptConfigGroupWrappers = children.Any() 
+                        ? new[]
                         {
-                            Name = categoryFilter,
-                            Children = configs.Select(c => new TaggedScriptConfig(categoryFilter, c.Name, c)).OrderBy(x => x.Name)
+                            new ScriptConfigGroupWrapper
+                            {
+                                Name = categoryFilter,
+                                Children = children
+                            }
                         }
-                    };
+                        : Enumerable.Empty<ScriptConfigGroupWrapper>();
                 }
                 else
                 {
                     // When no filter or "All" is selected, show actions grouped by all their categories
-                    scriptConfigGroupWrappers = configs.SelectMany(c =>
+                    var groupedConfigs = configs.SelectMany(c =>
                         {
                             if (c.Categories is {Count: > 0})
                             {
@@ -436,12 +456,31 @@ public class MainWindowViewModel : ReactiveObject
                             }
 
                             return new[] {(category: "(No Category)", script: c)};
-                        }).GroupBy(x => x.category).OrderBy(x=>x.Key)
-                        .Select(x=> new ScriptConfigGroupWrapper
+                        }).GroupBy(x => x.category).OrderBy(x=>x.Key);
+                    
+                    scriptConfigGroupWrappers = groupedConfigs.Select(x =>
+                    {
+                        var expandedEntries = x.SelectMany(p => 
+                            p.script.PredefinedArgumentSets.Select(argSet => new TaggedScriptConfig(
+                                x.Key, 
+                                argSet.Description == "<default>" ? p.script.Name : $"{p.script.Name} - {argSet.Description}", 
+                                p.script,
+                                argSet
+                            ))
+                        );
+                        
+                        // Apply text filter to expanded entries
+                        if (!string.IsNullOrWhiteSpace(textFilter))
+                        {
+                            expandedEntries = expandedEntries.Where(e => e.Name.Contains(textFilter, StringComparison.InvariantCultureIgnoreCase));
+                        }
+                        
+                        return new ScriptConfigGroupWrapper
                         {
                             Name = x.Key,
-                            Children = x.Select(p=> new TaggedScriptConfig(x.Key, p.script.Name, p.script)).OrderBy(x=>x.Name)
-                        });
+                            Children = expandedEntries.OrderBy(e => e.Name)
+                        };
+                    }).Where(group => group.Children.Any()); // Filter out empty groups
                 }
                 
                 return scriptConfigGroupWrappers;
@@ -1448,4 +1487,9 @@ public class ScriptConfigGroupWrapper
     public IEnumerable<TaggedScriptConfig> Children { get; set; }
 }
 
-public record TaggedScriptConfig(string Tag, string Name, ScriptConfig Config);
+public record TaggedScriptConfig(string Tag, string Name, ScriptConfig Config, ArgumentSet ArgumentSet = null)
+{
+    public string IconName => "fa-scroll";
+    public string IconColor => ArgumentSet?.Description == "<default>" ? "#3baced" : "#ff8c00";
+}
+

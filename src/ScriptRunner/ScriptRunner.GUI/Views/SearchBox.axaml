@@ -34,10 +34,10 @@
                   <ListBox.ItemTemplate>
                       <DataTemplate>
                           <StackPanel>
-                              <StackPanel Orientation="Horizontal" Spacing="10">
-                                  <avalonia:Icon Value="fas fa-scroll" FontSize="14" VerticalAlignment="Center" Opacity="0.7" />
-                                  <TextBlock Text="{Binding ActionName}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" />
-                              </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                   <avalonia:Icon Value="fas fa-scroll" FontSize="14" VerticalAlignment="Center" Opacity="0.7" Foreground="{Binding IconColor}" />
+                                   <TextBlock Text="{Binding ActionName}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" />
+                               </StackPanel>
                                 <TextBlock Text="{Binding SourceName}" FontSize="12" Foreground="#888888" Margin="24,2,0,0" />
                           </StackPanel> 
                       </DataTemplate>
