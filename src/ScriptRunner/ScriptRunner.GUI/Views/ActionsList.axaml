@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -203,14 +203,14 @@
                                                     Tapped="ActionTile_OnTapped">
                                                 <Grid RowDefinitions="Auto,Auto,Auto">
                                                     <!-- Action Name with Icon -->
-                                                    <StackPanel Orientation="Horizontal" Spacing="12" Grid.Row="0">
-                                                        <avalonia:Icon Value="{Binding IconName}" FontSize="20" Foreground="{Binding IconColor}" VerticalAlignment="Top" Margin="0,2,0,0"/>
-                                                        <TextBlock Text="{Binding Name}" 
+                                                    <Grid ColumnDefinitions="Auto,*" Grid.Row="0">
+                                                        <avalonia:Icon Grid.Column="0" Value="{Binding IconName}" FontSize="20" Foreground="{Binding IconColor}" VerticalAlignment="Top" Margin="0,2,10,0"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Name}" 
                                                                    FontSize="15"
                                                                    FontWeight="SemiBold"
                                                                    TextWrapping="Wrap"
                                                                    VerticalAlignment="Center"/>
-                                                    </StackPanel>
+                                                    </Grid>
                                                     
                                                     <!-- Description -->
                                                     <TextBlock Grid.Row="1"
