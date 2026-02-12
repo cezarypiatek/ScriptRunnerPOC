@@ -83,17 +83,13 @@ public partial class SideMenu : UserControl
 
                     if (pattern.EventArgs is SearchBox.ResultSelectedEventArgs {Result: { } selectedCommand, AutoLaunch: var autoLaunch})
                     {
-                        var selectedTagged = viewModel.FilteredActionList.SelectMany(x => x.Children)
-                            .FirstOrDefault(x => x.Config == selectedCommand.Config);
-
-                        if (selectedTagged != null)
+                        // Set SelectedAction directly (same pattern as ExecutionLog selection)
+                        // This works regardless of any active category filter
+                        viewModel.SelectedAction = selectedCommand.Config;
+                        viewModel.SelectedArgumentSet = selectedCommand.ArgumentSet;
+                        if (autoLaunch)
                         {
-                            viewModel.SelectedActionOrGroup = selectedTagged;
-                            viewModel.SelectedArgumentSet = selectedCommand.ArgumentSet;
-                            if (autoLaunch)
-                            {
-                                viewModel.RunScript();
-                            }
+                            viewModel.RunScript();
                         }
                     }
                 });
