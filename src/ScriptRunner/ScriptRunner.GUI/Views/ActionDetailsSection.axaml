@@ -38,10 +38,26 @@
                   <Button DockPanel.Dock="Top" HorizontalAlignment="Right"  Background="Transparent"  avalonia:Attached.Icon="fas fa-cog" Width="35" Height="35" VerticalAlignment="Top" >
                     <Button.Flyout>
                       <MenuFlyout Placement="BottomEdgeAlignedLeft" >
-                        <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}" />
-                        <MenuItem Header="Reset default settings"  Command="{Binding ResetDefaults}" />
-                        <MenuItem Header="Open containing dir in VSCode"  Command="{Binding OpenDirInVsCode}" />
-                        <MenuItem Header="Open definition in VSCode"  Command="{Binding OpenDefinitionInVsCode}" />
+                        <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}">
+                          <MenuItem.Icon>
+                            <avalonia:Icon Value="fas fa-sync" />
+                          </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Reset default settings"  Command="{Binding ResetDefaults}">
+                          <MenuItem.Icon>
+                            <avalonia:Icon Value="fas fa-undo" />
+                          </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Open containing dir in VSCode"  Command="{Binding OpenDirInVsCode}">
+                          <MenuItem.Icon>
+                            <avalonia:Icon Value="fas fa-folder-open" />
+                          </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Open definition in VSCode"  Command="{Binding OpenDefinitionInVsCode}">
+                          <MenuItem.Icon>
+                            <avalonia:Icon Value="fas fa-file-code" />
+                          </MenuItem.Icon>
+                        </MenuItem>
                       </MenuFlyout>
                     </Button.Flyout>
                   </Button>
