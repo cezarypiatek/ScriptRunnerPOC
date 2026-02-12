@@ -40,9 +40,10 @@
         </Style>
     </UserControl.Styles>
     
-    <Grid RowDefinitions="Auto,Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
         <!-- View Mode Tabs -->
         <Border Grid.Row="0" Background="#252526" BorderBrush="#3f3f46" BorderThickness="0,0,0,1" Padding="10,5">
+
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <RadioButton GroupName="ViewMode" IsChecked="{Binding IsTreeViewMode}" Padding="12,6">
                     <StackPanel Orientation="Horizontal" Spacing="6">
@@ -258,5 +259,15 @@
                 </ItemsControl>
             </ScrollViewer>
         </Panel>
+        
+        <!-- Footer -->
+        <Border Grid.Row="4" Background="#252526" BorderBrush="#3f3f46" BorderThickness="0,1,0,0" Padding="12,8">
+            <TextBlock Text="{Binding ActionCount, StringFormat='Total actions: {0}'}" 
+                       Foreground="#888888" 
+                       FontSize="12" 
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Left"/>
+        </Border>
     </Grid>
 </UserControl>
+
