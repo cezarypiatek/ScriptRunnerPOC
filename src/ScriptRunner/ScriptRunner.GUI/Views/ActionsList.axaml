@@ -162,7 +162,7 @@
                     </TreeDataTemplate>
                     <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <avalonia:Icon Value="fa-file-code" FontSize="16" Foreground="#3baced" />
+                            <avalonia:Icon Value="{Binding IconName}" FontSize="16" Foreground="{Binding IconColor}" />
                             <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
                         </StackPanel>
                     </DataTemplate>
@@ -196,15 +196,15 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
                                             <Border CornerRadius="4"
-                                                    Padding="16,12"
+                                                    Padding="12,12"
                                                     Margin="4,2"
                                                     Cursor="Hand"
                                                     Classes="actionTile"
                                                     Tapped="ActionTile_OnTapped">
                                                 <Grid RowDefinitions="Auto,Auto,Auto">
                                                     <!-- Action Name with Icon -->
-                                                    <StackPanel Orientation="Horizontal" Spacing="10" Grid.Row="0">
-                                                        <avalonia:Icon Value="fa-file-code" FontSize="20" Foreground="#3baced" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                                                    <StackPanel Orientation="Horizontal" Spacing="12" Grid.Row="0">
+                                                        <avalonia:Icon Value="{Binding IconName}" FontSize="20" Foreground="{Binding IconColor}" VerticalAlignment="Top" Margin="0,2,0,0"/>
                                                         <TextBlock Text="{Binding Name}" 
                                                                    FontSize="15"
                                                                    FontWeight="SemiBold"
@@ -218,7 +218,7 @@
                                                                Foreground="#b0b0b0"
                                                                FontSize="12"
                                                                TextWrapping="Wrap"
-                                                               Margin="30,6,0,0"
+                                                               Margin="32,6,0,0"
                                                                MaxHeight="40"
                                                                TextTrimming="CharacterEllipsis"
                                                                IsVisible="{Binding Config.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
@@ -226,7 +226,7 @@
                                                     <!-- Category Badges -->
                                                     <ItemsControl Grid.Row="2"
                                                                   ItemsSource="{Binding Config.Categories}" 
-                                                                  Margin="30,8,0,0"
+                                                                  Margin="32,8,0,0"
                                                                   IsVisible="{Binding Config.Categories.Count}">
                                                         <ItemsControl.ItemsPanel>
                                                             <ItemsPanelTemplate>
