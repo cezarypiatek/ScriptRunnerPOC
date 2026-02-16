@@ -187,12 +187,26 @@
         </Panel>
         
         <!-- Footer -->
-        <Border Grid.Row="3" Background="#252526" BorderBrush="#3f3f46" BorderThickness="0,1,0,0" Padding="12,8">
-            <TextBlock Text="{Binding ActionCount, StringFormat='Total actions: {0}'}" 
-                       Foreground="#888888" 
-                       FontSize="12" 
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Left"/>
+        <Border Grid.Row="3" Background="#252526" BorderBrush="#3f3f46" BorderThickness="0,1,0,0" Padding="12,6">
+            <Grid ColumnDefinitions="160,200">
+                <!-- Base Action Counter -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <avalonia:Icon Value="fa-scroll" FontSize="12" Foreground="#3baced" Opacity="0.9"/>
+                    <TextBlock Text="{Binding BaseActionCountText}" 
+                               Foreground="#cccccc" 
+                               FontSize="12" 
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Parameter Set Counter -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <avalonia:Icon Value="fa-list-ul" FontSize="12" Foreground="#3baced" Opacity="0.9"/>
+                    <TextBlock Text="{Binding ParameterSetCountText}" 
+                               Foreground="#cccccc" 
+                               FontSize="12" 
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

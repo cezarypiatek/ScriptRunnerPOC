@@ -168,8 +168,25 @@ public class MainWindowViewModel : ReactiveObject
     private readonly ObservableAsPropertyHelper<IEnumerable<TaggedScriptConfig>> _filteredActionList;
     public IEnumerable<TaggedScriptConfig> FilteredActionList => _filteredActionList.Value;
 
-    private readonly ObservableAsPropertyHelper<int> _actionCount;
-    public int ActionCount => _actionCount.Value;
+    // Base action count (unique ScriptConfig items)
+    private readonly ObservableAsPropertyHelper<int> _baseActionCount;
+    public int BaseActionCount => _baseActionCount.Value;
+
+    private readonly ObservableAsPropertyHelper<int> _filteredBaseActionCount;
+    public int FilteredBaseActionCount => _filteredBaseActionCount.Value;
+
+    private readonly ObservableAsPropertyHelper<string> _baseActionCountText;
+    public string BaseActionCountText => _baseActionCountText.Value;
+
+    // Parameter set count (including all predefined argument sets)
+    private readonly ObservableAsPropertyHelper<int> _parameterSetCount;
+    public int ParameterSetCount => _parameterSetCount.Value;
+
+    private readonly ObservableAsPropertyHelper<int> _filteredParameterSetCount;
+    public int FilteredParameterSetCount => _filteredParameterSetCount.Value;
+
+    private readonly ObservableAsPropertyHelper<string> _parameterSetCountText;
+    public string ParameterSetCountText => _parameterSetCountText.Value;
 
 
 
@@ -447,10 +464,93 @@ public class MainWindowViewModel : ReactiveObject
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
 
+        // Base action count (unique ScriptConfig items)
         this.WhenAnyValue(x => x.Actions)
             .Select(list => list?.Count ?? 0)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .ToProperty(this, x => x.ActionCount, out _actionCount);
+            .ToProperty(this, x => x.BaseActionCount, out _baseActionCount);
+        
+        // Filtered base action count (unique ScriptConfig items in filtered list)
+        this.WhenAnyValue(x => x.FilteredActionList)
+            .Select(list => 
+            {
+                if (list == null) return 0;
+                // Count unique ScriptConfig items
+                return list.Select(x => x.Config).Distinct().Count();
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.FilteredBaseActionCount, out _filteredBaseActionCount);
+        
+        // Base action count display text
+        this.WhenAnyValue(x => x.FilteredBaseActionCount, x => x.BaseActionCount, x => x.ActionFilter, x => x.SelectedCategoryFilter)
+            .Select(tuple =>
+            {
+                var (filteredCount, totalCount, textFilter, categoryFilter) = tuple;
+                
+                // Check if any filtering is applied
+                bool isFiltering = !string.IsNullOrWhiteSpace(textFilter) || 
+                                  (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != "All");
+                
+                if (isFiltering)
+                {
+                    return $"Actions: {filteredCount}/{totalCount}";
+                }
+                else
+                {
+                    return $"Actions: {totalCount}";
+                }
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.BaseActionCountText, out _baseActionCountText);
+
+        // Parameter set count (count of argument sets with non-default descriptions)
+        this.WhenAnyValue(x => x.Actions)
+            .Select(list => 
+            {
+                if (list == null) return 0;
+                // Count all argument sets that have Description != "<default>"
+                return list.Sum(action => 
+                    action.PredefinedArgumentSets?.Count(argSet => argSet.Description != "<default>") ?? 0);
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.ParameterSetCount, out _parameterSetCount);
+        
+        // Filtered parameter set count (count of filtered argument sets with non-default descriptions)
+        this.WhenAnyValue(x => x.FilteredActionList)
+            .Select(list => 
+            {
+                if (list == null) return 0;
+                // Count argument sets from filtered actions where Description != "<default>"
+                return list
+                    .Select(tagged => tagged.Config)
+                    .Distinct()
+                    .Sum(action => 
+                        action.PredefinedArgumentSets?.Count(argSet => argSet.Description != "<default>") ?? 0);
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.FilteredParameterSetCount, out _filteredParameterSetCount);
+        
+        // Parameter set count display text
+        this.WhenAnyValue(x => x.FilteredParameterSetCount, x => x.ParameterSetCount, x => x.ActionFilter, x => x.SelectedCategoryFilter)
+            .Select(tuple =>
+            {
+                var (filteredCount, totalCount, textFilter, categoryFilter) = tuple;
+                
+                // Check if any filtering is applied
+                bool isFiltering = !string.IsNullOrWhiteSpace(textFilter) || 
+                                  (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != "All");
+                
+                if (isFiltering)
+                {
+                    return $"Argument sets: {filteredCount}/{totalCount}";
+                }
+                else
+                {
+                    return $"Argument sets: {totalCount}";
+                }
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.ParameterSetCountText, out _parameterSetCountText);
             
         Observable
             .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
@@ -1453,7 +1553,7 @@ public class ScriptConfigGroupWrapper
 
 public record TaggedScriptConfig(string Tag, string Name, ScriptConfig Config, ArgumentSet ArgumentSet = null)
 {
-    public string IconName => "fa-scroll";
+    public string IconName => ArgumentSet?.Description == "<default>" ?"fa-scroll":"fa-list-ul";
     public string IconColor => ArgumentSet?.Description == "<default>" ? "#3baced" : "#ff8c00";
 }
 
