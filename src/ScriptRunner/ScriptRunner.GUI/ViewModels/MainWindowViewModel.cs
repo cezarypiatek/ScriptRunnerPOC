@@ -165,8 +165,8 @@ public class MainWindowViewModel : ReactiveObject
     private readonly ObservableAsPropertyHelper<IEnumerable<string>> _availableCategories;
     public IEnumerable<string> AvailableCategories => _availableCategories.Value;
 
-    private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfigGroupWrapper>> _filteredActionList;
-    public IEnumerable<ScriptConfigGroupWrapper> FilteredActionList => _filteredActionList.Value;
+    private readonly ObservableAsPropertyHelper<IEnumerable<TaggedScriptConfig>> _filteredActionList;
+    public IEnumerable<TaggedScriptConfig> FilteredActionList => _filteredActionList.Value;
 
     private readonly ObservableAsPropertyHelper<int> _actionCount;
     public int ActionCount => _actionCount.Value;
@@ -407,79 +407,42 @@ public class MainWindowViewModel : ReactiveObject
                     }
                 }
 
-                IEnumerable<ScriptConfigGroupWrapper> scriptConfigGroupWrappers;
-                
-                // When a specific category is filtered, show each action only once under that category
-                if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != "All")
+                // Create flat list without duplicates - each action appears only once
+                // Determine the tag to use: use the category filter if set, otherwise use first category or "(No Category)"
+                var expandedEntries = configs.SelectMany(c =>
                 {
-                    var expandedEntries = configs.SelectMany(c => 
-                        c.PredefinedArgumentSets.Select(p => new TaggedScriptConfig(
-                            categoryFilter, 
-                            p.Description == "<default>" ? c.Name : $"{c.Name} - {p.Description}", 
-                            c,
-                            p
-                        ))
-                    );
-                    
-                    // Apply text filter to expanded entries
-                    if (!string.IsNullOrWhiteSpace(textFilter))
+                    // Determine the tag for this action
+                    string tag;
+                    if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != "All")
                     {
-                        expandedEntries = expandedEntries.Where(x => x.Name.Contains(textFilter, StringComparison.InvariantCultureIgnoreCase));
+                        tag = categoryFilter;
+                    }
+                    else if (c.Categories != null && c.Categories.Count > 0)
+                    {
+                        tag = c.Categories[0]; // Use first category only
+                    }
+                    else
+                    {
+                        tag = "(No Category)";
                     }
                     
-                    var children = expandedEntries.OrderBy(x => x.Name).ToList();
-                    
-                    // Only create group if it has children
-                    scriptConfigGroupWrappers = children.Any() 
-                        ? new[]
-                        {
-                            new ScriptConfigGroupWrapper
-                            {
-                                Name = categoryFilter,
-                                Children = children
-                            }
-                        }
-                        : Enumerable.Empty<ScriptConfigGroupWrapper>();
-                }
-                else
+                    // Expand to include all predefined argument sets
+                    return c.PredefinedArgumentSets.Select(p => new TaggedScriptConfig(
+                        tag,
+                        p.Description == "<default>" ? c.Name : $"{c.Name} - {p.Description}",
+                        c,
+                        p
+                    ));
+                });
+                
+                // Apply text filter to expanded entries
+                if (!string.IsNullOrWhiteSpace(textFilter))
                 {
-                    // When no filter or "All" is selected, show actions grouped by all their categories
-                    var groupedConfigs = configs.SelectMany(c =>
-                        {
-                            if (c.Categories is {Count: > 0})
-                            {
-                                return c.Categories.DistinctBy(x=>x).Select((cat) => (category: cat, script: c));
-                            }
-
-                            return new[] {(category: "(No Category)", script: c)};
-                        }).GroupBy(x => x.category).OrderBy(x=>x.Key);
-                    
-                    scriptConfigGroupWrappers = groupedConfigs.Select(x =>
-                    {
-                        var expandedEntries = x.SelectMany(p => 
-                            p.script.PredefinedArgumentSets.Select(argSet => new TaggedScriptConfig(
-                                x.Key, 
-                                argSet.Description == "<default>" ? p.script.Name : $"{p.script.Name} - {argSet.Description}", 
-                                p.script,
-                                argSet
-                            ))
-                        );
-                        
-                        // Apply text filter to expanded entries
-                        if (!string.IsNullOrWhiteSpace(textFilter))
-                        {
-                            expandedEntries = expandedEntries.Where(e => e.Name.Contains(textFilter, StringComparison.InvariantCultureIgnoreCase));
-                        }
-                        
-                        return new ScriptConfigGroupWrapper
-                        {
-                            Name = x.Key,
-                            Children = expandedEntries.OrderBy(e => e.Name)
-                        };
-                    }).Where(group => group.Children.Any()); // Filter out empty groups
+                    expandedEntries = expandedEntries.Where(x => x.Name.Contains(textFilter, StringComparison.InvariantCultureIgnoreCase));
                 }
                 
-                return scriptConfigGroupWrappers;
+                // Return flat list sorted by name
+                return expandedEntries.OrderBy(x => x.Name);
             })
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);

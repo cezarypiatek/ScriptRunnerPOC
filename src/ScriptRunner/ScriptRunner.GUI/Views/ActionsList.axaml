@@ -125,84 +125,61 @@
                           VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding FilteredActionList}" Margin="10">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="viewModels:ScriptConfigGroupWrapper">
-                            <StackPanel Margin="0,0,0,15">
-                                <!-- Category Header -->
-                                <Border Background="#252526" 
-                                        CornerRadius="4"
-                                        Padding="12,8"
-                                        Margin="0,0,0,8">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <avalonia:Icon Value="fa-folder" FontSize="16" Foreground="#ffd700" />
-                                        <TextBlock Text="{Binding Name}" 
-                                                   FontWeight="SemiBold" 
-                                                   FontSize="14"
+                        <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
+                            <Border CornerRadius="4"
+                                    Padding="12,12"
+                                    Margin="4,2"
+                                    Cursor="Hand"
+                                    Classes="actionTile"
+                                    Tapped="ActionTile_OnTapped">
+                                <Grid RowDefinitions="Auto,Auto,Auto">
+                                    <!-- Action Name with Icon -->
+                                    <Grid ColumnDefinitions="Auto,*" Grid.Row="0">
+                                        <avalonia:Icon Grid.Column="0" Value="{Binding IconName}" FontSize="20" Foreground="{Binding IconColor}" VerticalAlignment="Top" Margin="0,2,10,0"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" 
+                                                   FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   TextWrapping="Wrap"
                                                    VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-                                
-                                <!-- Action Tiles -->
-                                <ItemsControl ItemsSource="{Binding Children}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
-                                            <Border CornerRadius="4"
-                                                    Padding="12,12"
-                                                    Margin="4,2"
-                                                    Cursor="Hand"
-                                                    Classes="actionTile"
-                                                    Tapped="ActionTile_OnTapped">
-                                                <Grid RowDefinitions="Auto,Auto,Auto">
-                                                    <!-- Action Name with Icon -->
-                                                    <Grid ColumnDefinitions="Auto,*" Grid.Row="0">
-                                                        <avalonia:Icon Grid.Column="0" Value="{Binding IconName}" FontSize="20" Foreground="{Binding IconColor}" VerticalAlignment="Top" Margin="0,2,10,0"/>
-                                                        <TextBlock Grid.Column="1" Text="{Binding Name}" 
-                                                                   FontSize="15"
-                                                                   FontWeight="SemiBold"
-                                                                   TextWrapping="Wrap"
-                                                                   VerticalAlignment="Center"/>
-                                                    </Grid>
-                                                    
-                                                    <!-- Description -->
-                                                    <TextBlock Grid.Row="1"
-                                                               Text="{Binding Config.Description}" 
-                                                               Foreground="#b0b0b0"
-                                                               FontSize="12"
-                                                               TextWrapping="Wrap"
-                                                               Margin="32,6,0,0"
-                                                               MaxHeight="40"
-                                                               TextTrimming="CharacterEllipsis"
-                                                               IsVisible="{Binding Config.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                                    
-                                                    <!-- Category Badges -->
-                                                    <ItemsControl Grid.Row="2"
-                                                                  ItemsSource="{Binding Config.Categories}" 
-                                                                  Margin="32,8,0,0"
-                                                                  IsVisible="{Binding Config.Categories.Count}">
-                                                        <ItemsControl.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <WrapPanel Orientation="Horizontal"/>
-                                                            </ItemsPanelTemplate>
-                                                        </ItemsControl.ItemsPanel>
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <Border Background="{Binding Converter={StaticResource CategoryToColorConverter}}" 
-                                                                        CornerRadius="3" 
-                                                                        Padding="6,2" 
-                                                                        Margin="0,0,4,4">
-                                                                    <TextBlock Text="{Binding}" 
-                                                                               FontSize="10" 
-                                                                               FontWeight="SemiBold"
-                                                                               Foreground="White"/>
-                                                                </Border>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
+                                    </Grid>
+                                    
+                                    <!-- Description -->
+                                    <TextBlock Grid.Row="1"
+                                               Text="{Binding Config.Description}" 
+                                               Foreground="#b0b0b0"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="32,6,0,0"
+                                               MaxHeight="40"
+                                               TextTrimming="CharacterEllipsis"
+                                               IsVisible="{Binding Config.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    
+                                    <!-- Category Badges -->
+                                    <ItemsControl Grid.Row="2"
+                                                  ItemsSource="{Binding Config.Categories}" 
+                                                  Margin="32,8,0,0"
+                                                  IsVisible="{Binding Config.Categories.Count}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{Binding Converter={StaticResource CategoryToColorConverter}}" 
+                                                        CornerRadius="3" 
+                                                        Padding="6,2" 
+                                                        Margin="0,0,4,4">
+                                                    <TextBlock Text="{Binding}" 
+                                                               FontSize="10" 
+                                                               FontWeight="SemiBold"
+                                                               Foreground="White"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
