@@ -165,14 +165,6 @@ public class MainWindowViewModel : ReactiveObject
     private readonly ObservableAsPropertyHelper<IEnumerable<string>> _availableCategories;
     public IEnumerable<string> AvailableCategories => _availableCategories.Value;
 
-    public bool IsTreeViewMode
-    {
-        get => _isTreeViewMode;
-        set => this.RaiseAndSetIfChanged(ref _isTreeViewMode, value);
-    }
-
-    private bool _isTreeViewMode = false;
-
     private readonly ObservableAsPropertyHelper<IEnumerable<ScriptConfigGroupWrapper>> _filteredActionList;
     public IEnumerable<ScriptConfigGroupWrapper> FilteredActionList => _filteredActionList.Value;
 

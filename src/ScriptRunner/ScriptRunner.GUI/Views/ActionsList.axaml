@@ -40,28 +40,9 @@
         </Style>
     </UserControl.Styles>
     
-    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
-        <!-- View Mode Tabs -->
-        <Border Grid.Row="0" Background="#252526" BorderBrush="#3f3f46" BorderThickness="0,0,0,1" Padding="10,5">
-
-            <StackPanel Orientation="Horizontal" Spacing="5">
-                <RadioButton GroupName="ViewMode" IsChecked="{Binding IsTreeViewMode}" Padding="12,6">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <avalonia:Icon Value="fa-solid fa-folder-tree" FontSize="14"/>
-                        <TextBlock Text="Tree" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </RadioButton>
-                <RadioButton GroupName="ViewMode" IsChecked="{Binding !IsTreeViewMode}" Padding="12,6">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <avalonia:Icon Value="fa-solid fa-list" FontSize="14"/>
-                        <TextBlock Text="List" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </RadioButton>
-            </StackPanel>
-        </Border>
-        
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
         <!-- Search Box -->
-        <Border Grid.Row="1" Background="#1e1e1e" Padding="10" BorderBrush="#3f3f46" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Background="#1e1e1e" Padding="10" BorderBrush="#3f3f46" BorderThickness="0,0,0,1">
             <TextBox x:Name="SearchTextBox"
                      Text="{Binding ActionFilter}" 
                      Watermark="Search actions..."
@@ -90,7 +71,7 @@
         </Border>
         
         <!-- Category Filter -->
-        <Border Grid.Row="2" Background="#1e1e1e" Padding="10,5" BorderBrush="#3f3f46" BorderThickness="0,0,0,1">
+        <Border Grid.Row="1" Background="#1e1e1e" Padding="10,5" BorderBrush="#3f3f46" BorderThickness="0,0,0,1">
             <ItemsControl ItemsSource="{Binding AvailableCategories}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -137,42 +118,10 @@
             </ItemsControl>
         </Border>
         
-        <!-- Content Area: Tree or List View -->
-        <Panel Grid.Row="3">
-            <!-- Tree View -->
-            <TreeView x:Name="ActionTree" 
-                      Background="#1e1e1e" 
-                      Classes="actionsMenu" 
-                      ItemsSource="{Binding FilteredActionList}" 
-                      SelectedItem="{Binding SelectedActionOrGroup, Mode=TwoWay}"
-                      IsVisible="{Binding IsTreeViewMode}">
-                <TreeView.Styles>
-                    <Style Selector="TreeViewItem:empty Panel#PART_ExpandCollapseChevronContainer">
-                        <Setter Property="IsVisible" Value="False"></Setter>
-                    </Style>
-                    <Style Selector="TreeViewItem:empty Grid#PART_Header">
-                        <Setter Property="Margin" Value="35,0,0,0"></Setter>
-                    </Style>
-                </TreeView.Styles>
-                <TreeView.DataTemplates>
-                    <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="viewModels:ScriptConfigGroupWrapper">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <avalonia:Icon Value="fa-folder" FontSize="16" Foreground="#ffd700" />
-                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </TreeDataTemplate>
-                    <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <avalonia:Icon Value="{Binding IconName}" FontSize="16" Foreground="{Binding IconColor}" />
-                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </DataTemplate>
-                </TreeView.DataTemplates>
-            </TreeView>
-            
+        <!-- Content Area: List View -->
+        <Panel Grid.Row="2">
             <!-- List View with Tiles -->
-            <ScrollViewer IsVisible="{Binding !IsTreeViewMode}" 
-                          Background="#1e1e1e"
+            <ScrollViewer Background="#1e1e1e"
                           VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding FilteredActionList}" Margin="10">
                     <ItemsControl.ItemTemplate>
@@ -261,7 +210,7 @@
         </Panel>
         
         <!-- Footer -->
-        <Border Grid.Row="4" Background="#252526" BorderBrush="#3f3f46" BorderThickness="0,1,0,0" Padding="12,8">
+        <Border Grid.Row="3" Background="#252526" BorderBrush="#3f3f46" BorderThickness="0,1,0,0" Padding="12,8">
             <TextBlock Text="{Binding ActionCount, StringFormat='Total actions: {0}'}" 
                        Foreground="#888888" 
                        FontSize="12" 
