@@ -26,6 +26,7 @@ using ScriptRunner.GUI.Infrastructure;
 using ScriptRunner.GUI.Infrastructure.DataProtection;
 using ScriptRunner.GUI.ScriptConfigs;
 using ScriptRunner.GUI.ScriptReader;
+using ScriptRunner.GUI.Services;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.Views;
 
@@ -292,16 +293,17 @@ public class MainWindowViewModel : ReactiveObject
 
     public ObservableCollection<OutdatedRepositoryModel> OutOfDateConfigRepositories { get; } = new();
 
+    private readonly INotificationService? _notificationService;
 
-
-    public MainWindowViewModel() : this(new ParamsPanelFactory(new VaultProvider(new NullDataProtector())), new VaultProvider(new NullDataProtector()))
+    public MainWindowViewModel() : this(new ParamsPanelFactory(new VaultProvider(new NullDataProtector())), new VaultProvider(new NullDataProtector()), null)
     {
     }
 
 
-    public MainWindowViewModel(ParamsPanelFactory paramsPanelFactory, VaultProvider vaultProvider)
+    public MainWindowViewModel(ParamsPanelFactory paramsPanelFactory, VaultProvider vaultProvider, INotificationService? notificationService = null)
     {
         CompactedHistoryForCurrent = true;
+        _notificationService = notificationService;
         this._configRepositoryUpdater = new ConfigRepositoryUpdater(new CliRepositoryClient(command =>
         {
             var tcs = new TaskCompletionSource<CliCommandOutputs>();
@@ -1385,6 +1387,22 @@ public class MainWindowViewModel : ReactiveObject
         
         this.RunningJobs.Add(job);
         SelectedRunningJob = job;
+
+        // Track start time for notification
+        var startTime = DateTime.Now;
+        
+        // Subscribe to job completion for notifications
+        job.ExecutionCompleted += async (sender, args) =>
+        {
+            var elapsed = DateTime.Now - startTime;
+            if (_notificationService != null)
+            {
+                await _notificationService.ShowJobCompletedAsync(
+                    job.Tile, 
+                    job.Status, 
+                    elapsed);
+            }
+        };
 
         if (onComplete != null)
         {

@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Labs.Notifications;
 using Avalonia.ReactiveUI;
 using System;
 using Avalonia.Platform;
@@ -7,6 +8,7 @@ using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using ScriptRunner.GUI.Infrastructure;
 using ScriptRunner.GUI.Infrastructure.DataProtection;
+using ScriptRunner.GUI.Services;
 using ScriptRunner.GUI.ViewModels;
 using ScriptRunner.GUI.Views;
 using IDataProtector = ScriptRunner.GUI.Infrastructure.DataProtection.IDataProtector;
@@ -30,6 +32,10 @@ internal class Program
         return AppBuilder.Configure<App>()
             .UseReactiveUI()
             .UsePlatformDetect()
+            .WithAppNotifications(new AppNotificationOptions
+            {
+                AppName = "ScriptRunner"
+            })
             .UseMicrosoftDependencyInjection(ConfigureServices)
             .LogToTrace();
     }
@@ -53,6 +59,7 @@ internal class Program
 
         services.AddSingleton<VaultProvider>();
         services.AddSingleton<ParamsPanelFactory>();
+        services.AddSingleton<INotificationService, NotificationService>();
 
         services.AddTransient<VaultViewModel>();
         services.AddTransient<VaultPickerViewModel>();

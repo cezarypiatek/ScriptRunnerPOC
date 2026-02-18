@@ -18,6 +18,7 @@ using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using ReactiveUI;
 using ScriptRunner.GUI.ScriptConfigs;
+using ScriptRunner.GUI.Services;
 using ScriptRunner.GUI.Settings;
 using ScriptRunner.GUI.ViewModels;
 using Splat;
@@ -34,6 +35,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         InitializeComponent();
         ViewModel = Locator.Current.GetService<MainWindowViewModel>();
         Title = $"ScriptRunner {this.GetType().Assembly.GetName().Version}";
+        
+        // Set up notification service with window reference
+        var notificationService = Locator.Current.GetService<INotificationService>();
+        notificationService?.SetMainWindow(this);
         
         // Set up scroll action for date navigation
         if (ViewModel != null)
