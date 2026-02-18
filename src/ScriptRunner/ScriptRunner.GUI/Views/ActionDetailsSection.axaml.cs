@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -18,6 +18,7 @@ public partial class ActionDetailsSection : UserControl
     private bool _isDetailsExpanded = false;
     private Border? _detailsSection;
     private TextBlock? _toggleDetailsText;
+    private Projektanker.Icons.Avalonia.Icon? _toggleDetailsIcon;
 
     public ActionDetailsSection()
     {
@@ -29,6 +30,7 @@ public partial class ActionDetailsSection : UserControl
     {
         _detailsSection = this.FindControl<Border>("DetailsSection");
         _toggleDetailsText = this.FindControl<TextBlock>("ToggleDetailsText");
+        _toggleDetailsIcon = this.FindControl<Projektanker.Icons.Avalonia.Icon>("ToggleDetailsIcon");
     }
 
     private void InitializeComponent()
@@ -96,8 +98,12 @@ public partial class ActionDetailsSection : UserControl
 
         _isDetailsExpanded = !_isDetailsExpanded;
 
-        // Update button text
+        // Update button text and icon
         _toggleDetailsText.Text = _isDetailsExpanded ? "Hide details" : "Show details";
+        if (_toggleDetailsIcon != null)
+        {
+            _toggleDetailsIcon.Value = _isDetailsExpanded ? "fas fa-chevron-up" : "fas fa-chevron-down";
+        }
 
         if (_isDetailsExpanded)
         {

@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -29,15 +29,58 @@
         <ColumnDefinition Width="*" MinWidth="350"/>
       </Grid.ColumnDefinitions>
       <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Margin="20, 0"  IsVisible="{Binding IsActionSelected, Mode=OneWay}">
-          <!-- Custom collapsible header section -->
-          <Border Background="#18181b" BorderBrush="#27272a" BorderThickness="1"  Padding="12">
+      <!-- Custom collapsible header section -->
+          <Border Background="#2A2A2E" BorderBrush="#48484E" BorderThickness="1" CornerRadius="8" Margin="0,0,0,15" BoxShadow="0 4 12 #60000000">
             <StackPanel>
               <!-- Header that's always visible -->
-              <Grid ColumnDefinitions="*, Auto"  >
-                <DockPanel Grid.Column="1">
-                  <Button DockPanel.Dock="Top" HorizontalAlignment="Right"  Background="Transparent"  avalonia:Attached.Icon="fas fa-cog" Width="35" Height="35" VerticalAlignment="Top" >
+              <Grid ColumnDefinitions="*, Auto" Margin="16,16,16,4">
+                <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="8">
+                  <Grid ColumnDefinitions="Auto, *">
+                    <StackPanel Grid.Column="0" Orientation="Vertical">
+                      <TextBlock FontSize="26" FontFamily="Inter" FontWeight="Bold" Foreground="#F0F0F0" TextWrapping="Wrap" Text="{Binding SelectedAction.Name}" />
+                      
+                      <!-- Description -->
+                      <TextBlock FontSize="15" FontFamily="Inter" Foreground="#A0A0A0" Margin="0,4,0,0" IsVisible="{Binding SelectedAction.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Text="{Binding SelectedAction.Description}" TextWrapping="Wrap" LineHeight="22"/>
+                    </StackPanel>
+                  </Grid>
+
+                  <!-- Categories as Pills -->
+                  <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding SelectedAction.Categories}" IsVisible="{Binding SelectedAction.Categories.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Border Background="{Binding Converter={StaticResource CategoryToColorConverter}}" 
+                                CornerRadius="4" 
+                                Padding="10,4" 
+                                Margin="0,0,6,6"
+                                BorderThickness="0">
+                          <TextBlock Text="{Binding}" 
+                                     FontSize="11" 
+                                     FontWeight="SemiBold"
+                                     Foreground="White"/>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+
+                <!-- Actions Column -->
+                <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top" Spacing="8">
+                  <!-- Settings Menu -->
+                  <Button HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Padding="8" Cursor="Hand" ToolTip.Tip="Action Settings">
+                    <avalonia:Icon Value="fas fa-cog" Width="16" Height="16" Foreground="#A0A0A0" />
+                    <Button.Styles>
+                      <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#303035"/>
+                        <Setter Property="Foreground" Value="White"/>
+                      </Style>
+                    </Button.Styles>
                     <Button.Flyout>
-                      <MenuFlyout Placement="BottomEdgeAlignedLeft" >
+                      <MenuFlyout Placement="BottomEdgeAlignedRight" >
                         <MenuItem Header="Reinstall script" IsVisible="{Binding InstallAvailable}" Command="{Binding InstallScript}">
                           <MenuItem.Icon>
                             <avalonia:Icon Value="fas fa-sync" />
@@ -61,56 +104,6 @@
                       </MenuFlyout>
                     </Button.Flyout>
                   </Button>
-                 
-                  <!-- Custom toggle button in bottom-right corner -->
-                  <Button 
-                    DockPanel.Dock="Bottom"
-                    HorizontalAlignment="Right" 
-                    VerticalAlignment="Bottom"
-                    Margin="0"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Padding="8,4"
-                    Foreground="#4A9EFF"
-                    FontWeight="SemiBold"
-                    Cursor="Hand"
-                    Click="ToggleDetailsButton_Click">
-                    <Button.Styles>
-                      <Style Selector="Button:pointerover">
-                        <Setter Property="Background" Value="#1A4A9EFF" />
-                      </Style>
-                      <Style Selector="Button:pressed">
-                        <Setter Property="Background" Value="#334A9EFF" />
-                      </Style>
-                    </Button.Styles>
-                    <TextBlock x:Name="ToggleDetailsText" Text="Show details" />
-                  </Button>
-                </DockPanel>
-                <StackPanel Grid.Column="0" Orientation="Vertical" Margin="10,0,10,0">
-                  <StackPanel Orientation="Vertical" >
-                    <TextBlock FontSize="24" FontFamily="Inter" FontWeight="Bold" Foreground="White" Margin="0,0,0,8" TextWrapping="Wrap" Text="{Binding SelectedAction.Name}" />
-                    <TextBlock FontSize="16" FontFamily="Inter" Foreground="#71717a"  IsVisible="{Binding SelectedAction.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Text="{Binding SelectedAction.Description}" TextWrapping="Wrap"/>
-                  </StackPanel>
-                  <ItemsControl Margin="0,16,0,0" ItemsSource="{Binding SelectedAction.Categories}" IsVisible="{Binding SelectedAction.Categories.Count, Converter={StaticResource CountToVisibilityConverter}}">
-                    <ItemsControl.ItemsPanel>
-                      <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
-                      </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate>
-                        <Border Background="{Binding Converter={StaticResource CategoryToColorConverter}}" 
-                                CornerRadius="3" 
-                                Padding="8,3" 
-                                Margin="0,0,5,5">
-                          <TextBlock Text="{Binding}" 
-                                     FontSize="11" 
-                                     FontWeight="SemiBold"
-                                     Foreground="White"/>
-                        </Border>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
                 </StackPanel>
               </Grid>
               
@@ -118,18 +111,21 @@
               <Border x:Name="DetailsSection" 
                       MaxHeight="0" 
                       ClipToBounds="True"
-                      Opacity="0">
+                      Opacity="0"
+                      Background="#18181C"
+                      BorderBrush="#48484E"
+                      BorderThickness="0,1,0,0">
                 <Border.Transitions>
                   <Transitions>
-                    <DoubleTransition Property="MaxHeight" Duration="0:0:0.3" Easing="CubicEaseInOut"/>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="CubicEaseInOut"/>
+                    <DoubleTransition Property="MaxHeight" Duration="0:0:0.25" Easing="CubicEaseInOut"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseInOut"/>
                   </Transitions>
                 </Border.Transitions>
-                <StackPanel Margin="10,0,10,0">
-                  <StackPanel Orientation="Horizontal">
-                    <Label VerticalAlignment="Center">Loaded from: </Label>
-
-                    <TextBlock FontWeight="Bold" Margin="10, 0" TextWrapping="Wrap" VerticalAlignment="Center">
+                <StackPanel Margin="20">
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                    <avalonia:Icon Value="fas fa-code-branch" Width="14" Height="14" Foreground="#808080" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Loaded from:" Foreground="#808080" VerticalAlignment="Center" FontSize="13"/>
+                    <TextBlock FontWeight="SemiBold" Margin="6, 0" TextWrapping="Wrap" VerticalAlignment="Center" Foreground="#D0D0D0" FontSize="13">
                       <TextBlock.Text>
                         <MultiBinding StringFormat="{}{0} [{1}]">
                           <Binding Path="SelectedAction.SourceName" />
@@ -140,45 +136,85 @@
                   </StackPanel>
                   
                   <!-- Command Section -->
-                  <Border  Background="#474747" 
-                           CornerRadius="0" 
-                           BorderBrush="#6e6e6e"
-                           Margin="0, 10,5, 0" 
-                           BorderThickness="1">
+                  <Border Background="#121212" 
+                           CornerRadius="6" 
+                           BorderBrush="#48484E"
+                           BorderThickness="1"
+                           Padding="0">
                     <StackPanel>
-                      <TextBlock FontSize="12" FontWeight="SemiBold" Margin="8,4,8,4">Command</TextBlock>
-                      <SelectableTextBlock Margin="0" TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding SelectedAction.CommandFormatted}" />
+                      <Border Background="#222226" CornerRadius="6,6,0,0" Padding="12,8" BorderBrush="#48484E" BorderThickness="0,0,0,1">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <avalonia:Icon Value="fas fa-terminal" Width="12" Height="12" Foreground="#A0A0A0" VerticalAlignment="Center"/>
+                          <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#D0D0D0" VerticalAlignment="Center">Command Execution</TextBlock>
+                        </StackPanel>
+                      </Border>
+                      <SelectableTextBlock Margin="12" TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding SelectedAction.CommandFormatted}" FontFamily="Cascadia Code, Consolas, Monospace" FontSize="13"/>
                     </StackPanel>
                   </Border>
                   
                   <!-- Install Command Section (only shown if InstallCommand exists) -->
-                  <StackPanel Margin="0,10,0,0" IsVisible="{Binding SelectedAction.InstallCommand, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                    
-                    <Border Background="#474747" 
-                            CornerRadius="0" 
-                            BorderBrush="#6e6e6e"
-                            Margin="0, 5,5, 10" 
+                  <StackPanel Margin="0,16,0,0" IsVisible="{Binding SelectedAction.InstallCommand, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <Border Background="#121212" 
+                            CornerRadius="6" 
+                            BorderBrush="#333338"
                             BorderThickness="1">
                       <StackPanel>
-                        <Grid ColumnDefinitions="*,Auto" Margin="8,4,8,4">
-                          <TextBlock FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center">Install Command</TextBlock>
-                          <Button Grid.Column="1" 
-                                  Command="{Binding InstallScript}" 
-                                  avalonia:Attached.Icon="fas fa-play"
-                                  Margin="0,0,0,0"
-                                  Padding="4"
-                                  FontSize="12"
-                                  ToolTip.Tip="Run install command">
-                          </Button>
-                        </Grid>
-                        <SelectableTextBlock Margin="0"  TextWrapping="Wrap" 
-                                              Classes="consoleOutput"  Inlines="{Binding SelectedAction.InstallCommandFormatted}" />  
+                        <Border Background="#1E1E22" CornerRadius="6,6,0,0" Padding="12,8" BorderBrush="#333338" BorderThickness="0,0,0,1">
+                          <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <avalonia:Icon Value="fas fa-download" Width="12" Height="12" Foreground="#A0A0A0" VerticalAlignment="Center"/>
+                              <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#D0D0D0" VerticalAlignment="Center">Install Command</TextBlock>
+                            </StackPanel>
+                            <Button Grid.Column="1" 
+                                    Command="{Binding InstallScript}" 
+                                    avalonia:Attached.Icon="fas fa-play"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Margin="0"
+                                    Padding="6,2"
+                                    FontSize="12"
+                                    ToolTip.Tip="Run install command"
+                                    Cursor="Hand">
+                                    <Button.Styles>
+                                      <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                        <Setter Property="Background" Value="#303035"/>
+                                        <Setter Property="Foreground" Value="#4A9EFF"/>
+                                      </Style>
+                                    </Button.Styles>
+                            </Button>
+                          </Grid>
+                        </Border>
+                        <SelectableTextBlock Margin="12" TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding SelectedAction.InstallCommandFormatted}" FontFamily="Cascadia Code, Consolas, Monospace" FontSize="13"/>  
                       </StackPanel>
-                        
                     </Border>
                   </StackPanel>
                 </StackPanel>
               </Border>
+
+              <!-- Footer / Toggle -->
+              <Button 
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Bottom"
+                    Margin="0"
+                    Background="Transparent"
+                    BorderThickness="0,1,0,0"
+                    BorderBrush="#2A2A30"
+                    Padding="4"
+                    Cursor="Hand"
+                    Click="ToggleDetailsButton_Click">
+                    <Button.Styles>
+                      <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#25252A"/>
+                      </Style>
+                      <Style Selector="Button:pressed /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#151518"/>
+                      </Style>
+                    </Button.Styles>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                       <TextBlock x:Name="ToggleDetailsText" Text="Show details" FontSize="12" FontWeight="SemiBold" Foreground="#4A9EFF" VerticalAlignment="Center"/>
+                       <avalonia:Icon x:Name="ToggleDetailsIcon" Value="fas fa-chevron-down" Width="10" Height="10" Foreground="#4A9EFF" VerticalAlignment="Center"/>
+                    </StackPanel>
+              </Button>
             </StackPanel>
           </Border>
               
@@ -186,15 +222,16 @@
              
           <StackPanel Grid.Row="2"  IsEnabled="{Binding SelectedActionInstalled}">
             <StackPanel IsVisible="{Binding HasParams}">
-              <Border BorderThickness="1" BorderBrush="#4E4E4E" Background="#2B2B2B" Padding="15,5" Margin="0,10,0,0">
-                   <Grid  Margin="0,5,0,5" ColumnDefinitions="Auto,*,120" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+              <Border Background="#2A2A2E" BorderBrush="#48484E" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,15" BoxShadow="0 4 12 #60000000">
+                   <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                    
                 <TextBlock Classes="h2"
-                           VerticalAlignment="Top"
+                           VerticalAlignment="Center"
                            Text="Predefined parameters: "
-                           Margin="0,5,0,0"
+                           FontWeight="SemiBold"
+                           Foreground="#D0D0D0"
                            Grid.Column="0"></TextBlock>
-                <ComboBox Margin="10,0,10,0"
+                <ComboBox Margin="15,0,15,0"
                           Grid.Column="1"
                           VerticalAlignment="Center"
                           HorizontalAlignment="Stretch"
@@ -207,41 +244,68 @@
                     </DataTemplate>
                   </ComboBox.DataTemplates>
                 </ComboBox>
-                <WrapPanel Grid.Column="2" ItemWidth="40" >
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                   <Button 
                     avalonia:Attached.Icon="far fa-save"
-                    Padding="0"
+                    Padding="8"
                     Margin="0"
-                    Width="35"
-                    Height="35"
                     ToolTip.Tip="Save current parameters as predefined set"  
                     Click="SaveCurrentParametersAsPredefined" 
                     VerticalAlignment="Center"
-                    VerticalContentAlignment="Center" 
-                    HorizontalContentAlignment="Center" ></Button>
+                    Background="Transparent"
+                    BorderThickness="1"
+                    BorderBrush="#48484E"
+                    CornerRadius="4"
+                    Foreground="#A0A0A0">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#303035"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="BorderBrush" Value="#4A9EFF"/>
+                        </Style>
+                    </Button.Styles>
+                  </Button>
                   <Button 
                     avalonia:Attached.Icon="far fa-copy"
-                    Padding="0"
+                    Padding="8"
                     Margin="0"
-                    Width="35"
-                    Height="35"
                     ToolTip.Tip="Copy current parameters to clipboard"  
                     Command="{Binding CopyParametersSetup}" 
                     VerticalAlignment="Center"
-                    VerticalContentAlignment="Center" 
-                    HorizontalContentAlignment="Center" ></Button>
+                    Background="Transparent"
+                    BorderThickness="1"
+                    BorderBrush="#48484E"
+                    CornerRadius="4"
+                    Foreground="#A0A0A0">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#303035"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="BorderBrush" Value="#4A9EFF"/>
+                        </Style>
+                    </Button.Styles>
+                  </Button>
                   <Button 
                     avalonia:Attached.Icon="far fa-paste"
-                    Padding="0"
+                    Padding="8"
                     Margin="0"
-                    Width="35"
-                    Height="35"
                     ToolTip.Tip="Paste parameters from clipboard"  
                     Command="{Binding PasteParametersSetup}" 
                     VerticalAlignment="Center"
-                    VerticalContentAlignment="Center" 
-                    HorizontalContentAlignment="Center" ></Button>
-                </WrapPanel>
+                    Background="Transparent"
+                    BorderThickness="1"
+                    BorderBrush="#48484E"
+                    CornerRadius="4"
+                    Foreground="#A0A0A0">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#303035"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="BorderBrush" Value="#4A9EFF"/>
+                        </Style>
+                    </Button.Styles>
+                  </Button>
+                </StackPanel>
 
               </Grid>
               </Border>
@@ -249,7 +313,7 @@
             </StackPanel>
             
           </StackPanel>
-          <Border Grid.Row="3"  BorderThickness="1" Background="#2B2B2B" BorderBrush="#4E4E4E" Padding="15,5, 0,5" Margin="0,10,0,0" IsEnabled="{Binding SelectedActionInstalled}">
+          <Border Grid.Row="3" Background="#2A2A2E" BorderBrush="#48484E" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,0" BoxShadow="0 4 12 #60000000" IsEnabled="{Binding SelectedActionInstalled}">
             <ScrollViewer ScrollChanged="OnActionPanelScrollChange"  BringIntoViewOnFocusChange="False" >
               <ItemsControl ItemsSource="{Binding ActionParametersPanel}">
                 <ItemsControl.Styles>
@@ -261,7 +325,8 @@
             </ScrollViewer>
           </Border>
           <DockPanel Grid.Row="4"  Margin="0, 15, 0 , 15" HorizontalAlignment="Stretch" IsEnabled="{Binding SelectedActionInstalled}">
-            <Button Classes="primary" DockPanel.Dock="Right"  HorizontalAlignment="Center" Width="200" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
+            <Button Classes="primary" DockPanel.Dock="Right"  HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
+
           </DockPanel>
         </Grid>
       <GridSplitter Grid.Column="1" MinWidth="2" HorizontalAlignment="Center" Background="#FF3E3E40"></GridSplitter>

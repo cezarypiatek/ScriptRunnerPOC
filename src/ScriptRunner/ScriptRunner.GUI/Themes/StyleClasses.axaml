@@ -2,7 +2,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
         xmlns:tanker="https://github.com/projektanker/icons.avalonia"
-        xmlns:gui="clr-namespace:ScriptRunner.GUI">
+        xmlns:gui="clr-namespace:ScriptRunner.GUI"
+        xmlns:avaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit">
+
     <Design.PreviewWith>
         <StackPanel>
             <TextBlock Classes="h1" Text="Heading 1"></TextBlock>
@@ -74,38 +76,57 @@
         <Setter Property="BorderThickness" Value="1,0,1,1" />
     </Style>
     <Style Selector="Button.primary">
-        <Setter Property="Background" Value="#007BFF" />
+        <Setter Property="Background" Value="#4A9EFF" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Style Selector="^:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#002BFF" />
+            <Setter Property="Background" Value="#3A8EFF" />
+        </Style>
+        <Style Selector="^:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#2A7EFF" />
         </Style>
     </Style>
     <Style Selector="Button.secondary">
-        <Setter Property="Background" Value="#55A7FF" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="#333338" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="Foreground" Value="#D0D0D0" />
         <Style Selector="^:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#00CCFF" />
+            <Setter Property="Background" Value="#303035" />
+            <Setter Property="BorderBrush" Value="#4A9EFF" />
+            <Setter Property="Foreground" Value="White" />
         </Style>
     </Style>
     
     <Style Selector="TextBlock.h1">
         <Setter Property="FontSize" Value="24" />
         <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="#F0F0F0" />
     </Style>
 
     <Style Selector="TextBlock.h2">
-        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Foreground" Value="#D0D0D0" />
     </Style>
 
 
     <Style Selector="Border.codeblock">
-        <Setter Property="Background" Value="#474747" />
-        <Setter Property="BorderBrush" Value="#6e6e6e" />
+        <Setter Property="Background" Value="#1A1A1E" />
+        <Setter Property="BorderBrush" Value="#333338" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="5" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="8" />
     </Style>
 
     <Style Selector="Border.codeblock TextBlock">
-        <Setter Property="FontFamily" Value="Consolas" />
-        <Setter Property="Foreground" Value="#dadada" />
+        <Setter Property="FontFamily" Value="Cascadia Code, Consolas, Monospace" />
+        <Setter Property="Foreground" Value="#A0A0A0" />
+        <Setter Property="FontSize" Value="13" />
     </Style>
 
     <Style Selector="StackPanel.paramsPanel">
