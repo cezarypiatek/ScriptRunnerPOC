@@ -21,7 +21,7 @@ jobs:
         PackageReleaseNotes: 'https://github.com/${{ github.repository }}/releases'
         ContinuousIntegrationBuild: true
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set version
       shell: pwsh
       run: |
@@ -29,10 +29,10 @@ jobs:
         $month = (Get-Date -Format "MM").TrimStart('0')
         $version = "$year.$month.${{ github.run_number }}"
         echo "Version=$version" >> $env:GITHUB_ENV
-    - name: Setup .NET Core 6
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '6.0.108'
+        dotnet-version: '8.0.x'
     - name: Restore dependencies
       run: |
         dotnet nuget locals all --clear
@@ -51,7 +51,7 @@ jobs:
         $commitLog = if([string]::IsNullOrWhitespace($commitLog)){git log --pretty=format:"- %s"}else{$commitLog}
         "What's new: `r`n`r`n$([string]::Join("`r`n",$commitLog))" | Out-File release_note.md -Encoding utf8
     - name: Compress artifacts
-      run: Compress-Archive -Path .\src\ScriptRunner\ScriptRunner.GUI\bin\Release\net6.0\win-x64\publish\* -DestinationPath ScriptRunner.win-x64.${{ env.Version }}.zip
+      run: Compress-Archive -Path .\src\ScriptRunner\ScriptRunner.GUI\bin\Release\net8.0\win-x64\publish\* -DestinationPath ScriptRunner.win-x64.${{ env.Version }}.zip
     - name: Create Github Release
       id: create_release
       uses: actions/create-release@v1
