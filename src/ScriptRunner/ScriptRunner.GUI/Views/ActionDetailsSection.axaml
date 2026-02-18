@@ -35,7 +35,7 @@
               <!-- Header that's always visible -->
               <Grid ColumnDefinitions="*, Auto" Margin="16,16,16,4">
                 <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="8">
-                  <Grid ColumnDefinitions="Auto, *">
+                  <Grid ColumnDefinitions="*, Auto">
                     <StackPanel Grid.Column="0" Orientation="Vertical">
                       <TextBlock FontSize="26" FontFamily="Inter" FontWeight="Bold" Foreground="#F0F0F0" TextWrapping="Wrap" Text="{Binding SelectedAction.Name}" />
                       
