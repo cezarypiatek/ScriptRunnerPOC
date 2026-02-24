@@ -8,7 +8,7 @@ public class TimePickerControl : IControlRecord
 
     public string GetFormattedValue()
     {
-        var selectedTime = ((TimePicker)Control).SelectedTime;
+        var selectedTime = ((ScriptRunner.GUI.Views.Controls.TimePickerInput)Control).SelectedTime;
         if (string.IsNullOrWhiteSpace(Format) == false && selectedTime is {} value)
         {
             return value.ToString(Format);

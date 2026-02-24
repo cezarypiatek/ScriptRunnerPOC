@@ -515,10 +515,9 @@ public class ParamsPanelFactory
             case PromptType.TimePicker:
                 return new TimePickerControl
                 {
-                    Control = new TimePicker
+                    Control = new ScriptRunner.GUI.Views.Controls.TimePickerInput
                     {
-                        SelectedTime = string.IsNullOrWhiteSpace(value)?null: TimeSpan.Parse(value),
-                        ClockIdentifier = "24HourClock",
+                        SelectedTime = string.IsNullOrWhiteSpace(value) ? null: TimeSpan.TryParse(value, out var ft)? ft : null,
                         TabIndex = index,
                         IsTabStop = true
                     },

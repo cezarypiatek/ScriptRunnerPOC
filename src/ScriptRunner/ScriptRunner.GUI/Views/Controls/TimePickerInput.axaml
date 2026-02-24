@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="120" d:DesignHeight="50"
+             x:Class="ScriptRunner.GUI.Views.Controls.TimePickerInput"
+             HorizontalAlignment="Left"
+             Width="120">
+    <Panel>
+        <TextBox Name="TimeTextBox" MinWidth="0" Watermark="00:00" VerticalAlignment="Center" Height="32" Padding="10, 5, 30, 5" CornerRadius="4" HorizontalAlignment="Stretch" />
+        <Button Name="OpenPopupButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,2,0" Width="28" Height="28" Background="Transparent" BorderThickness="0" CornerRadius="4" ZIndex="1">
+            <i:Icon Value="far fa-clock" FontSize="14" />
+        </Button>
+
+        <Popup Name="TimePopup" PlacementTarget="{Binding ElementName=TimeTextBox}" Placement="Bottom" IsOpen="False" IsLightDismissEnabled="True">
+            <Border Background="#252528" CornerRadius="12" Padding="16" Width="280" Height="420" BoxShadow="0 4 15 0 #80000000">
+                <Grid RowDefinitions="Auto, Auto, *, Auto">
+                    <TextBlock Text="Select time" Foreground="#A0A0A0" FontSize="12" Margin="0,0,0,16" />
+                    
+                    <!-- Time Display Header -->
+                    <Grid Grid.Row="1" ColumnDefinitions="*, Auto, *, Auto" Margin="0,0,0,24" Height="64">
+                        <Border Name="HourBorder" Grid.Column="0" Background="#7B1FA2" CornerRadius="8" Cursor="Hand">
+                            <TextBlock Name="HourText" Text="07" Foreground="White" FontSize="42" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        
+                        <TextBlock Grid.Column="1" Text=":" Foreground="#A0A0A0" FontSize="36" VerticalAlignment="Center" Margin="8,0" />
+                        
+                        <Border Name="MinuteBorder" Grid.Column="2" Background="#38383B" CornerRadius="8" Cursor="Hand">
+                            <TextBlock Name="MinuteText" Text="00" Foreground="#E0E0E0" FontSize="42" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+
+                        <Border Grid.Column="3" Margin="12,0,0,0" Width="42" BorderBrush="#555" BorderThickness="1" CornerRadius="6">
+                            <Grid RowDefinitions="*, *">
+                                <Border Name="AmBorder" Grid.Row="0" Background="#7B1FA2" CornerRadius="5,5,0,0" Cursor="Hand">
+                                    <TextBlock Name="AmText" Text="AM" Foreground="White" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <Border Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="#555">
+                                    <Border Name="PmBorder" Background="Transparent" CornerRadius="0,0,5,5" Cursor="Hand">
+                                        <TextBlock Name="PmText" Text="PM" Foreground="#A0A0A0" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Clock Face -->
+                    <Border Grid.Row="2" Background="#38383B" CornerRadius="120" Width="240" Height="240" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Panel Name="ClockFacePanel" Background="Transparent">
+                            <!-- Center Dot -->
+                            <Ellipse Width="6" Height="6" Fill="#7B1FA2" HorizontalAlignment="Center" VerticalAlignment="Center" ZIndex="3" />
+                            
+                            <!-- Clock Hand -->
+                            <Line Name="ClockHand" StartPoint="120,120" EndPoint="120,40" Stroke="#7B1FA2" StrokeThickness="2" ZIndex="0" />
+                            
+                            <!-- Selection Circle -->
+                            <Ellipse Name="SelectionCircle" Width="36" Height="36" Fill="#7B1FA2" Margin="102,22,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" ZIndex="1" />
+                            
+                            <!-- Numbers will be generated in code behind -->
+                            <Canvas Name="NumbersCanvas" Width="240" Height="240" ZIndex="2" />
+                        </Panel>
+                    </Border>
+
+                    <!-- Footer -->
+                    <Grid Grid.Row="3" ColumnDefinitions="Auto, *, Auto, Auto" Margin="0,16,0,0">
+                        <Button Name="CancelBtn" Grid.Column="2" Content="Cancel" Background="Transparent" Foreground="#E0B0FF" Margin="0,0,8,0" Cursor="Hand" />
+                        <Button Name="OkBtn" Grid.Column="3" Content="OK" Background="Transparent" Foreground="#E0B0FF" Cursor="Hand" />
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+    </Panel>
+</UserControl>
