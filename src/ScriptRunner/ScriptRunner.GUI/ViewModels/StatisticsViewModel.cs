@@ -296,7 +296,7 @@ public class StatisticsViewModel : ReactiveObject
         
         // Summary counts
         var today = now.Date;
-        var startOfWeek = today.AddDays(-(int)today.DayOfWeek == 0 ? 6 : (int)today.DayOfWeek - 1);
+        var startOfWeek = today.AddDays((int)today.DayOfWeek == 0 ? -6 : -(int)today.DayOfWeek + 1);
         var startOfMonth = new DateTime(now.Year, now.Month, 1);
         var startOfYear = new DateTime(now.Year, 1, 1);
 
