@@ -344,7 +344,7 @@ public class StatisticsViewModel : ReactiveObject
         }
         
         var yearData = _executionLog
-            .Where(x => x.Timestamp >= startDate && x.Timestamp <= endDate)
+            .Where(x => x.Timestamp.Date >= startDate && x.Timestamp.Date <= endDate)
             .ToList();
 
         GenerateHeatmapData(yearData, startDate, endDate, _selectedYearOption.IsLastYear);
