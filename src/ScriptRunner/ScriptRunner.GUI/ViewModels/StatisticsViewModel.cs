@@ -248,10 +248,57 @@ public class StatisticsViewModel : ReactiveObject
         }
     }
 
+    private int _totalExecutions;
+    public int TotalExecutions
+    {
+        get => _totalExecutions;
+        set => this.RaiseAndSetIfChanged(ref _totalExecutions, value);
+    }
+
+    private int _executionsToday;
+    public int ExecutionsToday
+    {
+        get => _executionsToday;
+        set => this.RaiseAndSetIfChanged(ref _executionsToday, value);
+    }
+
+    private int _executionsThisWeek;
+    public int ExecutionsThisWeek
+    {
+        get => _executionsThisWeek;
+        set => this.RaiseAndSetIfChanged(ref _executionsThisWeek, value);
+    }
+
+    private int _executionsThisMonth;
+    public int ExecutionsThisMonth
+    {
+        get => _executionsThisMonth;
+        set => this.RaiseAndSetIfChanged(ref _executionsThisMonth, value);
+    }
+
+    private int _executionsThisYear;
+    public int ExecutionsThisYear
+    {
+        get => _executionsThisYear;
+        set => this.RaiseAndSetIfChanged(ref _executionsThisYear, value);
+    }
+
     public void RefreshStatistics()
     {
         var now = DateTime.Now;
         var yearAgo = now.Date.AddYears(-1);
+        
+        // Summary counts
+        var today = now.Date;
+        var startOfWeek = today.AddDays(-(int)today.DayOfWeek == 0 ? 6 : (int)today.DayOfWeek - 1);
+        var startOfMonth = new DateTime(now.Year, now.Month, 1);
+        var startOfYear = new DateTime(now.Year, 1, 1);
+
+        TotalExecutions = _executionLog.Count;
+        ExecutionsToday = _executionLog.Count(x => x.Timestamp.Date == today);
+        ExecutionsThisWeek = _executionLog.Count(x => x.Timestamp.Date >= startOfWeek);
+        ExecutionsThisMonth = _executionLog.Count(x => x.Timestamp.Date >= startOfMonth);
+        ExecutionsThisYear = _executionLog.Count(x => x.Timestamp.Date >= startOfYear);
         
         // Filter execution log for the last year
         var yearData = _executionLog

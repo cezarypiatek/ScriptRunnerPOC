@@ -64,6 +64,40 @@
                        FontWeight="Bold"
                        Margin="0,0,0,10"/>
             
+            <!-- Summary Cards -->
+            <UniformGrid Rows="1" Margin="0,0,0,10">
+                <Border Background="#161b22" CornerRadius="8" Padding="20,16" Margin="0,0,8,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding TotalExecutions}" FontSize="36" FontWeight="Bold" Foreground="#39d353"/>
+                        <TextBlock Text="Total" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#161b22" CornerRadius="8" Padding="20,16" Margin="4,0,4,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding ExecutionsToday}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
+                        <TextBlock Text="Today" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#161b22" CornerRadius="8" Padding="20,16" Margin="4,0,4,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding ExecutionsThisWeek}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
+                        <TextBlock Text="This Week" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#161b22" CornerRadius="8" Padding="20,16" Margin="4,0,4,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding ExecutionsThisMonth}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
+                        <TextBlock Text="This Month" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#161b22" CornerRadius="8" Padding="20,16" Margin="8,0,0,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding ExecutionsThisYear}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
+                        <TextBlock Text="This Year" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+            
             <!-- Heatmap Section -->
             <StackPanel Spacing="10">
                 <!-- Header with Year Selector -->

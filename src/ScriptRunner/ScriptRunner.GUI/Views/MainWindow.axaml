@@ -74,7 +74,12 @@
                   </Panel>
               </views:ContentWithSidebar.Sidebar>
               <views:ContentWithSidebar.Main>
-                  <views:ActionDetailsSection ></views:ActionDetailsSection>
+                  <Panel>
+                      <views:ActionDetailsSection IsVisible="{Binding IsActionSelected}"></views:ActionDetailsSection>
+                      <Panel IsVisible="{Binding !IsActionSelected}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                          <views:Statistics DataContext="{Binding Statistics}" MaxWidth="1400" HorizontalAlignment="Center"/>
+                      </Panel>
+                  </Panel>
               </views:ContentWithSidebar.Main>
           </views:ContentWithSidebar>
     </Grid>
