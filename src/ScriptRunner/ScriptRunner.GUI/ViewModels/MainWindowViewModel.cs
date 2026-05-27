@@ -343,6 +343,17 @@ public class MainWindowViewModel : ReactiveObject
 
         // Initialize Statistics ViewModel
         Statistics = new StatisticsViewModel(ExecutionLog);
+        Statistics.ActionSelected
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(item =>
+            {
+                if (Actions.FirstOrDefault(x => x.Name == item.ActionName && x.SourceName == item.Source) is { } action)
+                {
+                    SelectedAction = action;
+                    IsStatisticsVisible = false;
+                    IsScriptListVisible = true;
+                }
+            });
 
         ExecutionLogAction? lastSelected = null;
         

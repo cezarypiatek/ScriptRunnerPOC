@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Windows.Input;
 using ReactiveUI;
 
@@ -24,6 +25,7 @@ public class StatisticsViewModel : ReactiveObject
         NextPageCommand = ReactiveCommand.Create(NextPage, this.WhenAnyValue(x => x.CanGoNext));
         PreviousPageCommand = ReactiveCommand.Create(PreviousPage, this.WhenAnyValue(x => x.CanGoPrevious));
         GoToPageCommand = ReactiveCommand.Create<int>(GoToPage);
+        SelectActionCommand = ReactiveCommand.Create<TopActionItem>(item => _selectActionSubject.OnNext(item));
 
         Observable
             .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
@@ -160,6 +162,10 @@ public class StatisticsViewModel : ReactiveObject
     public ICommand NextPageCommand { get; }
     public ICommand PreviousPageCommand { get; }
     public ICommand GoToPageCommand { get; }
+    public ReactiveCommand<TopActionItem, Unit> SelectActionCommand { get; }
+
+    private readonly Subject<TopActionItem> _selectActionSubject = new();
+    public IObservable<TopActionItem> ActionSelected => _selectActionSubject;
 
     private void NextPage()
     {

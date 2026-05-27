@@ -310,42 +310,56 @@
                         <ItemsControl Grid.Row="1" ItemsSource="{Binding TopActions}" Name="TopActionsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:TopActionItem">
-                                    <Border BorderBrush="#2E2E30" 
-                                            BorderThickness="0,1,0,0"
-                                            Padding="5">
-                                        <Grid ColumnDefinitions="50,*,200,120,120" Height="35">
-                                            <TextBlock Grid.Column="0" 
-                                                       Text="{Binding Rank}"
-                                                       VerticalAlignment="Center"
-                                                       Foreground="#858585"/>
-                                            <TextBlock Grid.Column="1" 
-                                                       Text="{Binding ActionName}"
-                                                       VerticalAlignment="Center"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       ToolTip.Tip="{Binding ActionName}"/>
-                                            <TextBlock Grid.Column="2" 
-                                                       Text="{Binding Source}"
-                                                       VerticalAlignment="Center"
-                                                       Foreground="#A0A0A0"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       ToolTip.Tip="{Binding Source}"/>
-                                            <TextBlock Grid.Column="3" 
-                                                       Text="{Binding LastUsedFormatted}"
-                                                       VerticalAlignment="Center"
-                                                       HorizontalAlignment="Center"
-                                                       Foreground="#B0B0B0"/>
-                                            <StackPanel Grid.Column="4" 
-                                                        Orientation="Horizontal" 
-                                                        HorizontalAlignment="Right"
-                                                        VerticalAlignment="Center"
-                                                        Spacing="5"
-                                                        Margin="0,0,10,0">
-                                                <TextBlock Text="{Binding ExecutionCount}"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#3baced"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
+                                    <Button Command="{Binding $parent[UserControl].DataContext.SelectActionCommand}"
+                                            CommandParameter="{Binding}"
+                                            Padding="0"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Stretch"
+                                            Cursor="Hand">
+                                        <Button.Styles>
+                                            <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                                <Setter Property="Background" Value="#1e2a1e"/>
+                                            </Style>
+                                        </Button.Styles>
+                                        <Border BorderBrush="#2E2E30" 
+                                                BorderThickness="0,1,0,0"
+                                                Padding="5">
+                                            <Grid ColumnDefinitions="50,*,200,120,120" Height="35">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{Binding Rank}"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#858585"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding ActionName}"
+                                                           VerticalAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           ToolTip.Tip="{Binding ActionName}"/>
+                                                <TextBlock Grid.Column="2" 
+                                                           Text="{Binding Source}"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#A0A0A0"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           ToolTip.Tip="{Binding Source}"/>
+                                                <TextBlock Grid.Column="3" 
+                                                           Text="{Binding LastUsedFormatted}"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           Foreground="#B0B0B0"/>
+                                                <StackPanel Grid.Column="4" 
+                                                            Orientation="Horizontal" 
+                                                            HorizontalAlignment="Right"
+                                                            VerticalAlignment="Center"
+                                                            Spacing="5"
+                                                            Margin="0,0,10,0">
+                                                    <TextBlock Text="{Binding ExecutionCount}"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#3baced"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
