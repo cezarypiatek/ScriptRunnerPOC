@@ -84,8 +84,8 @@
           </views:ContentWithSidebar>
     </Grid>
     
-    <GridSplitter IsTabStop="False" Grid.Row="3"   ResizeDirection="Rows"  BorderThickness="0,1,0,0" BorderBrush="#828282" ></GridSplitter>
-    <views:RunningJobsSection Grid.Row="4" ></views:RunningJobsSection>
+    <GridSplitter IsTabStop="False" Grid.Row="3"   ResizeDirection="Rows"  BorderThickness="0,1,0,0" BorderBrush="#828282" IsVisible="{Binding HasRunningJobs}"></GridSplitter>
+    <views:RunningJobsSection Grid.Row="4" IsVisible="{Binding HasRunningJobs}"></views:RunningJobsSection>
   </Grid>
   
             <!-- Search overlay - positioned on top of everything -->

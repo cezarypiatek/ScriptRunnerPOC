@@ -194,6 +194,13 @@ public class MainWindowViewModel : ReactiveObject
     
     public ObservableCollection<RunningJobViewModel> RunningJobs { get; set; } = new();
 
+    private bool _hasRunningJobs;
+    public bool HasRunningJobs
+    {
+        get => _hasRunningJobs;
+        private set => this.RaiseAndSetIfChanged(ref _hasRunningJobs, value);
+    }
+
     public RunningJobViewModel SelectedRunningJob
     {
         get => _selectedRunningJob;
@@ -375,7 +382,9 @@ public class MainWindowViewModel : ReactiveObject
             .Select(t => (t.Item1 || t.Item2 || t.Item3))
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.IsSideBoxVisible, out _isSideBoxVisible);
-        
+
+        RunningJobs.CollectionChanged += (_, _) => HasRunningJobs = RunningJobs.Count > 0;
+
         this.WhenAnyValue(x => x.IsScriptListVisible)
             .Where(x => x)
             .ObserveOn(RxApp.MainThreadScheduler)

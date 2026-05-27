@@ -44,6 +44,23 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         if (ViewModel != null)
         {
             ViewModel.ScrollToDateAction = ScrollToDate;
+
+            ViewModel.WhenAnyValue(x => x.HasRunningJobs)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(hasJobs =>
+                {
+                    var mainGrid = this.FindControl<Grid>("MainGrid");
+                    if (mainGrid != null)
+                    {
+                        // Row 3 = splitter, Row 4 = running jobs panel
+                        var splitterRow = mainGrid.RowDefinitions[3];
+                        var jobsRow = mainGrid.RowDefinitions[4];
+                        splitterRow.Height = hasJobs ? new GridLength(3) : new GridLength(0);
+                        splitterRow.MaxHeight = hasJobs ? 3 : 0;
+                        jobsRow.Height = hasJobs ? new GridLength(300) : new GridLength(0);
+                        jobsRow.MinHeight = hasJobs ? 100 : 0;
+                    }
+                });
         }
         
         if (AppSettingsService.Load().Layout is { } layoutSettings)
