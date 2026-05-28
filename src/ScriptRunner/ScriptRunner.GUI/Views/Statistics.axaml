@@ -53,6 +53,43 @@
         <Style Selector="Border.intensity-4">
             <Setter Property="Background" Value="#39d353"/>
         </Style>
+
+        <!-- Stat tile button base style -->
+        <Style Selector="Button.statTile">
+            <Setter Property="Background" Value="#161b22"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20,16"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.statTile /template/ ContentPresenter">
+            <Setter Property="Background" Value="#161b22"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.statTile:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1e2530"/>
+            <Setter Property="BorderBrush" Value="#4a7fa5"/>
+        </Style>
+        <Style Selector="Button.statTile.selected /template/ ContentPresenter">
+            <Setter Property="BorderBrush" Value="#3baced"/>
+            <Setter Property="Background" Value="#1a2535"/>
+        </Style>
+        <Style Selector="Button.statTile.selected:pointerover /template/ ContentPresenter">
+            <Setter Property="BorderBrush" Value="#5cc0f0"/>
+            <Setter Property="Background" Value="#1e2b3d"/>
+        </Style>
     </UserControl.Styles>
     
     <ScrollViewer>
@@ -66,36 +103,56 @@
             
             <!-- Summary Cards -->
             <UniformGrid Rows="1" Margin="0,0,0,10">
-                <Border Background="#161b22" CornerRadius="8" Padding="20,16" Margin="0,0,8,0">
+                <Button Classes="statTile"
+                        Classes.selected="{Binding IsTotalSelected}"
+                        Command="{Binding SelectRangeCommand}"
+                        CommandParameter="{x:Static vm:TopActionsRange.Total}"
+                        Margin="0,0,8,0">
                     <StackPanel Spacing="4">
                         <TextBlock Text="{Binding TotalExecutions}" FontSize="36" FontWeight="Bold" Foreground="#39d353"/>
                         <TextBlock Text="Total" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
                     </StackPanel>
-                </Border>
-                <Border Background="#161b22" CornerRadius="8" Padding="20,16" Margin="4,0,4,0">
+                </Button>
+                <Button Classes="statTile"
+                        Classes.selected="{Binding IsTodaySelected}"
+                        Command="{Binding SelectRangeCommand}"
+                        CommandParameter="{x:Static vm:TopActionsRange.Today}"
+                        Margin="4,0,4,0">
                     <StackPanel Spacing="4">
                         <TextBlock Text="{Binding ExecutionsToday}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
                         <TextBlock Text="Today" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
                     </StackPanel>
-                </Border>
-                <Border Background="#161b22" CornerRadius="8" Padding="20,16" Margin="4,0,4,0">
+                </Button>
+                <Button Classes="statTile"
+                        Classes.selected="{Binding IsThisWeekSelected}"
+                        Command="{Binding SelectRangeCommand}"
+                        CommandParameter="{x:Static vm:TopActionsRange.ThisWeek}"
+                        Margin="4,0,4,0">
                     <StackPanel Spacing="4">
                         <TextBlock Text="{Binding ExecutionsThisWeek}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
                         <TextBlock Text="This Week" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
                     </StackPanel>
-                </Border>
-                <Border Background="#161b22" CornerRadius="8" Padding="20,16" Margin="4,0,4,0">
+                </Button>
+                <Button Classes="statTile"
+                        Classes.selected="{Binding IsThisMonthSelected}"
+                        Command="{Binding SelectRangeCommand}"
+                        CommandParameter="{x:Static vm:TopActionsRange.ThisMonth}"
+                        Margin="4,0,4,0">
                     <StackPanel Spacing="4">
                         <TextBlock Text="{Binding ExecutionsThisMonth}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
                         <TextBlock Text="This Month" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
                     </StackPanel>
-                </Border>
-                <Border Background="#161b22" CornerRadius="8" Padding="20,16" Margin="8,0,0,0">
+                </Button>
+                <Button Classes="statTile"
+                        Classes.selected="{Binding IsThisYearSelected}"
+                        Command="{Binding SelectRangeCommand}"
+                        CommandParameter="{x:Static vm:TopActionsRange.ThisYear}"
+                        Margin="8,0,0,0">
                     <StackPanel Spacing="4">
                         <TextBlock Text="{Binding ExecutionsThisYear}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
                         <TextBlock Text="This Year" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
                     </StackPanel>
-                </Border>
+                </Button>
             </UniformGrid>
             
             <!-- Heatmap Section -->
@@ -262,7 +319,7 @@
             
             <!-- Top 10 Actions Section -->
             <StackPanel Spacing="10">
-                <TextBlock Text="Most Executed Actions" 
+                <TextBlock Text="{Binding TopActionsHeader}" 
                            FontSize="18" 
                            FontWeight="SemiBold"/>
                 

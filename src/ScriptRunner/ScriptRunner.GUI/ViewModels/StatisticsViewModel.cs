@@ -26,6 +26,10 @@ public class StatisticsViewModel : ReactiveObject
         PreviousPageCommand = ReactiveCommand.Create(PreviousPage, this.WhenAnyValue(x => x.CanGoPrevious));
         GoToPageCommand = ReactiveCommand.Create<int>(GoToPage);
         SelectActionCommand = ReactiveCommand.Create<TopActionItem>(item => _selectActionSubject.OnNext(item));
+        SelectRangeCommand = ReactiveCommand.Create<TopActionsRange>(range =>
+        {
+            SelectedRange = range;
+        });
 
         Observable
             .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
@@ -40,6 +44,11 @@ public class StatisticsViewModel : ReactiveObject
                 InitializeAvailableYears();
                 RefreshStatistics();
             });
+
+        this.WhenAnyValue(x => x.SelectedRange)
+            .Skip(1)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => RefreshStatistics());
     }
 
     private List<HeatmapDay> _heatmapDays = new();
@@ -159,10 +168,43 @@ public class StatisticsViewModel : ReactiveObject
         ? $"Page {CurrentPage} of {TotalPages} ({TotalActions} total actions)"
         : "No actions found";
 
+    private TopActionsRange _selectedRange = TopActionsRange.Total;
+    public TopActionsRange SelectedRange
+    {
+        get => _selectedRange;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _selectedRange, value);
+            this.RaisePropertyChanged(nameof(TopActionsHeader));
+            this.RaisePropertyChanged(nameof(IsTotalSelected));
+            this.RaisePropertyChanged(nameof(IsTodaySelected));
+            this.RaisePropertyChanged(nameof(IsThisWeekSelected));
+            this.RaisePropertyChanged(nameof(IsThisMonthSelected));
+            this.RaisePropertyChanged(nameof(IsThisYearSelected));
+        }
+    }
+
+    public string TopActionsHeader => SelectedRange switch
+    {
+        TopActionsRange.Total     => "Most Executed Actions \u2014 Total",
+        TopActionsRange.Today     => "Most Executed Actions \u2014 Today",
+        TopActionsRange.ThisWeek  => "Most Executed Actions \u2014 This Week",
+        TopActionsRange.ThisMonth => "Most Executed Actions \u2014 This Month",
+        TopActionsRange.ThisYear  => "Most Executed Actions \u2014 This Year",
+        _                         => "Most Executed Actions"
+    };
+
+    public bool IsTotalSelected     => SelectedRange == TopActionsRange.Total;
+    public bool IsTodaySelected     => SelectedRange == TopActionsRange.Today;
+    public bool IsThisWeekSelected  => SelectedRange == TopActionsRange.ThisWeek;
+    public bool IsThisMonthSelected => SelectedRange == TopActionsRange.ThisMonth;
+    public bool IsThisYearSelected  => SelectedRange == TopActionsRange.ThisYear;
+
     public ICommand NextPageCommand { get; }
     public ICommand PreviousPageCommand { get; }
     public ICommand GoToPageCommand { get; }
     public ReactiveCommand<TopActionItem, Unit> SelectActionCommand { get; }
+    public ReactiveCommand<TopActionsRange, Unit> SelectRangeCommand { get; }
 
     private readonly Subject<TopActionItem> _selectActionSubject = new();
     public IObservable<TopActionItem> ActionSelected => _selectActionSubject;
@@ -292,7 +334,6 @@ public class StatisticsViewModel : ReactiveObject
     public void RefreshStatistics()
     {
         var now = DateTime.Now;
-        var yearAgo = now.Date.AddYears(-1);
         
         // Summary counts
         var today = now.Date;
@@ -306,16 +347,28 @@ public class StatisticsViewModel : ReactiveObject
         ExecutionsThisMonth = _executionLog.Count(x => x.Timestamp.Date >= startOfMonth);
         ExecutionsThisYear = _executionLog.Count(x => x.Timestamp.Date >= startOfYear);
         
-        // Filter execution log for the last year
-        var yearData = _executionLog
-            .Where(x => x.Timestamp >= yearAgo)
-            .ToList();
-
         // Generate heatmap data for selected year
         RefreshHeatmapForSelectedOption();
         
-        // Generate top actions
-        GenerateTopActions(yearData);
+        // Generate top actions filtered by selected range
+        GenerateTopActions(FilterByRange(SelectedRange, today, startOfWeek, startOfMonth, startOfYear));
+    }
+
+    private List<ExecutionLogAction> FilterByRange(
+        TopActionsRange range,
+        DateTime today,
+        DateTime startOfWeek,
+        DateTime startOfMonth,
+        DateTime startOfYear)
+    {
+        return range switch
+        {
+            TopActionsRange.Today     => _executionLog.Where(x => x.Timestamp.Date == today).ToList(),
+            TopActionsRange.ThisWeek  => _executionLog.Where(x => x.Timestamp.Date >= startOfWeek).ToList(),
+            TopActionsRange.ThisMonth => _executionLog.Where(x => x.Timestamp.Date >= startOfMonth).ToList(),
+            TopActionsRange.ThisYear  => _executionLog.Where(x => x.Timestamp.Date >= startOfYear).ToList(),
+            _                         => _executionLog.ToList(), // Total
+        };
     }
 
     private void RefreshHeatmapForSelectedOption()
@@ -517,6 +570,15 @@ public class StatisticsViewModel : ReactiveObject
         var skip = (CurrentPage - 1) * PageSize;
         TopActions = _allActions.Skip(skip).Take(PageSize).ToList();
     }
+}
+
+public enum TopActionsRange
+{
+    Total,
+    Today,
+    ThisWeek,
+    ThisMonth,
+    ThisYear
 }
 
 public class HeatmapDay
