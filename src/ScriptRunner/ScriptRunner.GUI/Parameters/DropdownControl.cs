@@ -39,6 +39,24 @@ public class DropdownControl : IControlRecord
         return selectedItem?.ToString() ?? string.Empty;
     }
 
+    public void SetValueFromString(string value)
+    {
+        // Find matching option by value or label
+        var match = DropdownOptions?.FirstOrDefault(o => o.Value == value)
+                    ?? DropdownOptions?.FirstOrDefault(o => o.Label == value);
+        switch (InputControl)
+        {
+            case ComboBox cb:
+                if (match != null)
+                    cb.SelectedItem = match;
+                break;
+            case SearchableComboBox acb:
+                if (match != null)
+                    acb.SelectedItem = match.Label;
+                break;
+        }
+    }
+
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
 }

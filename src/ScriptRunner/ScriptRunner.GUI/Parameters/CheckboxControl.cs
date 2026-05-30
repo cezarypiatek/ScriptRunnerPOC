@@ -12,6 +12,13 @@ public class CheckboxControl : IControlRecord
         return ((CheckBox)Control).IsChecked == true ? CheckedValue: UncheckedValue;
     }
 
+    public void SetValueFromString(string value)
+    {
+        ((CheckBox)Control).IsChecked = value == CheckedValue ||
+            value.Equals("true", System.StringComparison.OrdinalIgnoreCase) ||
+            value == "1";
+    }
+
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
 }

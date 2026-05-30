@@ -841,6 +841,8 @@ public class MainWindowViewModel : ReactiveObject
                 
                 Actions = actions;
 
+                ActionsReloaded?.Invoke(this, EventArgs.Empty);
+
                 if (string.IsNullOrWhiteSpace(selectedActionName) == false && Actions.FirstOrDefault(x => x.Name == selectedActionName) is { } previouslySelected)
                 {
                     SelectedAction = previouslySelected;
@@ -1056,6 +1058,35 @@ public class MainWindowViewModel : ReactiveObject
                 RefreshSettings();
             };
             window.Show(mainWindow);
+        }
+    }
+
+    public void OpenMcpConfigWindow()
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime {MainWindow: {} mainWindow})
+        {
+            var window = new McpConfigWindow();
+            window.Show(mainWindow);
+        }
+    }
+
+    /// <summary>
+    /// Fired after actions are reloaded so the MCP host can refresh its tool list.
+    /// </summary>
+    public event EventHandler? ActionsReloaded;
+
+    /// <summary>
+    /// Apply parameter values coming from an MCP tool call into the currently rendered form controls.
+    /// Must be called on the UI thread after RenderParameterForm has run.
+    /// </summary>
+    public void ApplyMcpParameterValues(IReadOnlyDictionary<string, string> args)
+    {
+        foreach (var controlRecord in _controlRecords)
+        {
+            if (args.TryGetValue(controlRecord.Name, out var value))
+            {
+                controlRecord.SetValueFromString(value);
+            }
         }
     }
 

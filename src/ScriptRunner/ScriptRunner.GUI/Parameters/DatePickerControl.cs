@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using Avalonia.Controls;
 
 namespace ScriptRunner.GUI;
@@ -20,6 +21,22 @@ public class DatePickerControl : IControlRecord
             return value.ToString(Format, Culture);
         }
         return selectedDateTime?.ToString() ?? string.Empty;
+    }
+
+    public void SetValueFromString(string value)
+    {
+        if (DateTime.TryParse(value, out var dt))
+        {
+            switch (Control)
+            {
+                case DatePicker dp:
+                    dp.SelectedDate = new DateTimeOffset(dt);
+                    break;
+                case CalendarDatePicker cdp:
+                    cdp.SelectedDate = dt;
+                    break;
+            }
+        }
     }
 
     public string Name { get; set; }

@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using Avalonia.Controls;
 
 namespace ScriptRunner.GUI;
 
@@ -14,6 +15,12 @@ public class TimePickerControl : IControlRecord
             return value.ToString(Format);
         }
         return selectedTime?.ToString() ?? string.Empty;
+    }
+
+    public void SetValueFromString(string value)
+    {
+        if (TimeSpan.TryParse(value, out var ts))
+            ((ScriptRunner.GUI.Views.Controls.TimePickerInput)Control).SelectedTime = ts;
     }
 
     public string Name { get; set; }

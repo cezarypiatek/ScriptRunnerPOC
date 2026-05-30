@@ -12,6 +12,11 @@ public class PasswordControl : IControlRecord
         return ((PasswordBox)Control).Password;
     }
 
+    public void SetValueFromString(string value)
+    {
+        ((PasswordBox)Control).Password = value;
+    }
+
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
 }

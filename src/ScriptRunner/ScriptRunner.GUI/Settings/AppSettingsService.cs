@@ -141,6 +141,13 @@ public class AppSettingsService
     }
 
 
+    public static void UpdateMcpServerSettings(McpServerSettings mcpSettings)
+    {
+        var allSettings = Load();
+        allSettings.McpServer = mcpSettings;
+        Save(allSettings);
+    }
+
     public static void UpdateScriptConfigs(IEnumerable<ConfigScriptEntry> configScripts)
     {
         var allSettings = Load();

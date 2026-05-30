@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 using ScriptRunner.GUI.ScriptConfigs;
 
@@ -7,6 +8,7 @@ namespace ScriptRunner.GUI;
 public class MultiSelectControl : IControlRecord
 {
     public Control Control { get; set; }
+    public IEnumerable<DropdownOption>? Options { get; set; }
 
     public string GetFormattedValue()
     {
@@ -25,6 +27,22 @@ public class MultiSelectControl : IControlRecord
         }
 
         return string.Join(Delimiter, copy);
+    }
+
+    public void SetValueFromString(string value)
+    {
+        var lb = (ListBox)Control;
+        lb.SelectedItems?.Clear();
+        var parts = value.Split(Delimiter);
+        foreach (var part in parts)
+        {
+            var match = Options?.FirstOrDefault(o => o.Value == part.Trim()) as object
+                        ?? lb.Items.OfType<object>().FirstOrDefault(i => i?.ToString() == part.Trim());
+            if (match != null)
+            {
+                lb.SelectedItems?.Add(match);
+            }
+        }
     }
 
     public string Name { get; set; }

@@ -35,7 +35,19 @@ public class FileContent : IControlRecord
         return _useWslPath ? WslPathConverter.ConvertToWslPath(FileName) : FileName;
     }
 
-   
+    public void SetValueFromString(string value)
+    {
+        switch (Control)
+        {
+            case TextBox textBox:
+                textBox.Text = value;
+                break;
+            case TextEditor textEditor:
+                textEditor.Text = value;
+                break;
+        }
+    }
+
     private static string GetFileContentStoragePath(string fileName)
     {
         var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ScriptRunner", "FileContentStorage");
