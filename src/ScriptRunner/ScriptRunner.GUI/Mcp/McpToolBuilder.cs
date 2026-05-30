@@ -141,7 +141,12 @@ public static class McpToolBuilder
     /// When true, the action will not execute automatically. Instead the UI presents Accept/Reject
     /// buttons and the MCP call blocks until the user makes a choice.
     /// </param>
-    public static McpServerTool CreateTool(ScriptConfig action, string toolName, McpUiBridge bridge, bool includeOutput = false, bool safeMode = false)
+    /// <param name="fireAndForget">
+    /// When true, the MCP call returns immediately with a "running in background" message if the
+    /// job has not completed within 3 seconds of starting. If the job finishes within that window
+    /// the real result is returned as normal.
+    /// </param>
+    public static McpServerTool CreateTool(ScriptConfig action, string toolName, McpUiBridge bridge, bool includeOutput = false, bool safeMode = false, bool fireAndForget = false)
     {
         return McpServerTool.Create(
             async (IReadOnlyDictionary<string, object?> rawArgs, CancellationToken ct) =>
@@ -163,7 +168,7 @@ public static class McpToolBuilder
                         stringArgs[param.Name] = param.Default;
                 }
 
-                var result = await bridge.ExecuteActionAsync(action, stringArgs, ct, safeMode, explicitKeys);
+                var result = await bridge.ExecuteActionAsync(action, stringArgs, ct, safeMode, explicitKeys, fireAndForget);
 
                 if (result.Rejected)
                 {
@@ -174,6 +179,18 @@ public static class McpToolBuilder
                             new TextContentBlock { Text = $"Action '{action.FullName}' was rejected by the user in safe mode." }
                         },
                         IsError = true
+                    };
+                }
+
+                if (result.StillRunning)
+                {
+                    return new CallToolResult
+                    {
+                        Content = new List<ContentBlock>
+                        {
+                            new TextContentBlock { Text = $"Action '{action.FullName}' was launched and is running in the background." }
+                        },
+                        IsError = false
                     };
                 }
 

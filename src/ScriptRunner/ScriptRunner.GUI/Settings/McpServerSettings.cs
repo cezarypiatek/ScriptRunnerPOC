@@ -48,4 +48,19 @@ public class McpServerSettings
     /// Missing key means safe mode is off for the action.
     /// </summary>
     public Dictionary<string, bool> ActionSafeModeOverrides { get; set; } = new();
+
+    /// <summary>
+    /// When true, all exposed actions use fire-and-forget mode: the MCP call returns after a 3-second
+    /// delay with a "running in background" message if the job has not completed by then.
+    /// If the job finishes within 3 seconds the real result is returned immediately.
+    /// Default is false (original blocking behavior).
+    /// </summary>
+    public bool FireAndForgetForAllActions { get; set; } = false;
+
+    /// <summary>
+    /// Per-action fire-and-forget map. Key is ScriptConfig.FullName.
+    /// Only used when <see cref="FireAndForgetForAllActions"/> is false.
+    /// Missing key means fire-and-forget is off for the action.
+    /// </summary>
+    public Dictionary<string, bool> ActionFireAndForgetOverrides { get; set; } = new();
 }

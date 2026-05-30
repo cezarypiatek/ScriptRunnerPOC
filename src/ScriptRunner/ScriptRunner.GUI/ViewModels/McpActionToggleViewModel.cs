@@ -22,6 +22,7 @@ public class McpActionToggleViewModel : ReactiveObject
             this.RaiseAndSetIfChanged(ref _isEnabled, value);
             this.RaisePropertyChanged(nameof(CanEditExposeOutput));
             this.RaisePropertyChanged(nameof(CanEditSafeMode));
+            this.RaisePropertyChanged(nameof(CanEditFireAndForget));
         }
     }
 
@@ -82,4 +83,33 @@ public class McpActionToggleViewModel : ReactiveObject
     /// the action must be exposed AND the master safe mode switch must be OFF.
     /// </summary>
     public bool CanEditSafeMode => _isEnabled && _canConfigureIndividualSafeMode;
+
+    private bool _fireAndForget;
+    /// <summary>When true, the MCP call returns after 3 seconds with a background-running notice if the job hasn't finished yet.</summary>
+    public bool FireAndForget
+    {
+        get => _fireAndForget;
+        set => this.RaiseAndSetIfChanged(ref _fireAndForget, value);
+    }
+
+    private bool _canConfigureIndividualFireAndForget;
+    /// <summary>
+    /// Pushed from the parent VM whenever <see cref="McpConfigWindowViewModel.CanConfigureIndividualFireAndForget"/> changes.
+    /// Combines with <see cref="IsEnabled"/> to produce <see cref="CanEditFireAndForget"/>.
+    /// </summary>
+    public bool CanConfigureIndividualFireAndForget
+    {
+        get => _canConfigureIndividualFireAndForget;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _canConfigureIndividualFireAndForget, value);
+            this.RaisePropertyChanged(nameof(CanEditFireAndForget));
+        }
+    }
+
+    /// <summary>
+    /// True when the "Fire &amp; forget" toggle for this row should be interactive:
+    /// the action must be exposed AND the master fire-and-forget switch must be OFF.
+    /// </summary>
+    public bool CanEditFireAndForget => _isEnabled && _canConfigureIndividualFireAndForget;
 }
