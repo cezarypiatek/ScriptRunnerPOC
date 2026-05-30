@@ -160,8 +160,9 @@ public static class McpToolBuilder
             props[p.Name] = propSchema;
 
             // Booleans are never required — false is always a valid implicit default.
+            // Passwords are never reported as required — MCP clients cannot securely supply them.
             // All other params are required only when no default is available from either source.
-            if (p.Prompt != PromptType.Checkbox && string.IsNullOrWhiteSpace(effectiveDefault))
+            if (p.Prompt != PromptType.Checkbox && p.Prompt != PromptType.Password && string.IsNullOrWhiteSpace(effectiveDefault))
                 required.Add(p.Name);
         }
 
