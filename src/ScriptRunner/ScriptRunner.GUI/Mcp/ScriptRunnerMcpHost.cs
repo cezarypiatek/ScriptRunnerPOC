@@ -47,16 +47,18 @@ public class ScriptRunnerMcpHost : ReactiveObject
         // Rebuild tools whenever actions are reloaded
         _vm.ActionsReloaded += async (_, _) =>
         {
-            if (IsRunning && _lastSettings != null)
+            if (_enabled && IsRunning && _lastSettings != null)
                 await RestartAsync(_lastSettings);
         };
     }
 
     private McpServerSettings? _lastSettings;
+    private bool _enabled;
 
     public async Task StartAsync(McpServerSettings settings)
     {
         await StopAsync();
+        _enabled = true;
         _lastSettings = settings;
         try
         {
@@ -75,6 +77,7 @@ public class ScriptRunnerMcpHost : ReactiveObject
 
     public async Task StopAsync()
     {
+        _enabled = false;
         if (_app != null)
         {
             try
@@ -86,6 +89,7 @@ public class ScriptRunnerMcpHost : ReactiveObject
             finally
             {
                 _app = null;
+                _lastSettings = null;
                 IsRunning = false;
                 StatusMessage = "Stopped";
             }
