@@ -130,7 +130,14 @@ public static class McpToolBuilder
     /// <summary>
     /// Create a McpServerTool for a single ScriptConfig action.
     /// </summary>
-    public static McpServerTool CreateTool(ScriptConfig action, string toolName, McpUiBridge bridge)
+    /// <param name="action">The action to expose as a tool.</param>
+    /// <param name="toolName">The sanitised MCP tool name.</param>
+    /// <param name="bridge">The UI bridge used to execute the action.</param>
+    /// <param name="includeOutput">
+    /// When true the full visible job output (blended stdout+stderr, ANSI-stripped) is appended
+    /// to the response in addition to the status line.
+    /// </param>
+    public static McpServerTool CreateTool(ScriptConfig action, string toolName, McpUiBridge bridge, bool includeOutput = false)
     {
         return McpServerTool.Create(
             async (IReadOnlyDictionary<string, object?> rawArgs, CancellationToken ct) =>
@@ -155,12 +162,16 @@ public static class McpToolBuilder
                     ? $"Success: '{action.FullName}' completed in {result.Elapsed.TotalSeconds:F1}s"
                     : $"Failed: '{action.FullName}' finished with exit code {result.ExitCode?.ToString() ?? "unknown"} after {result.Elapsed.TotalSeconds:F1}s";
 
+                var content = new List<ContentBlock> { new TextContentBlock { Text = statusText } };
+
+                if (includeOutput && !string.IsNullOrEmpty(result.Output))
+                {
+                    content.Add(new TextContentBlock { Text = result.Output });
+                }
+
                 return new CallToolResult
                 {
-                    Content =
-                    [
-                        new TextContentBlock { Text = statusText }
-                    ],
+                    Content = content,
                     IsError = !result.Success
                 };
             },

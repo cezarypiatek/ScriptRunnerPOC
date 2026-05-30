@@ -3,8 +3,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:ScriptRunner.GUI.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="700"
-        Width="600" MinHeight="500" Height="700"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="750"
+        Width="600" MinHeight="500" Height="750"
         x:Class="ScriptRunner.GUI.Views.McpConfigWindow"
         x:Name="Root"
         Title="MCP Server Configuration"
@@ -19,6 +19,7 @@
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -65,20 +66,41 @@
             </StackPanel>
         </Border>
 
-        <!-- Per-action grid (shown/active only when ExposeAllActions is off) -->
-        <Grid Grid.Row="3" Margin="0,0,0,12">
+        <!-- Master "return output for all" toggle -->
+        <Border Grid.Row="3" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#444">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                    <TextBlock FontSize="13" FontWeight="SemiBold" Text="Return output for all actions"/>
+                    <TextBlock FontSize="11" Foreground="#858585" Text="When off, only individually configured actions return their full output"/>
+                </StackPanel>
+                <ToggleSwitch IsChecked="{Binding ExposeOutputForAllActions}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Per-action grid -->
+        <Grid Grid.Row="4" Margin="0,0,0,12">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#858585" Margin="0,0,0,4"
+
+            <TextBlock Grid.Row="0" FontSize="12" FontWeight="SemiBold" Foreground="#858585" Margin="0,0,0,4"
                        Text="Individual actions:"/>
-            <Border Grid.Row="1" BorderThickness="1" BorderBrush="#333" CornerRadius="4">
+
+            <!-- Column headers -->
+            <Grid Grid.Row="1" Margin="8,0,0,2" ColumnDefinitions="*,90,110">
+                <TextBlock Grid.Column="0" FontSize="11" Foreground="#666" Text="Action"/>
+                <TextBlock Grid.Column="1" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Text="Exposed"/>
+                <TextBlock Grid.Column="2" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Text="Return output"/>
+            </Grid>
+
+            <Border Grid.Row="2" BorderThickness="1" BorderBrush="#333" CornerRadius="4">
                 <ScrollViewer>
                     <ItemsControl ItemsSource="{Binding AvailableActions}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:McpActionToggleViewModel">
-                                <Grid Margin="8,2" ColumnDefinitions="*,Auto">
+                                <Grid Margin="8,2" ColumnDefinitions="*,90,110">
                                     <TextBlock Grid.Column="0"
                                                Text="{Binding DisplayName}"
                                                FontSize="12"
@@ -90,7 +112,14 @@
                                                   IsChecked="{Binding IsEnabled}"
                                                   IsEnabled="{Binding DataContext.CanConfigureIndividualActions, RelativeSource={RelativeSource AncestorType=Window}}"
                                                   VerticalAlignment="Center"
-                                                  Margin="8,0,15,0"/>
+                                                  HorizontalAlignment="Center"
+                                                  Margin="0,0,0,0"/>
+                                    <ToggleSwitch Grid.Column="2"
+                                                  IsChecked="{Binding ExposeOutput}"
+                                                  IsEnabled="{Binding CanEditExposeOutput}"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Center"
+                                                  Margin="0,0,0,0"/>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -98,8 +127,9 @@
                 </ScrollViewer>
             </Border>
         </Grid>
+
         <!-- Save button -->
-        <Button Grid.Row="4"
+        <Button Grid.Row="5"
                 HorizontalAlignment="Right"
                 Width="140"
                 HorizontalContentAlignment="Center"

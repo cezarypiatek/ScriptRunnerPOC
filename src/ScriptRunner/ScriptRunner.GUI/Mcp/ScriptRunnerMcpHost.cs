@@ -117,7 +117,12 @@ public class ScriptRunnerMcpHost : ReactiveObject
                 settings.ActionOverrides.TryGetValue(a.FullName, out var enabled) && enabled).ToArray();
 
         var nameMap = McpToolBuilder.BuildNameMap(actions);
-        var tools = nameMap.Select(t => McpToolBuilder.CreateTool(t.Action, t.ToolName, bridge)).ToList();
+        var tools = nameMap.Select(t =>
+        {
+            var includeOutput = settings.ExposeOutputForAllActions
+                || (settings.ActionOutputOverrides.TryGetValue(t.Action.FullName, out var v) && v);
+            return McpToolBuilder.CreateTool(t.Action, t.ToolName, bridge, includeOutput);
+        }).ToList();
 
         var builder = WebApplication.CreateSlimBuilder();
 

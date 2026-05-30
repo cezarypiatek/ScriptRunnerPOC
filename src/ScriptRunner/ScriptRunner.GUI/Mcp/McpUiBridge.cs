@@ -11,7 +11,7 @@ namespace ScriptRunner.GUI.Mcp;
 /// <summary>
 /// Result of a single MCP tool execution.
 /// </summary>
-public record JobResult(bool Success, int? ExitCode, TimeSpan Elapsed);
+public record JobResult(bool Success, int? ExitCode, TimeSpan Elapsed, string Output);
 
 /// <summary>
 /// Bridges the MCP layer to the Avalonia UI thread.
@@ -58,7 +58,7 @@ public class McpUiBridge
                 var match = _vm.Actions.Find(a => a.Name == action.Name && a.SourceName == action.SourceName);
                 if (match is null)
                 {
-                    tcs.TrySetResult(new JobResult(false, null, TimeSpan.Zero));
+                    tcs.TrySetResult(new JobResult(false, null, TimeSpan.Zero, string.Empty));
                     return;
                 }
 
@@ -74,7 +74,15 @@ public class McpUiBridge
                     {
                         job.ExecutionCompleted -= OnCompleted;
                         var success = job.Status == RunningJobStatus.Finished && (job.ExitCode ?? 0) == 0;
-                        tcs.TrySetResult(new JobResult(success, job.ExitCode, job.Elapsed));
+                        var exitCode = job.ExitCode;
+                        var elapsed = job.Elapsed;
+                        // Defer reading RichOutput by one background-priority tick so the 200 ms
+                        // Rx buffer in RunningJobViewModel has flushed its final batch.
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            var output = job.RichOutput.Text ?? string.Empty;
+                            tcs.TrySetResult(new JobResult(success, exitCode, elapsed, output));
+                        }, Avalonia.Threading.DispatcherPriority.Background);
                     }
                 }
 
@@ -105,7 +113,7 @@ public class McpUiBridge
                 else
                 {
                     // RunScript may have returned early (e.g., elevation required)
-                    tcs.TrySetResult(new JobResult(false, null, TimeSpan.Zero));
+                    tcs.TrySetResult(new JobResult(false, null, TimeSpan.Zero, string.Empty));
                 }
             }
             catch (Exception ex)
