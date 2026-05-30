@@ -41,8 +41,25 @@ public class McpConfigWindowViewModel : ViewModelBase
         }
     }
 
-    /// <summary>True when per-action toggles should be interactive (i.e. master switch is OFF).</summary>
+    /// <summary>True when per-action availability toggles should be interactive (i.e. master switch is OFF).</summary>
     public bool CanConfigureIndividualActions => !_exposeAllActions;
+
+    private bool _exposeOutputForAllActions;
+    public bool ExposeOutputForAllActions
+    {
+        get => _exposeOutputForAllActions;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _exposeOutputForAllActions, value);
+            this.RaisePropertyChanged(nameof(CanConfigureIndividualOutput));
+            // Push updated value to each row so CanEditExposeOutput updates immediately
+            foreach (var row in AvailableActions)
+                row.CanConfigureIndividualOutput = !value;
+        }
+    }
+
+    /// <summary>True when per-action output toggles should be interactive (i.e. output master switch is OFF).</summary>
+    public bool CanConfigureIndividualOutput => !_exposeOutputForAllActions;
 
     public ObservableCollection<McpActionToggleViewModel> AvailableActions { get; } = new();
 
@@ -78,24 +95,28 @@ public class McpConfigWindowViewModel : ViewModelBase
         _enabled = settings.Enabled;
         _port = settings.Port;
         _exposeAllActions = settings.ExposeAllActions;
+        _exposeOutputForAllActions = settings.ExposeOutputForAllActions;
 
-        PopulateAvailableActions(settings.ActionOverrides);
+        PopulateAvailableActions(settings.ActionOverrides, settings.ActionOutputOverrides);
 
         // Refresh the list when actions are reloaded while the dialog is open
         _mainVm.ActionsReloaded += OnActionsReloaded;
     }
 
-    private void PopulateAvailableActions(Dictionary<string, bool> overrides)
+    private void PopulateAvailableActions(Dictionary<string, bool> overrides, Dictionary<string, bool>? outputOverrides = null)
     {
         AvailableActions.Clear();
         foreach (var action in _mainVm.Actions.OrderBy(a => a.FullName))
         {
             var enabled = overrides.TryGetValue(action.FullName, out var val) && val;
+            var exposeOutput = outputOverrides != null && outputOverrides.TryGetValue(action.FullName, out var outVal) && outVal;
             AvailableActions.Add(new McpActionToggleViewModel
             {
                 Key = action.FullName,
                 DisplayName = action.FullName,
-                IsEnabled = enabled
+                IsEnabled = enabled,
+                ExposeOutput = exposeOutput,
+                CanConfigureIndividualOutput = !_exposeOutputForAllActions
             });
         }
     }
@@ -104,7 +125,8 @@ public class McpConfigWindowViewModel : ViewModelBase
     {
         // Preserve the current toggle states when refreshing after a reload
         var current = AvailableActions.ToDictionary(a => a.Key, a => a.IsEnabled);
-        PopulateAvailableActions(current);
+        var currentOutput = AvailableActions.ToDictionary(a => a.Key, a => a.ExposeOutput);
+        PopulateAvailableActions(current, currentOutput);
     }
 
     public IReadOnlyList<string> ExposedTools => _mcpHost.GetCurrentToolNames();
@@ -112,12 +134,15 @@ public class McpConfigWindowViewModel : ViewModelBase
     public async Task SaveAndApplyAsync()
     {
         var overrides = AvailableActions.ToDictionary(a => a.Key, a => a.IsEnabled);
+        var outputOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.ExposeOutput);
         var settings = new McpServerSettings
         {
             Enabled = Enabled,
             Port = Port,
             ExposeAllActions = ExposeAllActions,
-            ActionOverrides = overrides
+            ActionOverrides = overrides,
+            ExposeOutputForAllActions = ExposeOutputForAllActions,
+            ActionOutputOverrides = outputOverrides
         };
         AppSettingsService.UpdateMcpServerSettings(settings);
 
