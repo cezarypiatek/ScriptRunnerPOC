@@ -105,6 +105,13 @@ public class MainWindowViewModel : ReactiveObject
 
     private bool _isAnyRefreshInProgress;
 
+    private bool _isMcpRunning;
+    public bool IsMcpRunning
+    {
+        get => _isMcpRunning;
+        set => this.RaiseAndSetIfChanged(ref _isMcpRunning, value);
+    }
+
     private void UpdateIsAnyRefreshInProgress()
     {
         IsAnyRefreshInProgress = IsRefreshingAppUpdates || IsRefreshingRepositories || IsLoadingConfig;

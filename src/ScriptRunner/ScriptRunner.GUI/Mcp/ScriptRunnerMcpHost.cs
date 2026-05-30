@@ -34,7 +34,11 @@ public class ScriptRunnerMcpHost : ReactiveObject
     public bool IsRunning
     {
         get => _isRunning;
-        private set => this.RaiseAndSetIfChanged(ref _isRunning, value);
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _isRunning, value);
+            _vm.IsMcpRunning = value;
+        }
     }
 
     public ScriptRunnerMcpHost(MainWindowViewModel vm)
