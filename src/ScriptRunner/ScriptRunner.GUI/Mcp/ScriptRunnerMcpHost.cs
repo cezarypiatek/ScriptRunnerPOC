@@ -108,7 +108,14 @@ public class ScriptRunnerMcpHost : ReactiveObject
     private WebApplication BuildApp(McpServerSettings settings)
     {
         var bridge = new McpUiBridge(_vm);
-        var actions = bridge.GetActionsSnapshot();
+        var allActions = bridge.GetActionsSnapshot();
+
+        // Filter actions based on the per-tool enable/disable settings
+        var actions = settings.ExposeAllActions
+            ? allActions
+            : allActions.Where(a =>
+                settings.ActionOverrides.TryGetValue(a.FullName, out var enabled) && enabled).ToArray();
+
         var nameMap = McpToolBuilder.BuildNameMap(actions);
         var tools = nameMap.Select(t => McpToolBuilder.CreateTool(t.Action, t.ToolName, bridge)).ToList();
 
@@ -148,7 +155,12 @@ public class ScriptRunnerMcpHost : ReactiveObject
     {
         if (!IsRunning || _lastSettings == null) return Array.Empty<string>();
         var bridge = new McpUiBridge(_vm);
-        return McpToolBuilder.BuildNameMap(bridge.GetActionsSnapshot())
+        var allActions = bridge.GetActionsSnapshot();
+        var actions = _lastSettings.ExposeAllActions
+            ? allActions
+            : allActions.Where(a =>
+                _lastSettings.ActionOverrides.TryGetValue(a.FullName, out var enabled) && enabled).ToArray();
+        return McpToolBuilder.BuildNameMap(actions)
             .Select(t => t.ToolName)
             .ToList();
     }
