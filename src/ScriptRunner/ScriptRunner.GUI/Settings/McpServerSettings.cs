@@ -63,4 +63,23 @@ public class McpServerSettings
     /// Missing key means fire-and-forget is off for the action.
     /// </summary>
     public Dictionary<string, bool> ActionFireAndForgetOverrides { get; set; } = new();
+
+    /// <summary>
+    /// When true, each exposed action's predefined parameter sets (excluding the default set) are
+    /// also exposed as individual MCP tools. The set-specific tools inherit all settings (output,
+    /// safe mode, fire-and-forget) from their parent action.
+    /// When false, only the base action tools are exposed (original behavior).
+    /// </summary>
+    public bool ExposePredefinedParameterSets { get; set; } = false;
+
+    /// <summary>
+    /// Per-action predefined-sets inclusion map. Key is ScriptConfig.FullName.
+    /// Only consulted when <see cref="ExposePredefinedParameterSets"/> is false; in that case a
+    /// value of true opts the action's sets in individually.
+    /// When <see cref="ExposePredefinedParameterSets"/> is true all exposed actions include their
+    /// sets and this dictionary is ignored at runtime (but values are still persisted so they are
+    /// remembered if the global switch is later turned off).
+    /// Missing key means the action does not include its predefined sets.
+    /// </summary>
+    public Dictionary<string, bool> ActionPredefinedSetsOverrides { get; set; } = new();
 }

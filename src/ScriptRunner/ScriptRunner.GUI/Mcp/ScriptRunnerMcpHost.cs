@@ -111,21 +111,32 @@ public class ScriptRunnerMcpHost : ReactiveObject
         var allActions = bridge.GetActionsSnapshot();
 
         // Filter actions based on the per-tool enable/disable settings
-        var actions = settings.ExposeAllActions
+        var exposedActions = settings.ExposeAllActions
             ? allActions
             : allActions.Where(a =>
                 settings.ActionOverrides.TryGetValue(a.FullName, out var enabled) && enabled).ToArray();
 
-        var nameMap = McpToolBuilder.BuildNameMap(actions);
+        // For each exposed action, determine whether its predefined sets should also be exposed.
+        // Global switch on  → all exposed actions include their sets.
+        // Global switch off → check per-action override (missing key = false).
+        var actionTuples = exposedActions.Select(a =>
+        {
+            var includeSets = settings.ExposePredefinedParameterSets
+                || (settings.ActionPredefinedSetsOverrides.TryGetValue(a.FullName, out var v) && v);
+            return (Action: a, IncludeSets: includeSets);
+        });
+
+        var nameMap = McpToolBuilder.BuildNameMap(actionTuples);
         var tools = nameMap.Select(t =>
         {
+            // All flags are keyed by the *parent* action's FullName — predefined-set tools inherit them.
             var includeOutput = settings.ExposeOutputForAllActions
                 || (settings.ActionOutputOverrides.TryGetValue(t.Action.FullName, out var v) && v);
             var safeMode = settings.SafeModeForAllActions
                 || (settings.ActionSafeModeOverrides.TryGetValue(t.Action.FullName, out var sm) && sm);
             var fireAndForget = settings.FireAndForgetForAllActions
                 || (settings.ActionFireAndForgetOverrides.TryGetValue(t.Action.FullName, out var ff) && ff);
-            return McpToolBuilder.CreateTool(t.Action, t.ToolName, bridge, includeOutput, safeMode, fireAndForget);
+            return McpToolBuilder.CreateTool(t.Action, t.ToolName, bridge, includeOutput, safeMode, fireAndForget, t.ArgumentSet);
         }).ToList();
 
         var builder = WebApplication.CreateSlimBuilder();
@@ -165,11 +176,17 @@ public class ScriptRunnerMcpHost : ReactiveObject
         if (!IsRunning || _lastSettings == null) return Array.Empty<string>();
         var bridge = new McpUiBridge(_vm);
         var allActions = bridge.GetActionsSnapshot();
-        var actions = _lastSettings.ExposeAllActions
+        var exposedActions = _lastSettings.ExposeAllActions
             ? allActions
             : allActions.Where(a =>
                 _lastSettings.ActionOverrides.TryGetValue(a.FullName, out var enabled) && enabled).ToArray();
-        return McpToolBuilder.BuildNameMap(actions)
+        var actionTuples = exposedActions.Select(a =>
+        {
+            var includeSets = _lastSettings.ExposePredefinedParameterSets
+                || (_lastSettings.ActionPredefinedSetsOverrides.TryGetValue(a.FullName, out var v) && v);
+            return (Action: a, IncludeSets: includeSets);
+        });
+        return McpToolBuilder.BuildNameMap(actionTuples)
             .Select(t => t.ToolName)
             .ToList();
     }
