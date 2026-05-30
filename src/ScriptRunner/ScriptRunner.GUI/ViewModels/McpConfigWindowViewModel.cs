@@ -78,6 +78,23 @@ public class McpConfigWindowViewModel : ViewModelBase
     /// <summary>True when per-action safe mode toggles should be interactive (i.e. safe mode master switch is OFF).</summary>
     public bool CanConfigureIndividualSafeMode => !_safeModeForAllActions;
 
+    private bool _fireAndForgetForAllActions;
+    public bool FireAndForgetForAllActions
+    {
+        get => _fireAndForgetForAllActions;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _fireAndForgetForAllActions, value);
+            this.RaisePropertyChanged(nameof(CanConfigureIndividualFireAndForget));
+            // Push updated value to each row so CanEditFireAndForget updates immediately
+            foreach (var row in AvailableActions)
+                row.CanConfigureIndividualFireAndForget = !value;
+        }
+    }
+
+    /// <summary>True when per-action fire-and-forget toggles should be interactive (i.e. fire-and-forget master switch is OFF).</summary>
+    public bool CanConfigureIndividualFireAndForget => !_fireAndForgetForAllActions;
+
     public ObservableCollection<McpActionToggleViewModel> AvailableActions { get; } = new();
 
     public string StatusMessage => _mcpHost.StatusMessage;
@@ -114,14 +131,15 @@ public class McpConfigWindowViewModel : ViewModelBase
         _exposeAllActions = settings.ExposeAllActions;
         _exposeOutputForAllActions = settings.ExposeOutputForAllActions;
         _safeModeForAllActions = settings.SafeModeForAllActions;
+        _fireAndForgetForAllActions = settings.FireAndForgetForAllActions;
 
-        PopulateAvailableActions(settings.ActionOverrides, settings.ActionOutputOverrides, settings.ActionSafeModeOverrides);
+        PopulateAvailableActions(settings.ActionOverrides, settings.ActionOutputOverrides, settings.ActionSafeModeOverrides, settings.ActionFireAndForgetOverrides);
 
         // Refresh the list when actions are reloaded while the dialog is open
         _mainVm.ActionsReloaded += OnActionsReloaded;
     }
 
-    private void PopulateAvailableActions(Dictionary<string, bool> overrides, Dictionary<string, bool>? outputOverrides = null, Dictionary<string, bool>? safeModeOverrides = null)
+    private void PopulateAvailableActions(Dictionary<string, bool> overrides, Dictionary<string, bool>? outputOverrides = null, Dictionary<string, bool>? safeModeOverrides = null, Dictionary<string, bool>? fireAndForgetOverrides = null)
     {
         AvailableActions.Clear();
         foreach (var action in _mainVm.Actions.OrderBy(a => a.FullName))
@@ -129,6 +147,7 @@ public class McpConfigWindowViewModel : ViewModelBase
             var enabled = overrides.TryGetValue(action.FullName, out var val) && val;
             var exposeOutput = outputOverrides != null && outputOverrides.TryGetValue(action.FullName, out var outVal) && outVal;
             var safeMode = safeModeOverrides != null && safeModeOverrides.TryGetValue(action.FullName, out var smVal) && smVal;
+            var fireAndForget = fireAndForgetOverrides != null && fireAndForgetOverrides.TryGetValue(action.FullName, out var ffVal) && ffVal;
             AvailableActions.Add(new McpActionToggleViewModel
             {
                 Key = action.FullName,
@@ -137,7 +156,9 @@ public class McpConfigWindowViewModel : ViewModelBase
                 ExposeOutput = exposeOutput,
                 CanConfigureIndividualOutput = !_exposeOutputForAllActions,
                 SafeMode = safeMode,
-                CanConfigureIndividualSafeMode = !_safeModeForAllActions
+                CanConfigureIndividualSafeMode = !_safeModeForAllActions,
+                FireAndForget = fireAndForget,
+                CanConfigureIndividualFireAndForget = !_fireAndForgetForAllActions
             });
         }
     }
@@ -148,7 +169,8 @@ public class McpConfigWindowViewModel : ViewModelBase
         var current = AvailableActions.ToDictionary(a => a.Key, a => a.IsEnabled);
         var currentOutput = AvailableActions.ToDictionary(a => a.Key, a => a.ExposeOutput);
         var currentSafeMode = AvailableActions.ToDictionary(a => a.Key, a => a.SafeMode);
-        PopulateAvailableActions(current, currentOutput, currentSafeMode);
+        var currentFireAndForget = AvailableActions.ToDictionary(a => a.Key, a => a.FireAndForget);
+        PopulateAvailableActions(current, currentOutput, currentSafeMode, currentFireAndForget);
     }
 
     public IReadOnlyList<string> ExposedTools => _mcpHost.GetCurrentToolNames();
@@ -158,6 +180,7 @@ public class McpConfigWindowViewModel : ViewModelBase
         var overrides = AvailableActions.ToDictionary(a => a.Key, a => a.IsEnabled);
         var outputOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.ExposeOutput);
         var safeModeOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.SafeMode);
+        var fireAndForgetOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.FireAndForget);
         var settings = new McpServerSettings
         {
             Enabled = Enabled,
@@ -167,7 +190,9 @@ public class McpConfigWindowViewModel : ViewModelBase
             ExposeOutputForAllActions = ExposeOutputForAllActions,
             ActionOutputOverrides = outputOverrides,
             SafeModeForAllActions = SafeModeForAllActions,
-            ActionSafeModeOverrides = safeModeOverrides
+            ActionSafeModeOverrides = safeModeOverrides,
+            FireAndForgetForAllActions = FireAndForgetForAllActions,
+            ActionFireAndForgetOverrides = fireAndForgetOverrides
         };
         AppSettingsService.UpdateMcpServerSettings(settings);
 
