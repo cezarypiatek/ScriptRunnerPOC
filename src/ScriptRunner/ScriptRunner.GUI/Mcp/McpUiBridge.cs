@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +43,8 @@ public class McpUiBridge
         CancellationToken ct,
         bool safeMode = false,
         IReadOnlySet<string>? explicitKeys = null,
-        bool fireAndForget = false)
+        bool fireAndForget = false,
+        ArgumentSet? argumentSet = null)
     {
         await _lock.WaitAsync(ct);
         try
@@ -50,7 +52,7 @@ public class McpUiBridge
             if (!fireAndForget)
             {
                 return await ExecuteOnUiThreadAsync(action, args, ct, safeMode, explicitKeys,
-                    startedTcs: null, detach: null);
+                    startedTcs: null, detach: null, argumentSet: argumentSet);
             }
 
             // Fire-and-forget path ------------------------------------------------
@@ -62,7 +64,7 @@ public class McpUiBridge
             var detach = new StrongBox<bool>(false);
 
             var completionTask = ExecuteOnUiThreadAsync(action, args, ct, safeMode, explicitKeys,
-                startedTcs, detach);
+                startedTcs, detach, argumentSet);
 
             // Phase 1: wait until execution starts (handles safe-mode approval delay)
             // or until the job completes/is rejected before even starting.
@@ -110,7 +112,8 @@ public class McpUiBridge
         bool safeMode,
         IReadOnlySet<string>? explicitKeys,
         TaskCompletionSource<bool>? startedTcs,
-        StrongBox<bool>? detach)
+        StrongBox<bool>? detach,
+        ArgumentSet? argumentSet = null)
     {
         var tcs = new TaskCompletionSource<JobResult>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -128,10 +131,22 @@ public class McpUiBridge
 
                 _vm.SelectedAction = match;
 
-                // 2. Push MCP-supplied values into the freshly rendered form controls
+                // 2. If a specific predefined argument set was requested, select it now.
+                //    The SelectedAction setter already assigns the first set (<default>), so we
+                //    re-assign here to override that with the requested set. This re-runs
+                //    RenderParameterForm with the set's pre-filled values.
+                if (argumentSet != null)
+                {
+                    var matchedSet = match.PredefinedArgumentSets
+                        .FirstOrDefault(s => s.Description == argumentSet.Description);
+                    if (matchedSet != null)
+                        _vm.SelectedArgumentSet = matchedSet;
+                }
+
+                // 3. Push MCP-supplied values into the freshly rendered form controls
                 _vm.ApplyMcpParameterValues(args, safeMode ? explicitKeys : null);
 
-                // 3. Subscribe to the next job's completion event *before* invoking RunScript
+                // 4. Subscribe to the next job's completion event *before* invoking RunScript
                 void OnCompleted(object? sender, EventArgs _)
                 {
                     if (sender is RunningJobViewModel job)
@@ -172,13 +187,13 @@ public class McpUiBridge
                 {
                     // Normal (non-safe) path: execute immediately
 
-                    // 4. Run
+                    // 5. Run
                     _vm.RunScript();
 
                     // Signal that execution has started (fire-and-forget timer begins here).
                     startedTcs?.TrySetResult(true);
 
-                    // 5. Grab the job that was just added and subscribe
+                    // 6. Grab the job that was just added and subscribe
                     if (_vm.RunningJobs.Count > jobCountBefore)
                     {
                         var newJob = _vm.RunningJobs[_vm.RunningJobs.Count - 1];

@@ -17,8 +17,9 @@
         <vm:McpConfigWindowViewModel />
     </Design.DataContext>
 
-    <Grid Margin="16">
+        <Grid Margin="16">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -104,8 +105,19 @@
             </StackPanel>
         </Border>
 
+        <!-- Master "expose predefined parameter sets" toggle -->
+        <Border Grid.Row="5" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#444">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                    <TextBlock FontSize="13" FontWeight="SemiBold" Text="Expose predefined parameter sets"/>
+                    <TextBlock FontSize="11" Foreground="#858585" Text="When on, each action's predefined parameter sets are exposed as additional MCP tools, inheriting the action's settings. Use the per-action toggle to opt individual actions in when this is off."/>
+                </StackPanel>
+                <ToggleSwitch IsChecked="{Binding ExposePredefinedParameterSets}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+            </StackPanel>
+        </Border>
+
         <!-- Per-action grid -->
-        <Grid Grid.Row="5" Margin="0,0,0,12">
+        <Grid Grid.Row="6" Margin="0,0,0,12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -116,12 +128,13 @@
                        Text="Individual actions:"/>
 
             <!-- Column headers -->
-            <Grid Grid.Row="1" Margin="8,0,8,2" ColumnDefinitions="*,90,110,100,110">
+            <Grid Grid.Row="1" Margin="8,0,8,2" ColumnDefinitions="*,90,110,100,110,100">
                 <TextBlock Grid.Column="0" FontSize="11" Foreground="#666" Text="Action"/>
                 <TextBlock Grid.Column="1" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Text="Exposed"/>
                 <TextBlock Grid.Column="2" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Text="Return output"/>
                 <TextBlock Grid.Column="3" FontSize="11" Foreground="#FF8C00" HorizontalAlignment="Center" Text="Safe mode"/>
                 <TextBlock Grid.Column="4" FontSize="11" Foreground="#4CAF50" HorizontalAlignment="Center" Text="Fire &amp; forget"/>
+                <TextBlock Grid.Column="5" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Text="Param sets"/>
             </Grid>
 
             <Border Grid.Row="2" BorderThickness="1" BorderBrush="#333" CornerRadius="4">
@@ -129,7 +142,7 @@
                     <ItemsControl ItemsSource="{Binding AvailableActions}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:McpActionToggleViewModel">
-                                <Grid Margin="8,2" ColumnDefinitions="*,90,110,100,110">
+                                <Grid Margin="8,2" ColumnDefinitions="*,90,110,100,110,100">
                                     <TextBlock Grid.Column="0"
                                                Text="{Binding DisplayName}"
                                                FontSize="12"
@@ -165,6 +178,14 @@
                                                    HorizontalAlignment="Center"
                                                    OnContent="" OffContent=""
                                                    Margin="0,0,0,0"/>
+                                     <ToggleSwitch Grid.Column="5"
+                                                   IsChecked="{Binding IncludePredefinedSets}"
+                                                   IsEnabled="{Binding CanEditIncludePredefinedSets}"
+                                                   IsVisible="{Binding HasPredefinedSets}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   OnContent="" OffContent=""
+                                                   Margin="0,0,0,0"/>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -174,7 +195,7 @@
         </Grid>
 
         <!-- Save button -->
-        <Button Grid.Row="6"
+        <Button Grid.Row="7"
                 HorizontalAlignment="Right"
                 Width="140"
                 HorizontalContentAlignment="Center"

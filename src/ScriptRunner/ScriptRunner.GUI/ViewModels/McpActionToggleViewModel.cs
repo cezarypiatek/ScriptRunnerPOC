@@ -13,6 +13,12 @@ public class McpActionToggleViewModel : ReactiveObject
     /// <summary>Human-readable label shown in the grid.</summary>
     public string DisplayName { get; init; } = "";
 
+    /// <summary>
+    /// True when the action has at least one predefined argument set (excluding the synthetic
+    /// &lt;default&gt; set). Used to show/hide the "Param sets" toggle column for this row.
+    /// </summary>
+    public bool HasPredefinedSets { get; init; }
+
     private bool _isEnabled;
     public bool IsEnabled
     {
@@ -23,6 +29,7 @@ public class McpActionToggleViewModel : ReactiveObject
             this.RaisePropertyChanged(nameof(CanEditExposeOutput));
             this.RaisePropertyChanged(nameof(CanEditSafeMode));
             this.RaisePropertyChanged(nameof(CanEditFireAndForget));
+            this.RaisePropertyChanged(nameof(CanEditIncludePredefinedSets));
         }
     }
 
@@ -112,4 +119,40 @@ public class McpActionToggleViewModel : ReactiveObject
     /// the action must be exposed AND the master fire-and-forget switch must be OFF.
     /// </summary>
     public bool CanEditFireAndForget => _isEnabled && _canConfigureIndividualFireAndForget;
+
+    private bool _includePredefinedSets;
+    /// <summary>
+    /// When true, this action's predefined parameter sets (excluding &lt;default&gt;) are exposed
+    /// as individual MCP tools in addition to the base action tool.
+    /// Only relevant when <see cref="HasPredefinedSets"/> is true.
+    /// </summary>
+    public bool IncludePredefinedSets
+    {
+        get => _includePredefinedSets;
+        set => this.RaiseAndSetIfChanged(ref _includePredefinedSets, value);
+    }
+
+    private bool _canConfigureIndividualPredefinedSets;
+    /// <summary>
+    /// Pushed from the parent VM whenever
+    /// <see cref="McpConfigWindowViewModel.CanConfigureIndividualPredefinedSets"/> changes.
+    /// When false (global predefined-sets switch is ON) the per-action toggle is disabled
+    /// because all sets are included automatically.
+    /// </summary>
+    public bool CanConfigureIndividualPredefinedSets
+    {
+        get => _canConfigureIndividualPredefinedSets;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _canConfigureIndividualPredefinedSets, value);
+            this.RaisePropertyChanged(nameof(CanEditIncludePredefinedSets));
+        }
+    }
+
+    /// <summary>
+    /// True when the "Param sets" toggle for this row should be interactive:
+    /// the action must be exposed, the global predefined-sets switch must be OFF, and the
+    /// action must actually have non-default predefined sets.
+    /// </summary>
+    public bool CanEditIncludePredefinedSets => _isEnabled && _canConfigureIndividualPredefinedSets && HasPredefinedSets;
 }

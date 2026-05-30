@@ -12,6 +12,17 @@ using ScriptRunner.GUI.ScriptConfigs;
 namespace ScriptRunner.GUI.Mcp;
 
 /// <summary>
+/// Describes a single MCP tool target — either a base action or a predefined parameter set
+/// variant of an action.
+/// </summary>
+/// <param name="Action">The parent action.</param>
+/// <param name="ArgumentSet">
+/// The predefined argument set this tool represents, or <c>null</c> for the base action tool.
+/// </param>
+/// <param name="ToolName">The sanitised, deduplicated MCP tool name.</param>
+public record ToolTarget(ScriptConfig Action, ArgumentSet? ArgumentSet, string ToolName);
+
+/// <summary>
 /// Converts ScriptConfig actions into McpServerTool instances.
 /// </summary>
 public static class McpToolBuilder
@@ -28,27 +39,48 @@ public static class McpToolBuilder
         return result.Length > 64 ? result[..64] : result;
     }
 
-    /// <summary>Build a unique set of tool names from the action list, handling collisions.</summary>
-    public static IReadOnlyList<(ScriptConfig Action, string ToolName)> BuildNameMap(IEnumerable<ScriptConfig> actions)
+    /// <summary>
+    /// Build a unique set of tool targets from the action list, handling collisions.
+    /// </summary>
+    /// <param name="actions">
+    /// Sequence of <c>(ScriptConfig action, bool includeSets)</c> tuples. When
+    /// <c>includeSets</c> is <c>true</c> the action's non-default predefined argument sets are
+    /// each emitted as an additional <see cref="ToolTarget"/>.
+    /// </param>
+    public static IReadOnlyList<ToolTarget> BuildNameMap(IEnumerable<(ScriptConfig Action, bool IncludeSets)> actions)
     {
-        var result = new List<(ScriptConfig, string)>();
+        var result = new List<ToolTarget>();
         var seen = new Dictionary<string, int>(StringComparer.Ordinal);
 
-        foreach (var action in actions)
+        string Deduplicate(string baseName)
         {
-            var baseName = SanitizeName(action.FullName);
-            if (string.IsNullOrEmpty(baseName)) baseName = "action";
-
             if (!seen.ContainsKey(baseName))
             {
                 seen[baseName] = 1;
-                result.Add((action, baseName));
+                return baseName;
             }
-            else
+            var n = ++seen[baseName];
+            // Reserve 3 chars for "_NN" suffix (supports up to _99 cleanly, more if needed)
+            var trimmed = baseName.Length <= 61 ? baseName : baseName[..61];
+            return $"{trimmed}_{n}";
+        }
+
+        foreach (var (action, includeSets) in actions)
+        {
+            // Base action tool
+            var baseName = SanitizeName(action.FullName);
+            if (string.IsNullOrEmpty(baseName)) baseName = "action";
+            result.Add(new ToolTarget(action, null, Deduplicate(baseName)));
+
+            // Predefined set tools
+            if (!includeSets) continue;
+            foreach (var set in action.PredefinedArgumentSets)
             {
-                var n = ++seen[baseName];
-                var suffixed = baseName.Length <= 61 ? $"{baseName}_{n}" : $"{baseName[..61]}_{n}";
-                result.Add((action, suffixed));
+                if (set.Description == "<default>") continue;
+                var setRaw = $"{action.FullName}__{set.Description}";
+                var setBase = SanitizeName(setRaw);
+                if (string.IsNullOrEmpty(setBase)) setBase = "action_set";
+                result.Add(new ToolTarget(action, set, Deduplicate(setBase)));
             }
         }
 
@@ -58,7 +90,13 @@ public static class McpToolBuilder
     /// <summary>
     /// Build a JSON-Schema object for the action's parameters so MCP clients can validate inputs.
     /// </summary>
-    public static JsonObject BuildInputSchema(ScriptConfig action)
+    /// <param name="action">The parent action.</param>
+    /// <param name="argumentSet">
+    /// Optional predefined argument set. When provided, values from the set are used as
+    /// <c>default</c> for the corresponding parameters and those parameters are not listed as
+    /// <c>required</c> (since the set already supplies them).
+    /// </param>
+    public static JsonObject BuildInputSchema(ScriptConfig action, ArgumentSet? argumentSet = null)
     {
         var props = new JsonObject();
         var required = new JsonArray();
@@ -106,13 +144,20 @@ public static class McpToolBuilder
             if (!string.IsNullOrWhiteSpace(p.Description))
                 propSchema["description"] = p.Description;
 
-            if (!string.IsNullOrWhiteSpace(p.Default))
-                propSchema["default"] = p.Default;
+            // Effective default: set value takes priority over param default
+            var effectiveDefault = argumentSet != null
+                && argumentSet.Arguments.TryGetValue(p.Name, out var setVal)
+                && !string.IsNullOrEmpty(setVal)
+                ? setVal
+                : p.Default;
+
+            if (!string.IsNullOrWhiteSpace(effectiveDefault))
+                propSchema["default"] = effectiveDefault;
 
             props[p.Name] = propSchema;
 
-            // Required if no default
-            if (string.IsNullOrWhiteSpace(p.Default))
+            // Required only when no default is available from either source
+            if (string.IsNullOrWhiteSpace(effectiveDefault))
                 required.Add(p.Name);
         }
 
@@ -128,7 +173,8 @@ public static class McpToolBuilder
     }
 
     /// <summary>
-    /// Create a McpServerTool for a single ScriptConfig action.
+    /// Create a McpServerTool for a single ScriptConfig action (or a predefined parameter set
+    /// variant of it).
     /// </summary>
     /// <param name="action">The action to expose as a tool.</param>
     /// <param name="toolName">The sanitised MCP tool name.</param>
@@ -146,8 +192,26 @@ public static class McpToolBuilder
     /// job has not completed within 3 seconds of starting. If the job finishes within that window
     /// the real result is returned as normal.
     /// </param>
-    public static McpServerTool CreateTool(ScriptConfig action, string toolName, McpUiBridge bridge, bool includeOutput = false, bool safeMode = false, bool fireAndForget = false)
+    /// <param name="argumentSet">
+    /// Optional predefined argument set. When provided the tool pre-selects that set before
+    /// applying any caller-supplied arguments, so the set's values act as defaults that the
+    /// caller can override.
+    /// </param>
+    public static McpServerTool CreateTool(
+        ScriptConfig action,
+        string toolName,
+        McpUiBridge bridge,
+        bool includeOutput = false,
+        bool safeMode = false,
+        bool fireAndForget = false,
+        ArgumentSet? argumentSet = null)
     {
+        var description = !string.IsNullOrWhiteSpace(action.Description)
+            ? action.Description
+            : action.FullName;
+        if (argumentSet != null)
+            description = $"{description} [parameter set: {argumentSet.Description}]";
+
         return McpServerTool.Create(
             async (IReadOnlyDictionary<string, object?> rawArgs, CancellationToken ct) =>
             {
@@ -158,17 +222,28 @@ public static class McpToolBuilder
                     stringArgs[k] = v?.ToString() ?? string.Empty;
                 }
 
-                // Track which keys were explicitly supplied by the AI (before filling defaults)
+                // Track which keys were explicitly supplied by the AI (before filling defaults).
+                // Pre-filled set values are NOT included — they are treated as approved defaults
+                // and should not be highlighted in safe mode.
                 var explicitKeys = new HashSet<string>(stringArgs.Keys, StringComparer.OrdinalIgnoreCase);
 
-                // Also fill in defaults for params not provided
+                // Fill in defaults for params not provided by the caller.
+                // For set-based tools, set values take priority over param defaults.
                 foreach (var param in action.Params)
                 {
-                    if (!stringArgs.ContainsKey(param.Name) && !string.IsNullOrEmpty(param.Default))
-                        stringArgs[param.Name] = param.Default;
+                    if (stringArgs.ContainsKey(param.Name)) continue;
+
+                    var setDefault = argumentSet != null
+                        && argumentSet.Arguments.TryGetValue(param.Name, out var sv)
+                        && !string.IsNullOrEmpty(sv)
+                        ? sv : null;
+
+                    var effectiveDefault = setDefault ?? (string.IsNullOrEmpty(param.Default) ? null : param.Default);
+                    if (effectiveDefault != null)
+                        stringArgs[param.Name] = effectiveDefault;
                 }
 
-                var result = await bridge.ExecuteActionAsync(action, stringArgs, ct, safeMode, explicitKeys, fireAndForget);
+                var result = await bridge.ExecuteActionAsync(action, stringArgs, ct, safeMode, explicitKeys, fireAndForget, argumentSet);
 
                 if (result.Rejected)
                 {
@@ -214,9 +289,7 @@ public static class McpToolBuilder
             new McpServerToolCreateOptions
             {
                 Name = toolName,
-                Description = !string.IsNullOrWhiteSpace(action.Description)
-                    ? action.Description
-                    : action.FullName,
+                Description = description,
                 SerializerOptions = null
             }
         );
