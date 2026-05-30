@@ -11,7 +11,8 @@ namespace ScriptRunner.GUI.Mcp;
 /// <summary>
 /// Result of a single MCP tool execution.
 /// </summary>
-public record JobResult(bool Success, int? ExitCode, TimeSpan Elapsed, string Output);
+/// <param name="Rejected">True when the user rejected the action in safe mode (no execution took place).</param>
+public record JobResult(bool Success, int? ExitCode, TimeSpan Elapsed, string Output, bool Rejected = false);
 
 /// <summary>
 /// Bridges the MCP layer to the Avalonia UI thread.
@@ -30,12 +31,14 @@ public class McpUiBridge
     public async Task<JobResult> ExecuteActionAsync(
         ScriptConfig action,
         IReadOnlyDictionary<string, string> args,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool safeMode = false,
+        IReadOnlySet<string>? explicitKeys = null)
     {
         await _lock.WaitAsync(ct);
         try
         {
-            return await ExecuteOnUiThreadAsync(action, args, ct);
+            return await ExecuteOnUiThreadAsync(action, args, ct, safeMode, explicitKeys);
         }
         finally
         {
@@ -46,7 +49,9 @@ public class McpUiBridge
     private Task<JobResult> ExecuteOnUiThreadAsync(
         ScriptConfig action,
         IReadOnlyDictionary<string, string> args,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool safeMode,
+        IReadOnlySet<string>? explicitKeys)
     {
         var tcs = new TaskCompletionSource<JobResult>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -65,7 +70,7 @@ public class McpUiBridge
                 _vm.SelectedAction = match;
 
                 // 2. Push MCP-supplied values into the freshly rendered form controls
-                _vm.ApplyMcpParameterValues(args);
+                _vm.ApplyMcpParameterValues(args, safeMode ? explicitKeys : null);
 
                 // 3. Subscribe to the next job's completion event *before* invoking RunScript
                 void OnCompleted(object? sender, EventArgs _)
@@ -86,13 +91,13 @@ public class McpUiBridge
                     }
                 }
 
-                // Wire up before RunScript so we don't miss quick completions
-                // We do this via a one-shot subscription on RunningJobs count change.
                 var jobCountBefore = _vm.RunningJobs.Count;
 
                 ct.Register(() =>
                 {
-                    // Try to cancel the job if it was started
+                    // Try to cancel the job if it was started, or cancel a pending safe-mode approval
+                    Dispatcher.UIThread.Post(() => _vm.CancelMcpApproval());
+
                     if (_vm.RunningJobs.Count > jobCountBefore)
                     {
                         var job = _vm.RunningJobs[_vm.RunningJobs.Count - 1];
@@ -101,19 +106,49 @@ public class McpUiBridge
                     tcs.TrySetCanceled(ct);
                 });
 
-                // 4. Run
-                _vm.RunScript();
-
-                // 5. Grab the job that was just added and subscribe
-                if (_vm.RunningJobs.Count > jobCountBefore)
+                if (!safeMode)
                 {
-                    var newJob = _vm.RunningJobs[_vm.RunningJobs.Count - 1];
-                    newJob.ExecutionCompleted += OnCompleted;
+                    // Normal (non-safe) path: execute immediately
+
+                    // 4. Run
+                    _vm.RunScript();
+
+                    // 5. Grab the job that was just added and subscribe
+                    if (_vm.RunningJobs.Count > jobCountBefore)
+                    {
+                        var newJob = _vm.RunningJobs[_vm.RunningJobs.Count - 1];
+                        newJob.ExecutionCompleted += OnCompleted;
+                    }
+                    else
+                    {
+                        // RunScript may have returned early (e.g., elevation required)
+                        tcs.TrySetResult(new JobResult(false, null, TimeSpan.Zero, string.Empty));
+                    }
                 }
                 else
                 {
-                    // RunScript may have returned early (e.g., elevation required)
-                    tcs.TrySetResult(new JobResult(false, null, TimeSpan.Zero, string.Empty));
+                    // Safe-mode path: defer execution to manual Accept/Reject by the user.
+                    _vm.BeginMcpApproval(
+                        onAccept: () =>
+                        {
+                            // User clicked Accept — run the script and wire completion
+                            _vm.RunScript();
+
+                            if (_vm.RunningJobs.Count > jobCountBefore)
+                            {
+                                var newJob = _vm.RunningJobs[_vm.RunningJobs.Count - 1];
+                                newJob.ExecutionCompleted += OnCompleted;
+                            }
+                            else
+                            {
+                                tcs.TrySetResult(new JobResult(false, null, TimeSpan.Zero, string.Empty));
+                            }
+                        },
+                        onReject: () =>
+                        {
+                            // User clicked Reject — return a rejected result immediately
+                            tcs.TrySetResult(new JobResult(false, null, TimeSpan.Zero, string.Empty, Rejected: true));
+                        });
                 }
             }
             catch (Exception ex)

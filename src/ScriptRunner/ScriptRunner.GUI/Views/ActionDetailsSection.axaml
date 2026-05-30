@@ -324,10 +324,32 @@
               </ItemsControl>
             </ScrollViewer>
           </Border>
-          <DockPanel Grid.Row="4"  Margin="0, 15, 0 , 15" HorizontalAlignment="Stretch" IsEnabled="{Binding SelectedActionInstalled}">
-            <Button Classes="primary" DockPanel.Dock="Right"  HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding RunScript}">Run</Button>
+          <Grid Grid.Row="4" Margin="0,15,0,15" HorizontalAlignment="Stretch" IsEnabled="{Binding SelectedActionInstalled}">
+            <!-- Normal run button — hidden while awaiting MCP safe-mode approval -->
+            <Button Classes="primary"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Command="{Binding RunScript}"
+                    IsVisible="{Binding !IsAwaitingMcpApproval}">Run</Button>
 
-          </DockPanel>
+            <!-- Safe-mode approval buttons — visible only while an MCP call is pending confirmation -->
+            <Grid ColumnDefinitions="*,*"
+                  HorizontalAlignment="Stretch"
+                  IsVisible="{Binding IsAwaitingMcpApproval}">
+              <Button Grid.Column="0"
+                      Classes="mcpAccept"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center"
+                      Margin="0,0,4,0"
+                      Command="{Binding AcceptMcpRun}">Accept &amp; Run</Button>
+              <Button Grid.Column="1"
+                      Classes="mcpReject"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center"
+                      Margin="4,0,0,0"
+                      Command="{Binding RejectMcpRun}">Reject</Button>
+            </Grid>
+          </Grid>
         </Grid>
       <GridSplitter Grid.Column="1" MinWidth="2" HorizontalAlignment="Center" Background="#FF3E3E40"></GridSplitter>
       <TabControl Grid.Column="2"  SelectedIndex="{}">

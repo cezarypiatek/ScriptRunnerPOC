@@ -137,7 +137,11 @@ public static class McpToolBuilder
     /// When true the full visible job output (blended stdout+stderr, ANSI-stripped) is appended
     /// to the response in addition to the status line.
     /// </param>
-    public static McpServerTool CreateTool(ScriptConfig action, string toolName, McpUiBridge bridge, bool includeOutput = false)
+    /// <param name="safeMode">
+    /// When true, the action will not execute automatically. Instead the UI presents Accept/Reject
+    /// buttons and the MCP call blocks until the user makes a choice.
+    /// </param>
+    public static McpServerTool CreateTool(ScriptConfig action, string toolName, McpUiBridge bridge, bool includeOutput = false, bool safeMode = false)
     {
         return McpServerTool.Create(
             async (IReadOnlyDictionary<string, object?> rawArgs, CancellationToken ct) =>
@@ -149,6 +153,9 @@ public static class McpToolBuilder
                     stringArgs[k] = v?.ToString() ?? string.Empty;
                 }
 
+                // Track which keys were explicitly supplied by the AI (before filling defaults)
+                var explicitKeys = new HashSet<string>(stringArgs.Keys, StringComparer.OrdinalIgnoreCase);
+
                 // Also fill in defaults for params not provided
                 foreach (var param in action.Params)
                 {
@@ -156,7 +163,19 @@ public static class McpToolBuilder
                         stringArgs[param.Name] = param.Default;
                 }
 
-                var result = await bridge.ExecuteActionAsync(action, stringArgs, ct);
+                var result = await bridge.ExecuteActionAsync(action, stringArgs, ct, safeMode, explicitKeys);
+
+                if (result.Rejected)
+                {
+                    return new CallToolResult
+                    {
+                        Content = new List<ContentBlock>
+                        {
+                            new TextContentBlock { Text = $"Action '{action.FullName}' was rejected by the user in safe mode." }
+                        },
+                        IsError = true
+                    };
+                }
 
                 var statusText = result.Success
                     ? $"Success: '{action.FullName}' completed in {result.Elapsed.TotalSeconds:F1}s"

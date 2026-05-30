@@ -771,6 +771,7 @@ public class MainWindowViewModel : ReactiveObject
         OutOfDateConfigRepositories.Clear();
     }
     private IEnumerable<IControlRecord> _controlRecords;
+    private Dictionary<string, Avalonia.Controls.Border> _parameterContainers = new();
 
     //private ActionsConfig config;
     
@@ -986,6 +987,10 @@ public class MainWindowViewModel : ReactiveObject
 
         // Write down param controls to read easier later - TODO: figure out better way, support multiple actions
         _controlRecords = paramsPanel.ControlRecords;
+        _parameterContainers = paramsPanel.ParameterContainers;
+
+        // Clear any pending safe-mode approval when the action changes
+        CancelMcpApproval();
     }
 
     private int jobCounter;
@@ -1086,7 +1091,7 @@ public class MainWindowViewModel : ReactiveObject
     /// Apply parameter values coming from an MCP tool call into the currently rendered form controls.
     /// Must be called on the UI thread after RenderParameterForm has run.
     /// </summary>
-    public void ApplyMcpParameterValues(IReadOnlyDictionary<string, string> args)
+    public void ApplyMcpParameterValues(IReadOnlyDictionary<string, string> args, IReadOnlySet<string>? explicitKeys = null)
     {
         foreach (var controlRecord in _controlRecords)
         {
@@ -1095,6 +1100,92 @@ public class MainWindowViewModel : ReactiveObject
                 controlRecord.SetValueFromString(value);
             }
         }
+        // Only highlight when in safe mode (explicitKeys is non-null); highlight only explicitly-provided params
+        if (explicitKeys != null)
+            HighlightMcpRows(explicitKeys);
+    }
+
+    // ── Safe-mode approval state ──────────────────────────────────────────────
+
+    private bool _isAwaitingMcpApproval;
+    public bool IsAwaitingMcpApproval
+    {
+        get => _isAwaitingMcpApproval;
+        private set => this.RaiseAndSetIfChanged(ref _isAwaitingMcpApproval, value);
+    }
+
+    private Action? _onMcpAccept;
+    private Action? _onMcpReject;
+
+    /// <summary>
+    /// Called by McpUiBridge when safe mode is active.
+    /// Puts the UI into approval state: shows Accept/Reject buttons, highlights MCP rows.
+    /// Also brings the main window to the foreground so the user notices the pending confirmation.
+    /// </summary>
+    public void BeginMcpApproval(Action onAccept, Action onReject)
+    {
+        _onMcpAccept = onAccept;
+        _onMcpReject = onReject;
+        IsAwaitingMcpApproval = true;
+
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } mainWindow })
+        {
+            mainWindow.WindowState = Avalonia.Controls.WindowState.Normal;
+            mainWindow.Activate();
+        }
+    }
+
+    /// <summary>Invoked by the Accept button — runs the script and clears approval state.</summary>
+    public void AcceptMcpRun()
+    {
+        var accept = _onMcpAccept;
+        ClearApprovalCallbacks();
+        accept?.Invoke();
+    }
+
+    /// <summary>Invoked by the Reject button — cancels the MCP call and clears approval state.</summary>
+    public void RejectMcpRun()
+    {
+        var reject = _onMcpReject;
+        ClearApprovalCallbacks();
+        reject?.Invoke();
+    }
+
+    /// <summary>
+    /// Called on action switch or CancellationToken cancellation to tear down any pending approval
+    /// without invoking callbacks (the tcs is already being resolved by the ct path).
+    /// </summary>
+    public void CancelMcpApproval()
+    {
+        ClearApprovalCallbacks();
+    }
+
+    private void ClearApprovalCallbacks()
+    {
+        _onMcpAccept = null;
+        _onMcpReject = null;
+        IsAwaitingMcpApproval = false;
+        ClearMcpHighlight();
+    }
+
+    // ── Parameter row highlighting ────────────────────────────────────────────
+
+    private void HighlightMcpRows(IEnumerable<string> paramNames)
+    {
+        var names = new HashSet<string>(paramNames, StringComparer.OrdinalIgnoreCase);
+        foreach (var (name, border) in _parameterContainers)
+        {
+            if (names.Contains(name))
+                border.Classes.Add("mcpModified");
+            else
+                border.Classes.Remove("mcpModified");
+        }
+    }
+
+    private void ClearMcpHighlight()
+    {
+        foreach (var border in _parameterContainers.Values)
+            border.Classes.Remove("mcpModified");
     }
 
     public void ForceRefresh()

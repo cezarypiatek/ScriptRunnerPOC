@@ -50,6 +50,7 @@ public class ParamsPanelFactory
         };
 
         var controlRecords = new List<IControlRecord>();
+        var parameterContainers = new Dictionary<string, Border>();
         var appSettings = AppSettingsService.Load();
         var secretBindings = appSettings.VaultBindings ?? new List<VaultBinding>();
         foreach (var (param,i) in action.Params.Select((x,i)=>(x,i)))
@@ -250,17 +251,23 @@ public class ParamsPanelFactory
                 ToolTip.SetTip(generateButton, string.IsNullOrWhiteSpace(param.ValueGeneratorLabel)? "Auto fill": param.ValueGeneratorLabel);
                 actionPanel.Children.Add(generateButton);
             }
-            paramsPanel.Children.Add(actionPanel);
+            // Wrap the row in a Border so we can apply the MCP-modified orange highlight
+            var rowBorder = new Border
+            {
+                Classes = { "paramRowBorder" },
+                Child = actionPanel
+            };
+            paramsPanel.Children.Add(rowBorder);
+            parameterContainers[param.Name] = rowBorder;
             controlRecords.Add(controlRecord);
         }
 
         return new ParamsPanel
         {
             Panel = paramsPanel,
-            ControlRecords = controlRecords
-        };
-    }
-
+            ControlRecords = controlRecords,
+            ParameterContainers = parameterContainers
+        };    }
     private IControlRecord CreateControlRecord(ScriptParam p, string? value, int index,
         ScriptConfig scriptConfig, List<VaultBinding> secretBindings,
         Func<string, string, Task<string?>> commandExecutor)
