@@ -1,0 +1,104 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:ScriptRunner.GUI.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="500"
+        Width="600" Height="500"
+        x:Class="ScriptRunner.GUI.Views.McpConfigWindow"
+        Title="MCP Server Configuration"
+        Icon="/Assets/avalonia-logo.ico"
+        FontFamily="Segoe UI Variable"
+        WindowStartupLocation="CenterOwner"
+        Background="#212222">
+
+    <Design.DataContext>
+        <vm:McpConfigWindowViewModel />
+    </Design.DataContext>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Enable / Disable toggle -->
+        <Border Grid.Row="0" Padding="12" Margin="0,0,0,12" BorderThickness="1" CornerRadius="4" BorderBrush="#85DFFF">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="⚙" FontSize="20" VerticalAlignment="Center"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock FontSize="14" FontWeight="Bold" Text="MCP HTTP Server"/>
+                    <TextBlock FontSize="11" Foreground="#858585" Text="Expose loaded actions as Model Context Protocol tools over HTTP"/>
+                </StackPanel>
+                <ToggleSwitch IsChecked="{Binding Enabled}" VerticalAlignment="Center" Margin="20,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Port -->
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock VerticalAlignment="Center" Text="Port:" FontSize="13"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding Port}"
+                           Minimum="1024" Maximum="65535"
+                           Increment="1"
+                           FormatString="0"
+                           Width="120"
+                           HorizontalAlignment="Left"/>
+        </Grid>
+
+        <!-- Endpoint URL -->
+        <Grid Grid.Row="2" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock VerticalAlignment="Center" Text="Endpoint:" FontSize="13"/>
+            <TextBox Grid.Column="1" IsReadOnly="True" Text="{Binding EndpointUrl}" FontFamily="Consolas,Menlo,monospace" FontSize="12" Background="#1A1A1A"/>
+        </Grid>
+
+        <!-- Status -->
+        <Border Grid.Row="3" Padding="10" Margin="0,0,0,12" BorderThickness="1" CornerRadius="4" BorderBrush="#4E4E4E" Background="#2B2B2B">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{Binding IsRunning, StringFormat={}{0:Running;0;Stopped}}"
+                           VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+                <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" FontFamily="Consolas,Menlo,monospace" FontSize="12"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Exposed tools list -->
+        <Grid Grid.Row="4" Margin="0,0,0,12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" Text="Exposed tools (current session):"/>
+            <ScrollViewer Grid.Row="1" MaxHeight="200">
+                <ItemsControl ItemsSource="{Binding ExposedTools}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" FontFamily="Consolas,Menlo,monospace" FontSize="11" Foreground="#85DFFF" Margin="0,2"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Save button -->
+        <Button Grid.Row="5"
+                HorizontalAlignment="Right"
+                Width="140"
+                HorizontalContentAlignment="Center"
+                Click="OnSaveClicked">
+            Save &amp; Apply
+        </Button>
+    </Grid>
+</Window>

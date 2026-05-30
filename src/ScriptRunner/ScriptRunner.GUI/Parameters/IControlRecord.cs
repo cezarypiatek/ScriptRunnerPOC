@@ -8,6 +8,8 @@ public interface IControlRecord
 
     string GetFormattedValue();
 
+    void SetValueFromString(string value);
+
     public string Name { get; set; }
 
     public bool MaskingRequired { get; set; }

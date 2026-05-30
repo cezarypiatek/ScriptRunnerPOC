@@ -95,6 +95,13 @@ public class RunningJobViewModel : ViewModelBase
 
     public event EventHandler ExecutionCompleted;
     public void RaiseExecutionCompleted() => ExecutionCompleted?.Invoke(this, EventArgs.Empty);
+
+    /// <summary>Exit code from the last execution. 0 = success, non-zero = failure, null = not finished or shell-launched.</summary>
+    public int? ExitCode { get; private set; }
+
+    /// <summary>Total wall-clock time of the last execution.</summary>
+    public TimeSpan Elapsed { get; private set; }
+
     private IReadOnlyList<InteractiveInputDescription> _inputs = new List<InteractiveInputDescription>();
     public void RunJob(string commandPath, string args, string? workingDirectory,
         IReadOnlyList<InteractiveInputDescription> interactiveInputs, 
@@ -150,7 +157,8 @@ public class RunningJobViewModel : ViewModelBase
                     {
                         if (p != null)
                         {
-                            await p.WaitForExitAsync(GracefulCancellation.Token);    
+                            await p.WaitForExitAsync(GracefulCancellation.Token);
+                            ExitCode = p.ExitCode;
                         }
                     }
                     finally
@@ -161,7 +169,7 @@ public class RunningJobViewModel : ViewModelBase
                 }
                 else
                 {
-                    await Cli.Wrap(commandPath)
+                    var result = await Cli.Wrap(commandPath)
                         .WithArguments(args)
                         //TODO: Working dir should be read from the config with the fallback set to the config file dir
                         .WithWorkingDirectory(workingDirectory ?? "Scripts/")
@@ -179,6 +187,7 @@ public class RunningJobViewModel : ViewModelBase
                         .WithValidation(CommandResultValidation.None)
                         .WithEnvironmentVariables(EnvironmentVariables ?? new())
                         .ExecuteAsync(KillCancellation.Token, GracefulCancellation.Token);
+                    ExitCode = result.ExitCode;
                 } 
                
                 ChangeStatus(RunningJobStatus.Finished);
@@ -202,6 +211,7 @@ public class RunningJobViewModel : ViewModelBase
             finally
             {
                 stopWatch.Stop();
+                Elapsed = stopWatch.Elapsed;
                 AppendToOutput("---------------------------------------------", ConsoleOutputLevel.Normal);
                 AppendToOutput($"Execution finished after {stopWatch.Elapsed}", ConsoleOutputLevel.Normal);
                 

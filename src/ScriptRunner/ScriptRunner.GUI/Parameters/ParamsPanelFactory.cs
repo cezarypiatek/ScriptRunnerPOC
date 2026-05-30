@@ -480,7 +480,8 @@ public class ParamsPanelFactory
                         BorderThickness = new Thickness(1),
                         Width = 500
                     },
-                    Delimiter = delimiter
+                    Delimiter = delimiter,
+                    Options = multiSelectOptions
                 };
             case PromptType.Datepicker:
                 var yearVisible = p.GetPromptSettings("yearVisible", bool.Parse, true);

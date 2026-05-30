@@ -26,6 +26,7 @@
         <ToggleButton i:Attached.Icon="fas fa-clock" IsChecked="{Binding IsRecentListVisible}"  ToolTip.Tip="Recently executed"/>
         <ToggleButton i:Attached.Icon="fas fa-chart-bar" IsChecked="{Binding IsStatisticsVisible}"  ToolTip.Tip="Statistics"/>
         <Button i:Attached.Icon="fas fa-cog" Command="{Binding OpenSettingsWindow}"   ToolTip.Tip="Configure actions sources"/>
+        <Button i:Attached.Icon="fas fa-plug" Command="{Binding OpenMcpConfigWindow}" ToolTip.Tip="MCP Server"/>
         <Button Command="{Binding ForceRefresh}" ToolTip.Tip="Refresh actions" Margin="5" Width="50" Height="35">
             <Grid>
                 <i:Icon Value="fas fa-sync" FontSize="18"/>

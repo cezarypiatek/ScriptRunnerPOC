@@ -17,6 +17,19 @@ public class TextControl : IControlRecord
         };
     }
 
+    public void SetValueFromString(string value)
+    {
+        switch (Control)
+        {
+            case TextBox textBox:
+                textBox.Text = value;
+                break;
+            case TextEditor textEditor:
+                textEditor.Text = value;
+                break;
+        }
+    }
+
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
 }

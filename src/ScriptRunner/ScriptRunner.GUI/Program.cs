@@ -63,6 +63,8 @@ internal class Program
 
         services.AddTransient<VaultViewModel>();
         services.AddTransient<VaultPickerViewModel>();
-        services.AddTransient<MainWindowViewModel>();
+        services.AddSingleton<MainWindowViewModel>();
+        services.AddSingleton<ScriptRunner.GUI.Mcp.ScriptRunnerMcpHost>();
+        services.AddTransient<ScriptRunner.GUI.ViewModels.McpConfigWindowViewModel>();
     }
 }

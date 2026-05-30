@@ -13,6 +13,7 @@ public class ScriptRunnerAppSettings
     public List<ActionDefaultOverrides> DefaultOverrides { get; set; }
     public List<ActionExtraPredefinedParameterSet> ExtraParameterSets { get; set; }
     public Dictionary<string, RecentAction>? Recent { get; set; } = new();
+    public McpServerSettings McpServer { get; set; } = new();
 }
 
 public record ConfigScriptEntry

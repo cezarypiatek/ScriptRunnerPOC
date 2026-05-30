@@ -20,6 +20,11 @@ public class DirectoryPickerControl : IControlRecord
         return _useWslPathForDirPicker ? WslPathConverter.ConvertToWslPath(path) : path;
     }
 
+    public void SetValueFromString(string value)
+    {
+        ((DirectoryPicker)Control).DirPath = value;
+    }
+
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
 }
