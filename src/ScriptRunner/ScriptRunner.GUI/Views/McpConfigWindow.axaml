@@ -39,9 +39,9 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="⚙" FontSize="20" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
                     <TextBlock FontSize="14" FontWeight="Bold" Text="MCP HTTP Server"/>
-                    <TextBlock FontSize="11" Foreground="#858585" Text="Expose loaded actions as Model Context Protocol tools over HTTP"/>
+                    <TextBlock FontSize="11" Foreground="#858585" TextWrapping="Wrap" Text="Expose loaded actions as Model Context Protocol tools over HTTP"/>
                 </StackPanel>
                 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,20,0" Spacing="8">
@@ -57,63 +57,63 @@
                                    HorizontalAlignment="Left"/>
                 </StackPanel>
 
-                <ToggleSwitch Grid.Column="3" IsChecked="{Binding Enabled}" VerticalAlignment="Center"/>
+                <ToggleSwitch Grid.Column="3" IsChecked="{Binding Enabled}" VerticalAlignment="Center" OnContent="" OffContent=""/>
             </Grid>
         </Border>
 
         <!-- Master "expose all actions" toggle -->
-        <Border Grid.Row="1" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#444">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch">
+        <Border Grid.Row="1" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#60A5FA">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                     <TextBlock FontSize="13" FontWeight="SemiBold" Text="Expose all actions"/>
-                    <TextBlock FontSize="11" Foreground="#858585" Text="When off, only the individually enabled actions below are exposed"/>
+                    <TextBlock FontSize="11" Foreground="#858585" TextWrapping="Wrap" Text="When off, only the individually enabled actions below are exposed"/>
                 </StackPanel>
-                <ToggleSwitch IsChecked="{Binding ExposeAllActions}" VerticalAlignment="Center" Margin="8,0,0,0"/>
-            </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding ExposeAllActions}" VerticalAlignment="Center" OnContent="" OffContent=""/>
+            </Grid>
         </Border>
 
         <!-- Master "return output for all" toggle -->
-        <Border Grid.Row="2" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#444">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch">
+        <Border Grid.Row="2" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#C084FC">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                     <TextBlock FontSize="13" FontWeight="SemiBold" Text="Return output for all actions"/>
-                    <TextBlock FontSize="11" Foreground="#858585" Text="When off, only individually configured actions return their full output"/>
+                    <TextBlock FontSize="11" Foreground="#858585" TextWrapping="Wrap" Text="When off, only individually configured actions return their full output"/>
                 </StackPanel>
-                <ToggleSwitch IsChecked="{Binding ExposeOutputForAllActions}" VerticalAlignment="Center" Margin="8,0,0,0"/>
-            </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding ExposeOutputForAllActions}" VerticalAlignment="Center" OnContent="" OffContent=""/>
+            </Grid>
         </Border>
 
         <!-- Master "safe mode for all" toggle -->
-        <Border Grid.Row="3" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#664400">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch">
+        <Border Grid.Row="3" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#FF8C00">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                     <TextBlock FontSize="13" FontWeight="SemiBold" Text="Safe mode for all actions"/>
-                    <TextBlock FontSize="11" Foreground="#858585" Text="When on, MCP-populated parameters are highlighted and execution requires manual confirmation"/>
+                    <TextBlock FontSize="11" Foreground="#858585" TextWrapping="Wrap" Text="When on, MCP-populated parameters are highlighted and execution requires manual confirmation"/>
                 </StackPanel>
-                <ToggleSwitch IsChecked="{Binding SafeModeForAllActions}" VerticalAlignment="Center" Margin="8,0,0,0"/>
-            </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding SafeModeForAllActions}" VerticalAlignment="Center" OnContent="" OffContent=""/>
+            </Grid>
         </Border>
 
         <!-- Master "fire and forget for all" toggle -->
-        <Border Grid.Row="4" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#1a4d1a">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch">
+        <Border Grid.Row="4" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#4CAF50">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                     <TextBlock FontSize="13" FontWeight="SemiBold" Text="Fire &amp; forget for all actions"/>
-                    <TextBlock FontSize="11" Foreground="#858585" Text="When on, the MCP call returns after 3 s if the job hasn't finished; the job keeps running in the background"/>
+                    <TextBlock FontSize="11" Foreground="#858585" TextWrapping="Wrap" Text="When on, the MCP call returns after 3 s if the job hasn't finished; the job keeps running in the background"/>
                 </StackPanel>
-                <ToggleSwitch IsChecked="{Binding FireAndForgetForAllActions}" VerticalAlignment="Center" Margin="8,0,0,0"/>
-            </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding FireAndForgetForAllActions}" VerticalAlignment="Center" OnContent="" OffContent=""/>
+            </Grid>
         </Border>
 
         <!-- Master "expose predefined parameter sets" toggle -->
-        <Border Grid.Row="5" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#444">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch">
+        <Border Grid.Row="5" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#2DD4BF">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                     <TextBlock FontSize="13" FontWeight="SemiBold" Text="Expose predefined parameter sets"/>
-                    <TextBlock FontSize="11" Foreground="#858585" Text="When on, each action's predefined parameter sets are exposed as additional MCP tools, inheriting the action's settings. Use the per-action toggle to opt individual actions in when this is off."/>
+                    <TextBlock FontSize="11" Foreground="#858585" TextWrapping="Wrap" Text="When on, each action's predefined parameter sets are exposed as additional MCP tools, inheriting the action's settings. Use the per-action toggle to opt individual actions in when this is off."/>
                 </StackPanel>
-                <ToggleSwitch IsChecked="{Binding ExposePredefinedParameterSets}" VerticalAlignment="Center" Margin="8,0,0,0"/>
-            </StackPanel>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding ExposePredefinedParameterSets}" VerticalAlignment="Center" OnContent="" OffContent=""/>
+            </Grid>
         </Border>
 
         <!-- Per-action grid -->
@@ -130,11 +130,11 @@
             <!-- Column headers -->
             <Grid Grid.Row="1" Margin="8,0,8,2" ColumnDefinitions="*,90,110,100,110,100">
                 <TextBlock Grid.Column="0" FontSize="11" Foreground="#666" Text="Action"/>
-                <TextBlock Grid.Column="1" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Text="Exposed"/>
-                <TextBlock Grid.Column="2" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Text="Return output"/>
+                <TextBlock Grid.Column="1" FontSize="11" Foreground="#60A5FA" HorizontalAlignment="Center" Text="Exposed"/>
+                <TextBlock Grid.Column="2" FontSize="11" Foreground="#C084FC" HorizontalAlignment="Center" Text="Return output"/>
                 <TextBlock Grid.Column="3" FontSize="11" Foreground="#FF8C00" HorizontalAlignment="Center" Text="Safe mode"/>
                 <TextBlock Grid.Column="4" FontSize="11" Foreground="#4CAF50" HorizontalAlignment="Center" Text="Fire &amp; forget"/>
-                <TextBlock Grid.Column="5" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Text="Param sets"/>
+                <TextBlock Grid.Column="5" FontSize="11" Foreground="#2DD4BF" HorizontalAlignment="Center" Text="Param sets"/>
             </Grid>
 
             <Border Grid.Row="2" BorderThickness="1" BorderBrush="#333" CornerRadius="4">
