@@ -121,7 +121,9 @@ public class ScriptRunnerMcpHost : ReactiveObject
         {
             var includeOutput = settings.ExposeOutputForAllActions
                 || (settings.ActionOutputOverrides.TryGetValue(t.Action.FullName, out var v) && v);
-            return McpToolBuilder.CreateTool(t.Action, t.ToolName, bridge, includeOutput);
+            var safeMode = settings.SafeModeForAllActions
+                || (settings.ActionSafeModeOverrides.TryGetValue(t.Action.FullName, out var sm) && sm);
+            return McpToolBuilder.CreateTool(t.Action, t.ToolName, bridge, includeOutput, safeMode);
         }).ToList();
 
         var builder = WebApplication.CreateSlimBuilder();

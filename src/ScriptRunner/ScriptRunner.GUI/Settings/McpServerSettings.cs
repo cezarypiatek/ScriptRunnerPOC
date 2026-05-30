@@ -33,4 +33,19 @@ public class McpServerSettings
     /// Missing key means the action returns status only.
     /// </summary>
     public Dictionary<string, bool> ActionOutputOverrides { get; set; } = new();
+
+    /// <summary>
+    /// When true, all exposed actions require manual user confirmation before executing.
+    /// Parameters set by MCP are highlighted with an orange border and the user must click
+    /// Accept or Reject instead of the action running automatically.
+    /// Default is false (original auto-execute behavior).
+    /// </summary>
+    public bool SafeModeForAllActions { get; set; } = false;
+
+    /// <summary>
+    /// Per-action safe-mode map. Key is ScriptConfig.FullName.
+    /// Only used when <see cref="SafeModeForAllActions"/> is false.
+    /// Missing key means safe mode is off for the action.
+    /// </summary>
+    public Dictionary<string, bool> ActionSafeModeOverrides { get; set; } = new();
 }

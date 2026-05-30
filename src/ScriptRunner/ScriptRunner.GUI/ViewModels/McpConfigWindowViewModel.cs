@@ -61,6 +61,23 @@ public class McpConfigWindowViewModel : ViewModelBase
     /// <summary>True when per-action output toggles should be interactive (i.e. output master switch is OFF).</summary>
     public bool CanConfigureIndividualOutput => !_exposeOutputForAllActions;
 
+    private bool _safeModeForAllActions;
+    public bool SafeModeForAllActions
+    {
+        get => _safeModeForAllActions;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _safeModeForAllActions, value);
+            this.RaisePropertyChanged(nameof(CanConfigureIndividualSafeMode));
+            // Push updated value to each row so CanEditSafeMode updates immediately
+            foreach (var row in AvailableActions)
+                row.CanConfigureIndividualSafeMode = !value;
+        }
+    }
+
+    /// <summary>True when per-action safe mode toggles should be interactive (i.e. safe mode master switch is OFF).</summary>
+    public bool CanConfigureIndividualSafeMode => !_safeModeForAllActions;
+
     public ObservableCollection<McpActionToggleViewModel> AvailableActions { get; } = new();
 
     public string StatusMessage => _mcpHost.StatusMessage;
@@ -96,27 +113,31 @@ public class McpConfigWindowViewModel : ViewModelBase
         _port = settings.Port;
         _exposeAllActions = settings.ExposeAllActions;
         _exposeOutputForAllActions = settings.ExposeOutputForAllActions;
+        _safeModeForAllActions = settings.SafeModeForAllActions;
 
-        PopulateAvailableActions(settings.ActionOverrides, settings.ActionOutputOverrides);
+        PopulateAvailableActions(settings.ActionOverrides, settings.ActionOutputOverrides, settings.ActionSafeModeOverrides);
 
         // Refresh the list when actions are reloaded while the dialog is open
         _mainVm.ActionsReloaded += OnActionsReloaded;
     }
 
-    private void PopulateAvailableActions(Dictionary<string, bool> overrides, Dictionary<string, bool>? outputOverrides = null)
+    private void PopulateAvailableActions(Dictionary<string, bool> overrides, Dictionary<string, bool>? outputOverrides = null, Dictionary<string, bool>? safeModeOverrides = null)
     {
         AvailableActions.Clear();
         foreach (var action in _mainVm.Actions.OrderBy(a => a.FullName))
         {
             var enabled = overrides.TryGetValue(action.FullName, out var val) && val;
             var exposeOutput = outputOverrides != null && outputOverrides.TryGetValue(action.FullName, out var outVal) && outVal;
+            var safeMode = safeModeOverrides != null && safeModeOverrides.TryGetValue(action.FullName, out var smVal) && smVal;
             AvailableActions.Add(new McpActionToggleViewModel
             {
                 Key = action.FullName,
                 DisplayName = action.FullName,
                 IsEnabled = enabled,
                 ExposeOutput = exposeOutput,
-                CanConfigureIndividualOutput = !_exposeOutputForAllActions
+                CanConfigureIndividualOutput = !_exposeOutputForAllActions,
+                SafeMode = safeMode,
+                CanConfigureIndividualSafeMode = !_safeModeForAllActions
             });
         }
     }
@@ -126,7 +147,8 @@ public class McpConfigWindowViewModel : ViewModelBase
         // Preserve the current toggle states when refreshing after a reload
         var current = AvailableActions.ToDictionary(a => a.Key, a => a.IsEnabled);
         var currentOutput = AvailableActions.ToDictionary(a => a.Key, a => a.ExposeOutput);
-        PopulateAvailableActions(current, currentOutput);
+        var currentSafeMode = AvailableActions.ToDictionary(a => a.Key, a => a.SafeMode);
+        PopulateAvailableActions(current, currentOutput, currentSafeMode);
     }
 
     public IReadOnlyList<string> ExposedTools => _mcpHost.GetCurrentToolNames();
@@ -135,6 +157,7 @@ public class McpConfigWindowViewModel : ViewModelBase
     {
         var overrides = AvailableActions.ToDictionary(a => a.Key, a => a.IsEnabled);
         var outputOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.ExposeOutput);
+        var safeModeOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.SafeMode);
         var settings = new McpServerSettings
         {
             Enabled = Enabled,
@@ -142,7 +165,9 @@ public class McpConfigWindowViewModel : ViewModelBase
             ExposeAllActions = ExposeAllActions,
             ActionOverrides = overrides,
             ExposeOutputForAllActions = ExposeOutputForAllActions,
-            ActionOutputOverrides = outputOverrides
+            ActionOutputOverrides = outputOverrides,
+            SafeModeForAllActions = SafeModeForAllActions,
+            ActionSafeModeOverrides = safeModeOverrides
         };
         AppSettingsService.UpdateMcpServerSettings(settings);
 

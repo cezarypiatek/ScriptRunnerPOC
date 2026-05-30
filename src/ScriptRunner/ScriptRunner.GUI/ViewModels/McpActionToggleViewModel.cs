@@ -21,6 +21,7 @@ public class McpActionToggleViewModel : ReactiveObject
         {
             this.RaiseAndSetIfChanged(ref _isEnabled, value);
             this.RaisePropertyChanged(nameof(CanEditExposeOutput));
+            this.RaisePropertyChanged(nameof(CanEditSafeMode));
         }
     }
 
@@ -52,4 +53,33 @@ public class McpActionToggleViewModel : ReactiveObject
     /// the action must be exposed AND the master output switch must be OFF.
     /// </summary>
     public bool CanEditExposeOutput => _isEnabled && _canConfigureIndividualOutput;
+
+    private bool _safeMode;
+    /// <summary>When true, MCP calls to this action require manual user confirmation before executing.</summary>
+    public bool SafeMode
+    {
+        get => _safeMode;
+        set => this.RaiseAndSetIfChanged(ref _safeMode, value);
+    }
+
+    private bool _canConfigureIndividualSafeMode;
+    /// <summary>
+    /// Pushed from the parent VM whenever <see cref="McpConfigWindowViewModel.CanConfigureIndividualSafeMode"/> changes.
+    /// Combines with <see cref="IsEnabled"/> to produce <see cref="CanEditSafeMode"/>.
+    /// </summary>
+    public bool CanConfigureIndividualSafeMode
+    {
+        get => _canConfigureIndividualSafeMode;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _canConfigureIndividualSafeMode, value);
+            this.RaisePropertyChanged(nameof(CanEditSafeMode));
+        }
+    }
+
+    /// <summary>
+    /// True when the "Safe mode" toggle for this row should be interactive:
+    /// the action must be exposed AND the master safe mode switch must be OFF.
+    /// </summary>
+    public bool CanEditSafeMode => _isEnabled && _canConfigureIndividualSafeMode;
 }

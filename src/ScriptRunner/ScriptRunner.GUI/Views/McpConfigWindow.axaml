@@ -3,8 +3,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:ScriptRunner.GUI.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="750"
-        Width="600" MinHeight="500" Height="750"
+        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="800"
+        Width="700" MinHeight="500" Height="800"
         x:Class="ScriptRunner.GUI.Views.McpConfigWindow"
         x:Name="Root"
         Title="MCP Server Configuration"
@@ -19,6 +19,7 @@
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -77,8 +78,19 @@
             </StackPanel>
         </Border>
 
+        <!-- Master "safe mode for all" toggle -->
+        <Border Grid.Row="4" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#664400">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                    <TextBlock FontSize="13" FontWeight="SemiBold" Text="Safe mode for all actions"/>
+                    <TextBlock FontSize="11" Foreground="#858585" Text="When on, MCP-populated parameters are highlighted and execution requires manual confirmation"/>
+                </StackPanel>
+                <ToggleSwitch IsChecked="{Binding SafeModeForAllActions}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+            </StackPanel>
+        </Border>
+
         <!-- Per-action grid -->
-        <Grid Grid.Row="4" Margin="0,0,0,12">
+        <Grid Grid.Row="5" Margin="0,0,0,12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -89,10 +101,11 @@
                        Text="Individual actions:"/>
 
             <!-- Column headers -->
-            <Grid Grid.Row="1" Margin="8,0,0,2" ColumnDefinitions="*,90,110">
+            <Grid Grid.Row="1" Margin="8,0,0,2" ColumnDefinitions="*,90,110,100">
                 <TextBlock Grid.Column="0" FontSize="11" Foreground="#666" Text="Action"/>
                 <TextBlock Grid.Column="1" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Text="Exposed"/>
                 <TextBlock Grid.Column="2" FontSize="11" Foreground="#666" HorizontalAlignment="Center" Text="Return output"/>
+                <TextBlock Grid.Column="3" FontSize="11" Foreground="#FF8C00" HorizontalAlignment="Center" Text="Safe mode"/>
             </Grid>
 
             <Border Grid.Row="2" BorderThickness="1" BorderBrush="#333" CornerRadius="4">
@@ -100,7 +113,7 @@
                     <ItemsControl ItemsSource="{Binding AvailableActions}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:McpActionToggleViewModel">
-                                <Grid Margin="8,2" ColumnDefinitions="*,90,110">
+                                <Grid Margin="8,2" ColumnDefinitions="*,90,110,100">
                                     <TextBlock Grid.Column="0"
                                                Text="{Binding DisplayName}"
                                                FontSize="12"
@@ -120,6 +133,12 @@
                                                   VerticalAlignment="Center"
                                                   HorizontalAlignment="Center"
                                                   Margin="0,0,0,0"/>
+                                    <ToggleSwitch Grid.Column="3"
+                                                  IsChecked="{Binding SafeMode}"
+                                                  IsEnabled="{Binding CanEditSafeMode}"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Center"
+                                                  Margin="0,0,0,0"/>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -129,7 +148,7 @@
         </Grid>
 
         <!-- Save button -->
-        <Button Grid.Row="5"
+        <Button Grid.Row="6"
                 HorizontalAlignment="Right"
                 Width="140"
                 HorizontalContentAlignment="Center"
