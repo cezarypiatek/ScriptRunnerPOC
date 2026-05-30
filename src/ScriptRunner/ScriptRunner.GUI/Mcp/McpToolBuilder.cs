@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using ScriptRunner.GUI.ScriptConfigs;
@@ -113,6 +115,7 @@ public static class McpToolBuilder
                     break;
                 case PromptType.Checkbox:
                     propSchema["type"] = "boolean";
+                    propSchema["default"] = false;
                     break;
                 case PromptType.Multiselect:
                     propSchema["type"] = "array";
@@ -156,8 +159,9 @@ public static class McpToolBuilder
 
             props[p.Name] = propSchema;
 
-            // Required only when no default is available from either source
-            if (string.IsNullOrWhiteSpace(effectiveDefault))
+            // Booleans are never required — false is always a valid implicit default.
+            // All other params are required only when no default is available from either source.
+            if (p.Prompt != PromptType.Checkbox && string.IsNullOrWhiteSpace(effectiveDefault))
                 required.Add(p.Name);
         }
 
@@ -212,12 +216,18 @@ public static class McpToolBuilder
         if (argumentSet != null)
             description = $"{description} [parameter set: {argumentSet.Description}]";
 
-        return McpServerTool.Create(
-            async (IReadOnlyDictionary<string, object?> rawArgs, CancellationToken ct) =>
+        var schemaJson = BuildInputSchema(action, argumentSet).ToJsonString();
+        var schema = JsonSerializer.Deserialize<JsonElement>(schemaJson);
+
+        var function = new DynamicScriptAIFunction(
+            toolName,
+            description,
+            schema,
+            async (AIFunctionArguments args, CancellationToken ct) =>
             {
                 // Convert raw args (object?) to string-keyed dict
                 var stringArgs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var (k, v) in rawArgs)
+                foreach (var (k, v) in args)
                 {
                     stringArgs[k] = v?.ToString() ?? string.Empty;
                 }
@@ -280,18 +290,50 @@ public static class McpToolBuilder
                     content.Add(new TextContentBlock { Text = result.Output });
                 }
 
-                return new CallToolResult
+                return (object)new CallToolResult
                 {
                     Content = content,
                     IsError = !result.Success
                 };
-            },
-            new McpServerToolCreateOptions
-            {
-                Name = toolName,
-                Description = description,
-                SerializerOptions = null
-            }
-        );
+            });
+
+        return McpServerTool.Create(function, new McpServerToolCreateOptions
+        {
+            Name = toolName,
+            Description = description,
+            SerializerOptions = null
+        });
+    }
+
+    /// <summary>
+    /// An <see cref="AIFunction"/> implementation with a pre-built JSON Schema, used to expose
+    /// dynamically-defined ScriptConfig parameters as properly-typed MCP tool inputs.
+    /// </summary>
+    private sealed class DynamicScriptAIFunction : AIFunction
+    {
+        private readonly string _name;
+        private readonly string _description;
+        private readonly JsonElement _schema;
+        private readonly Func<AIFunctionArguments, CancellationToken, ValueTask<object?>> _invoke;
+
+        public DynamicScriptAIFunction(
+            string name,
+            string description,
+            JsonElement schema,
+            Func<AIFunctionArguments, CancellationToken, ValueTask<object?>> invoke)
+        {
+            _name = name;
+            _description = description;
+            _schema = schema;
+            _invoke = invoke;
+        }
+
+        public override string Name => _name;
+        public override string Description => _description;
+        public override JsonElement JsonSchema => _schema;
+
+        protected override ValueTask<object?> InvokeCoreAsync(
+            AIFunctionArguments arguments, CancellationToken cancellationToken)
+            => _invoke(arguments, cancellationToken);
     }
 }
