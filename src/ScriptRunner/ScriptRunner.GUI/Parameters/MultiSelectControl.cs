@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Avalonia.Controls;
 using ScriptRunner.GUI.ScriptConfigs;
 
@@ -33,7 +35,13 @@ public class MultiSelectControl : IControlRecord
     {
         var lb = (ListBox)Control;
         lb.SelectedItems?.Clear();
-        var parts = value.Split(Delimiter);
+        
+        var parts = TryDeserialized(value) switch
+        {
+            (true, var elements) => elements ?? value.Split(Delimiter),
+            _ => value.Split(Delimiter)
+            
+        };
         foreach (var part in parts)
         {
             var match = Options?.FirstOrDefault(o => o.Value == part.Trim()) as object
@@ -42,6 +50,18 @@ public class MultiSelectControl : IControlRecord
             {
                 lb.SelectedItems?.Add(match);
             }
+        }
+    }
+
+    private static (bool, string[]?) TryDeserialized(string value)
+    {
+        try
+        {
+            return (true,  JsonSerializer.Deserialize<string[]>(value));
+        }
+        catch (Exception e)
+        {
+            return (false, Array.Empty<string>());
         }
     }
 

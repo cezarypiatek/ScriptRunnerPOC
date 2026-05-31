@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using System.Text.Json;
+using Avalonia.Controls;
 using AvaloniaEdit;
 
 namespace ScriptRunner.GUI;

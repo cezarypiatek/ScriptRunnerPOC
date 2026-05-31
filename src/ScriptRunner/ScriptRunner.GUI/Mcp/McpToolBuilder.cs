@@ -106,6 +106,19 @@ public static class McpToolBuilder
         foreach (var p in action.Params)
         {
             var propSchema = new JsonObject();
+            
+            // Effective default: set value takes priority over param default
+            var effectiveDefault = argumentSet != null
+                                   && argumentSet.Arguments.TryGetValue(p.Name, out var setVal)
+                                   && !string.IsNullOrEmpty(setVal)
+                ? setVal
+                : p.Default;
+
+            if (!string.IsNullOrWhiteSpace(effectiveDefault))
+            {
+                propSchema["default"] = effectiveDefault;
+            }
+            
 
             // Type
             switch (p.Prompt)
@@ -115,12 +128,21 @@ public static class McpToolBuilder
                     break;
                 case PromptType.Checkbox:
                     propSchema["type"] = "boolean";
-                    propSchema["default"] = false;
+                    if (string.IsNullOrWhiteSpace(effectiveDefault) == false &&
+                        p.GetPromptSettings("checkedValue", out var trueDefault))
+                    {
+                        propSchema["default"] = JsonValue.Create(trueDefault == effectiveDefault);    
+                    }
+                    else
+                    {
+                        propSchema["default"] = JsonValue.Create(false);    
+                    }
                     break;
                 case PromptType.Multiselect:
                     propSchema["type"] = "array";
                     var itemSchema = new JsonObject { ["type"] = "string" };
-                    var msOptions = p.GetDropdownOptions(",");
+                    var delimiterForMulti = p.GetPromptSettings("delimiter", s => s, ",");
+                    var msOptions = p.GetDropdownOptions(delimiterForMulti);
                     if (msOptions.Count > 0)
                     {
                         var msEnum = new JsonArray();
@@ -128,12 +150,24 @@ public static class McpToolBuilder
                         itemSchema["enum"] = msEnum;
                     }
                     propSchema["items"] = itemSchema;
+
+                    if (string.IsNullOrWhiteSpace(effectiveDefault) == false)
+                    {
+                        var defaultOptions = new JsonArray();
+                        foreach (var o in effectiveDefault.Split(delimiterForMulti))
+                        {
+                            defaultOptions.Add(o);
+                        }
+                        propSchema["default"] = defaultOptions;
+                    }
+                    
                     break;
                 default:
                     propSchema["type"] = "string";
                     if (p.Prompt == PromptType.Dropdown)
                     {
-                        var opts = p.GetDropdownOptions(",");
+                        var delimiter = p.GetPromptSettings("delimiter", s => s, ",");
+                        var opts = p.GetDropdownOptions(delimiter);
                         if (opts.Count > 0)
                         {
                             var enumArr = new JsonArray();
@@ -147,15 +181,7 @@ public static class McpToolBuilder
             if (!string.IsNullOrWhiteSpace(p.Description))
                 propSchema["description"] = p.Description;
 
-            // Effective default: set value takes priority over param default
-            var effectiveDefault = argumentSet != null
-                && argumentSet.Arguments.TryGetValue(p.Name, out var setVal)
-                && !string.IsNullOrEmpty(setVal)
-                ? setVal
-                : p.Default;
-
-            if (!string.IsNullOrWhiteSpace(effectiveDefault))
-                propSchema["default"] = effectiveDefault;
+            
 
             props[p.Name] = propSchema;
 
@@ -230,7 +256,20 @@ public static class McpToolBuilder
                 var stringArgs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var (k, v) in args)
                 {
-                    stringArgs[k] = v?.ToString() ?? string.Empty;
+                    if (v is JsonElement { ValueKind: JsonValueKind.String } stringValue)
+                    {
+                        var rawString = stringValue.GetString()
+                            ?.Replace("\\r\\n", "\r\n")
+                            .Replace("\\n", "\n")
+                            .Replace("\\t", "\t")
+                            .Replace("\\\"", "\"")
+                            ;
+                        stringArgs[k] = rawString ?? string.Empty;
+                    }
+                    else
+                    {
+                        stringArgs[k] = v?.ToString() ?? string.Empty;
+                    }
                 }
 
                 // Track which keys were explicitly supplied by the AI (before filling defaults).
