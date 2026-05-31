@@ -130,6 +130,10 @@
                                     "type": "string",
                                     "description":"Helper text shown next to the control; falls back to the parameter name when not provided."
                                 },
+                                "details": {
+                                    "type": "string",
+                                    "description":"Extended parameter guidance shown in an info tooltip next to the label."
+                                },
                                 "default": {
                                     "type": "string",
                                     "description":"Initial value for the control and the default argument set."

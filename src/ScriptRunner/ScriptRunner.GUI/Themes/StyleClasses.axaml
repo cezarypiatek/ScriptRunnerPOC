@@ -191,6 +191,32 @@
         <Setter Property="Margin" Value="0,4, 15, 4"></Setter>
     </Style>
 
+    <Style Selector="Border.paramDetailsIconHost">
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="CornerRadius" Value="9" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="Background" Value="#1AFFFFFF" />
+        <Setter Property="BorderBrush" Value="#2FFFFFFF" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="Border.paramDetailsIconHost:pointerover">
+        <Setter Property="Background" Value="#2E4A9EFF" />
+        <Setter Property="BorderBrush" Value="#4A9EFF" />
+    </Style>
+
+    <Style Selector="Border.paramDetailsIconHost tanker|Icon.paramDetailsIcon">
+        <Setter Property="Foreground" Value="#9FC2FF" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="StackPanel.paramDetailsTooltip">
+        <Setter Property="MaxWidth" Value="440" />
+        <Setter Property="Margin" Value="2" />
+    </Style>
+
     <Style Selector="StackPanel.paramRow TextBox">
         <Setter Property="MinWidth" Value="300" />
         <Setter Property="Background" Value="#1e1e1e" />

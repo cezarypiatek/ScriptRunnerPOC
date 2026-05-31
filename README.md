@@ -172,6 +172,7 @@ Each parameter object can shape both the UI control and how ScriptRunner constru
 
 - `name` *(required)*: Identifier used for placeholders (`{name}`), predefined argument sets, and environment-variable substitutions.
 - `description`: Text shown next to the control; falls back to `name` when omitted.
+- `details`: Extended helper text shown in a hover tooltip from the info icon next to the parameter label.
 - `default`: Value pre-populated in the UI and stored in the automatically generated `<default>` argument set.
 - `prompt` *(required)*: Chooses the control type (text box, dropdown, checkbox, etc.). See [Prompt Types](docs/PromptTypes.md).
 - `promptSettings`: Control-specific settings (date format, dropdown options, file template, etc.).
