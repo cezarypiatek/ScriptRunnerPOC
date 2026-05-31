@@ -20,6 +20,7 @@ public class ScriptConfig
     public string Docs { get; set; }
     public string DocsContent { get; set; } = string.Empty;
     public string DocAssetPath { get; set; }
+    public string DocsAbsolutePath { get; set; }
     public bool HasDocs { get; set; }
     public List<string> Categories { get; set; } = new();
     public string? InstallCommand { get; set; }
