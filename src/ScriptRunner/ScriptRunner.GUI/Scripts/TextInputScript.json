@@ -96,26 +96,44 @@
           "prompt": "multilineText"
         },
         {
-          "name": "p2",
-          "description": "Multiline JSONr",
+          "name": "p3",
+          "description": "Multiline JSON",
           "default": "Line 1\r\n Line 2",
           "prompt": "multilineText",
-            "promptSettings": {
-                "syntax": "json"
-            }
+          "promptSettings": {
+            "syntax": "json"
+          }
         },
         {
-          "name": "p22",
+          "name": "p31",
+          "description": "Multiline C# code",
+          "default": "Line 1\r\n Line 2",
+          "prompt": "multilineText",
+          "promptSettings": {
+            "syntax": "cs"
+          }
+        },
+        {
+          "name": "p32",
+          "description": "Multiline SQL code",
+          "default": "Line 1\r\n Line 2",
+          "prompt": "multilineText",
+          "promptSettings": {
+            "syntax": "sql"
+          }
+        },
+        {
+          "name": "p4",
           "description": "Fil Content",
           "default": "using System;\r\n\r\nclass Program {\r\n    static void Main() {\r\n        Console.WriteLine(\"Hello, World!\");\r\n    }\r\n}",
           "prompt": "fileContent",
-            "promptSettings": {
-              "extension": "cs",
-              "templateText": "using System;\r\n\r\nclass Program {\r\n    static void Main() {\r\n        Console.WriteLine(\"Hello, World!\");\r\n    }\r\n}"
-            }
+          "promptSettings": {
+            "extension": "cs",
+            "templateText": "using System;\r\n\r\nclass Program {\r\n    static void Main() {\r\n        Console.WriteLine(\"Hello, World!\");\r\n    }\r\n}"
+          }
         },
         {
-          "name": "p3",
+          "name": "p5",
           "description": "Checkbox parameter",
           "default": "checked",
           "prompt": "checkbox",
@@ -125,7 +143,7 @@
           }
         },
         {
-          "name": "p4",
+          "name": "p6",
           "description": "Date parameter",
           "default": "2022-05-03",
           "prompt": "datePicker",
@@ -134,7 +152,7 @@
           }
         },
         {
-          "name": "p5",
+          "name": "p7",
           "description": "Year-Month parameter",
           "default": "2022-05",
           "prompt": "datePicker",
@@ -144,44 +162,44 @@
           }
         },
         {
-          "name": "p6",
+          "name": "p8",
           "description": "Dropdown parameter",
           "default": "val3",
           "prompt": "dropdown",
           "promptSettings":{
-            "options":"va11,val2,val3,val4"
+            "options":"val1,val2,val3,val4"
           }
         },
         {
-          "name": "p7",
+          "name": "p9",
           "description": "MultiSelect parameter",
           "default": "val3,val4",
           "prompt": "multiSelect",
           "promptSettings":{
-            "options":"va11,val2,val3,val4",
+            "options":"val1,val2,val3,val4",
             "delimiter":","
           }
         },
         {
-          "name": "p8",
+          "name": "p10",
           "description": "Password parameter",
           "default": "secret",
           "prompt": "password"
         },
         {
-          "name": "p9",
+          "name": "p11",
           "description": "File parameter",
           "default": "c:\\Windows\\explorer.exe",
           "prompt": "filePicker"
         },
         {
-          "name": "p10",
+          "name": "p12",
           "description": "Directory parameter",
           "default": "c:\\Windows\\",
           "prompt": "directoryPicker"
         },
         {
-          "name": "p11",
+          "name": "p14",
           "description": "Numeric parameter",
           "default": "7",
           "prompt": "numeric",
@@ -192,7 +210,7 @@
           }
         },
         {
-          "name": "p12",
+          "name": "p15",
           "description": "Time parameter",
           "default": "7:30",
           "prompt": "timePicker",
