@@ -231,6 +231,7 @@ public static class McpToolBuilder
     public static McpServerTool CreateTool(
         ScriptConfig action,
         string toolName,
+        string? docsResourceUri,
         McpUiBridge bridge,
         bool includeOutput = false,
         bool safeMode = false,
@@ -242,8 +243,8 @@ public static class McpToolBuilder
             : action.FullName;
         if (argumentSet != null)
             description = $"{description} [parameter set: {argumentSet.Description}]";
-        if (action.HasDocs)
-            description = $"{description} More details {action.DocsAbsolutePath}";
+        if (!string.IsNullOrWhiteSpace(docsResourceUri))
+            description = $"{description} More details: {docsResourceUri}";
 
         var schemaJson = BuildInputSchema(action, argumentSet).ToJsonString();
         var schema = JsonSerializer.Deserialize<JsonElement>(schemaJson);

@@ -127,6 +127,12 @@ public class ScriptRunnerMcpHost : ReactiveObject
         });
 
         var nameMap = McpToolBuilder.BuildNameMap(actionTuples);
+        var docsByToolName = nameMap
+            .Where(t => t.Action.HasDocs && string.IsNullOrWhiteSpace(t.Action.DocsContent) == false)
+            .ToDictionary(t => t.ToolName, t => t.Action.DocsContent, StringComparer.Ordinal);
+
+        ActionDocsResources.SetDocs(docsByToolName);
+
         var tools = nameMap.Select(t =>
         {
             // All flags are keyed by the *parent* action's FullName — predefined-set tools inherit them.
@@ -136,7 +142,10 @@ public class ScriptRunnerMcpHost : ReactiveObject
                 || (settings.ActionSafeModeOverrides.TryGetValue(t.Action.FullName, out var sm) && sm);
             var fireAndForget = settings.FireAndForgetForAllActions
                 || (settings.ActionFireAndForgetOverrides.TryGetValue(t.Action.FullName, out var ff) && ff);
-            return McpToolBuilder.CreateTool(t.Action, t.ToolName, bridge, includeOutput, safeMode, fireAndForget, t.ArgumentSet);
+            var docsUri = docsByToolName.ContainsKey(t.ToolName)
+                ? ActionDocsResources.CreateUri(t.ToolName)
+                : null;
+            return McpToolBuilder.CreateTool(t.Action, t.ToolName, docsUri, bridge, includeOutput, safeMode, fireAndForget, t.ArgumentSet);
         }).ToList();
 
         var builder = WebApplication.CreateSlimBuilder();
@@ -152,7 +161,8 @@ public class ScriptRunnerMcpHost : ReactiveObject
 
         var mcpBuilder = builder.Services
             .AddMcpServer()
-            .WithHttpTransport(o => { o.Stateless = true; });
+            .WithHttpTransport(o => { o.Stateless = true; })
+            .WithResources<ActionDocsResources>();
 
         // Register each tool as a singleton McpServerTool
         foreach (var tool in tools)
