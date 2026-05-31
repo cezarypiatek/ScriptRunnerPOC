@@ -23,12 +23,20 @@ public class ActionDocsResources
 
     public static string CreateUri(string toolName) => $"scriptrunner://actions/{toolName}/docs";
 
+    public static string CreateHttpPath(string toolName) => $"/actions/{toolName}/docs";
+
+    public static bool TryGetDocs(string toolName, out string content)
+    {
+        toolName = toolName.Trim();
+        return DocsByToolName.TryGetValue(toolName, out content!);
+    }
+
     [McpServerResource(UriTemplate = "scriptrunner://actions/{tool}/docs", Name = "Action docs", MimeType = "text/markdown")]
     [Description("Returns documentation for a ScriptRunner MCP action tool")]
     public static TextResourceContents GetActionDocs(string tool)
     {
         tool = tool.Trim();
-        if (!DocsByToolName.TryGetValue(tool, out var content))
+        if (!TryGetDocs(tool, out var content))
         {
             throw new InvalidOperationException($"No docs resource found for tool '{tool}'.");
         }

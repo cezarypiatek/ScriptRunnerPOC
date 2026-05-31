@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -142,10 +143,13 @@ public class ScriptRunnerMcpHost : ReactiveObject
                 || (settings.ActionSafeModeOverrides.TryGetValue(t.Action.FullName, out var sm) && sm);
             var fireAndForget = settings.FireAndForgetForAllActions
                 || (settings.ActionFireAndForgetOverrides.TryGetValue(t.Action.FullName, out var ff) && ff);
-            var docsUri = docsByToolName.ContainsKey(t.ToolName)
+            var docsResourceUri = docsByToolName.ContainsKey(t.ToolName)
                 ? ActionDocsResources.CreateUri(t.ToolName)
                 : null;
-            return McpToolBuilder.CreateTool(t.Action, t.ToolName, docsUri, bridge, includeOutput, safeMode, fireAndForget, t.ArgumentSet);
+            var docsHttpUri = docsByToolName.ContainsKey(t.ToolName)
+                ? $"http://127.0.0.1:{settings.Port}{ActionDocsResources.CreateHttpPath(t.ToolName)}"
+                : null;
+            return McpToolBuilder.CreateTool(t.Action, t.ToolName, docsResourceUri, docsHttpUri, bridge, includeOutput, safeMode, fireAndForget, t.ArgumentSet);
         }).ToList();
 
         var builder = WebApplication.CreateSlimBuilder();
@@ -176,6 +180,15 @@ public class ScriptRunnerMcpHost : ReactiveObject
         app.UseHostFiltering();
 
         app.MapMcp();
+        app.MapGet("/actions/{tool}/docs", (string tool) =>
+        {
+            if (!ActionDocsResources.TryGetDocs(tool, out var content))
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Text(content, "text/markdown");
+        });
 
         return app;
     }

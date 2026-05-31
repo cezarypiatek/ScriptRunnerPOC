@@ -232,6 +232,7 @@ public static class McpToolBuilder
         ScriptConfig action,
         string toolName,
         string? docsResourceUri,
+        string? docsHttpUri,
         McpUiBridge bridge,
         bool includeOutput = false,
         bool safeMode = false,
@@ -244,7 +245,9 @@ public static class McpToolBuilder
         if (argumentSet != null)
             description = $"{description} [parameter set: {argumentSet.Description}]";
         if (!string.IsNullOrWhiteSpace(docsResourceUri))
-            description = $"{description} More details: {docsResourceUri}";
+            description = $"{description} More details (resource): {docsResourceUri}";
+        if (!string.IsNullOrWhiteSpace(docsHttpUri))
+            description = $"{description} More details (http): {docsHttpUri}";
 
         var schemaJson = BuildInputSchema(action, argumentSet).ToJsonString();
         var schema = JsonSerializer.Deserialize<JsonElement>(schemaJson);
