@@ -44,10 +44,7 @@ public class FileContent : IControlRecord
                 textBox.Text = value;
                 break;
             case TextEditor textEditor:
-                textEditor.Text = value?.Replace("\\r\\n", "\r\n")
-                    .Replace("\\n", "\n")
-                    .Replace("\\t", "\t")
-                    .Replace("\\\"", "\"");
+                textEditor.Text = value;
                 break;
         }
     }
