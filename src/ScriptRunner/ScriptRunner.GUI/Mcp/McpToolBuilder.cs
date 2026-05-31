@@ -178,8 +178,16 @@ public static class McpToolBuilder
                     break;
             }
 
-            if (!string.IsNullOrWhiteSpace(p.Description))
-                propSchema["description"] = p.Description;
+            var parameterDescription = string.IsNullOrWhiteSpace(p.Description) ? null : p.Description.Trim();
+            if (string.IsNullOrWhiteSpace(p.Details) == false)
+            {
+                parameterDescription = string.IsNullOrWhiteSpace(parameterDescription)
+                    ? p.Details.Trim()
+                    : $"{parameterDescription}\n\nDetails: {p.Details.Trim()}";
+            }
+
+            if (string.IsNullOrWhiteSpace(parameterDescription) == false)
+                propSchema["description"] = parameterDescription;
 
             
 

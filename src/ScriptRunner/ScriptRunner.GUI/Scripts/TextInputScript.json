@@ -115,7 +115,8 @@
         },
         {
           "name": "p32",
-          "description": "Multiline SQL code",
+          "description": "SQL code",
+          "details": "This is a multiline sql code with sqlserver syntax\r\n but postgres might be supported as well",
           "default": "Line 1\r\n Line 2",
           "prompt": "multilineText",
           "promptSettings": {

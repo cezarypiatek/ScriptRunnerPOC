@@ -67,14 +67,42 @@ public class ParamsPanelFactory
                 }
             }
 
+            var labelContent = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 6,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            labelContent.Children.Add(new TextBlock
+            {
+                Text = string.IsNullOrWhiteSpace(param.Description) ? param.Name : param.Description,
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 280,
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            if (string.IsNullOrWhiteSpace(param.Details) == false)
+            {
+                var detailsIconContainer = new Border
+                {
+                    Classes = { "paramDetailsIconHost" },
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Child = new Icon
+                    {
+                        Classes = { "paramDetailsIcon" },
+                        Value = "far fa-circle-question",
+                        FontSize = 12
+                    }
+                };
+
+                ToolTip.SetTip(detailsIconContainer, CreateParameterDetailsTooltip(param));
+                labelContent.Children.Add(detailsIconContainer);
+            }
+
             var label = new Label
             {
-                Content = new TextBlock
-                {
-                    Text = string.IsNullOrWhiteSpace(param.Description) ? param.Name : param.Description,
-                    TextWrapping = TextWrapping.Wrap,
-                    MaxWidth = 300
-                }
+                Content = labelContent
             };
             ToolTip.SetTip(label, param.Name);
 
@@ -268,6 +296,32 @@ public class ParamsPanelFactory
             ControlRecords = controlRecords,
             ParameterContainers = parameterContainers
         };    }
+
+    private static Control CreateParameterDetailsTooltip(ScriptParam param)
+    {
+        return new StackPanel
+        {
+            Classes = { "paramDetailsTooltip" },
+            Orientation = Orientation.Vertical,
+            Spacing = 4,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = $"Parameter: {param.Name}",
+                    FontWeight = FontWeight.SemiBold,
+                    TextWrapping = TextWrapping.Wrap
+                },
+                new TextBlock
+                {
+                    Text = param.Details ?? string.Empty,
+                    TextWrapping = TextWrapping.Wrap,
+                    MaxWidth = 420
+                }
+            }
+        };
+    }
+
     private IControlRecord CreateControlRecord(ScriptParam p, string? value, int index,
         ScriptConfig scriptConfig, List<VaultBinding> secretBindings,
         Func<string, string, Task<string?>> commandExecutor)
