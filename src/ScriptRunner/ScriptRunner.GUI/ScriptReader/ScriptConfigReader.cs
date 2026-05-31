@@ -158,6 +158,7 @@ public static class ScriptConfigReader
                         action.HasDocs = true;
                         action.DocsContent = File.ReadAllText(docPaths);
                         action.DocAssetPath = Path.GetDirectoryName(docPaths);
+                        action.DocsAbsolutePath = docPaths;
                     }
                 }
                 
@@ -330,6 +331,7 @@ public static class ScriptConfigReader
                         action.HasDocs = true;
                         action.DocsContent = File.ReadAllText(docPaths);
                         action.DocAssetPath = Path.GetDirectoryName(docPaths);
+                        action.DocsAbsolutePath = docPaths;
                     }
                 }
                 

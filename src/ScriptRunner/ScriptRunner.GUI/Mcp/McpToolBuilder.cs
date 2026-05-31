@@ -242,6 +242,8 @@ public static class McpToolBuilder
             : action.FullName;
         if (argumentSet != null)
             description = $"{description} [parameter set: {argumentSet.Description}]";
+        if (action.HasDocs)
+            description = $"{description} More details {action.DocsAbsolutePath}";
 
         var schemaJson = BuildInputSchema(action, argumentSet).ToJsonString();
         var schema = JsonSerializer.Deserialize<JsonElement>(schemaJson);
