@@ -264,12 +264,7 @@ public static class McpToolBuilder
                 {
                     if (v is JsonElement { ValueKind: JsonValueKind.String } stringValue)
                     {
-                        var rawString = stringValue.GetString()
-                            ?.Replace("\\r\\n", "\r\n")
-                            .Replace("\\n", "\n")
-                            .Replace("\\t", "\t")
-                            .Replace("\\\"", "\"")
-                            ;
+                        var rawString = stringValue.GetString();
                         stringArgs[k] = rawString ?? string.Empty;
                     }
                     else
