@@ -30,7 +30,7 @@ jobs:
         $version = "$year.$month.${{ github.run_number }}"
         echo "Version=$version" >> $env:GITHUB_ENV
     - name: Setup .NET 8
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: '8.0.x'
     - name: Restore dependencies

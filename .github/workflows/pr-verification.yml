@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET 8
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: '8.0.x'
     - name: Calculate next version
@@ -34,4 +34,6 @@ jobs:
         dotnet nuget locals all --clear
         dotnet restore $env:SolutionPath
     - name: Build extension
-      run: dotnet publish $env:SolutionPath -r win-x64 -maxcpucount:1 -p:PublishSingleFile=true --self-contained false -p:PublishReadyToRun=true
+      run: |
+        dotnet build $env:SolutionPath
+        dotnet publish src\ScriptRunner\ScriptRunner.GUI\ScriptRunner.GUI.csproj -r win-x64 -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:SkipInstallerBuild=true  -p:EnableCompressionInSingleFile=true  -p:IncludeNativeLibrariesForSelfExtract=true -p:PackAsTool=false
