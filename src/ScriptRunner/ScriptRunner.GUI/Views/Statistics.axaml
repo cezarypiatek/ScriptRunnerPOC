@@ -90,10 +90,58 @@
             <Setter Property="BorderBrush" Value="#5cc0f0"/>
             <Setter Property="Background" Value="#1e2b3d"/>
         </Style>
+
+        <Style Selector="ListBox.yearSelector">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style Selector="ListBox.yearSelector ListBoxItem">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinHeight" Value="0"/>
+        </Style>
+        <Style Selector="ListBox.yearSelector ListBoxItem /template/ ContentPresenter">
+            <Setter Property="Background" Value="#161b22"/>
+            <Setter Property="BorderBrush" Value="#3E3E40"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ListBox.yearSelector ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1e2530"/>
+            <Setter Property="BorderBrush" Value="#4a7fa5"/>
+        </Style>
+        <Style Selector="ListBox.yearSelector ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1a2535"/>
+            <Setter Property="BorderBrush" Value="#3baced"/>
+        </Style>
+        <Style Selector="ListBox.yearSelector ListBoxItem TextBlock">
+            <Setter Property="Foreground" Value="#A0A0A0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style Selector="ListBox.yearSelector ListBoxItem:pointerover TextBlock">
+            <Setter Property="Foreground" Value="#ffffff"/>
+        </Style>
+        <Style Selector="ListBox.yearSelector ListBoxItem:selected TextBlock">
+            <Setter Property="Foreground" Value="#3baced"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
     </UserControl.Styles>
     
     <ScrollViewer>
-        <StackPanel Margin="20" Spacing="30">
+        <StackPanel Margin="20" Spacing="20">
             
             <!-- Header -->
             <TextBlock Text="Execution Statistics" 
@@ -129,7 +177,7 @@
                         CommandParameter="{x:Static vm:TopActionsRange.ThisWeek}"
                         Margin="4,0,4,0">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="{Binding ExecutionsThisWeek}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
+                        <TextBlock Text="{Binding ExecutionsThisWeek}" FontSize="36" FontWeight="Bold" Foreground="#a371f7"/>
                         <TextBlock Text="This Week" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Button>
@@ -139,7 +187,7 @@
                         CommandParameter="{x:Static vm:TopActionsRange.ThisMonth}"
                         Margin="4,0,4,0">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="{Binding ExecutionsThisMonth}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
+                        <TextBlock Text="{Binding ExecutionsThisMonth}" FontSize="36" FontWeight="Bold" Foreground="#ff7b72"/>
                         <TextBlock Text="This Month" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Button>
@@ -149,7 +197,7 @@
                         CommandParameter="{x:Static vm:TopActionsRange.ThisYear}"
                         Margin="8,0,0,0">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="{Binding ExecutionsThisYear}" FontSize="36" FontWeight="Bold" Foreground="#3baced"/>
+                        <TextBlock Text="{Binding ExecutionsThisYear}" FontSize="36" FontWeight="Bold" Foreground="#ffa657"/>
                         <TextBlock Text="This Year" FontSize="13" Foreground="#858585" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Button>
@@ -158,23 +206,23 @@
             <!-- Heatmap Section -->
             <StackPanel Spacing="10">
                 <!-- Header with Year Selector -->
-                <StackPanel Orientation="Horizontal" Spacing="15">
-                    <TextBlock Text="Execution Frequency" 
-                               FontSize="18" 
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
-                    
-                    <ComboBox ItemsSource="{Binding YearOptions}"
-                              SelectedItem="{Binding SelectedYearOption}"
-                              MinWidth="120"
-                              VerticalAlignment="Center">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding DisplayName}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
+                <ListBox Classes="yearSelector"
+                         ItemsSource="{Binding YearOptions}"
+                         SelectedItem="{Binding SelectedYearOption}"
+                         SelectionMode="Single"
+                         HorizontalAlignment="Left"
+                         VerticalAlignment="Center">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
                 
                 <StackPanel Spacing="5">
                     <!-- Day labels -->
