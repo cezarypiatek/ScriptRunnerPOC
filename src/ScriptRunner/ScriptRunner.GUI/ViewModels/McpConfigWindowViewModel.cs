@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -116,6 +117,16 @@ public class McpConfigWindowViewModel : ViewModelBase
 
     public ObservableCollection<McpActionToggleViewModel> AvailableActions { get; } = new();
 
+    private string _actionFilter = string.Empty;
+    public string ActionFilter
+    {
+        get => _actionFilter;
+        set => this.RaiseAndSetIfChanged(ref _actionFilter, value);
+    }
+
+    private readonly ObservableAsPropertyHelper<IEnumerable<McpActionToggleViewModel>> _filteredAvailableActions;
+    public IEnumerable<McpActionToggleViewModel> FilteredAvailableActions => _filteredAvailableActions.Value;
+
     public string StatusMessage => _mcpHost.StatusMessage;
     public bool IsRunning => _mcpHost.IsRunning;
 
@@ -152,6 +163,31 @@ public class McpConfigWindowViewModel : ViewModelBase
         _braveModeForAllActions = settings.BraveModeForAllActions;
         _fireAndForgetForAllActions = settings.FireAndForgetForAllActions;
         _exposePredefinedParameterSets = settings.ExposePredefinedParameterSets;
+
+        var availableActionsChanged = Observable
+            .FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
+                handler => AvailableActions.CollectionChanged += handler,
+                handler => AvailableActions.CollectionChanged -= handler)
+            .Select(_ => 0)
+            .StartWith(0);
+
+        this.WhenAnyValue(x => x.ActionFilter)
+            .Throttle(TimeSpan.FromMilliseconds(200))
+            .DistinctUntilChanged()
+            .Select(filter => filter?.Trim() ?? string.Empty)
+            .CombineLatest(availableActionsChanged, (filter, _) => filter)
+            .Select(filter =>
+            {
+                if (string.IsNullOrWhiteSpace(filter))
+                {
+                    return AvailableActions.AsEnumerable();
+                }
+
+                return AvailableActions.Where(a =>
+                    a.DisplayName.Contains(filter, StringComparison.InvariantCultureIgnoreCase));
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.FilteredAvailableActions, out _filteredAvailableActions);
 
         PopulateAvailableActions(settings.ActionOverrides, settings.ActionOutputOverrides, settings.ActionBraveModeOverrides, settings.ActionFireAndForgetOverrides, settings.ActionPredefinedSetsOverrides);
 
