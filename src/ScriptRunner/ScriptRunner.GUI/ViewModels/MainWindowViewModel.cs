@@ -989,7 +989,7 @@ public class MainWindowViewModel : ReactiveObject
         _controlRecords = paramsPanel.ControlRecords;
         _parameterContainers = paramsPanel.ParameterContainers;
 
-        // Clear any pending safe-mode approval when the action changes
+        // Clear any pending MCP approval when the action changes
         CancelMcpApproval();
     }
 
@@ -1100,12 +1100,12 @@ public class MainWindowViewModel : ReactiveObject
                 controlRecord.SetValueFromString(value);
             }
         }
-        // Only highlight when in safe mode (explicitKeys is non-null); highlight only explicitly-provided params
+        // Only highlight when approval is required (explicitKeys is non-null); highlight only explicitly-provided params
         if (explicitKeys != null)
             HighlightMcpRows(explicitKeys);
     }
 
-    // ── Safe-mode approval state ──────────────────────────────────────────────
+    // ── MCP approval state ───────────────────────────────────────────────────
 
     private bool _isAwaitingMcpApproval;
     public bool IsAwaitingMcpApproval
@@ -1118,7 +1118,7 @@ public class MainWindowViewModel : ReactiveObject
     private Action? _onMcpReject;
 
     /// <summary>
-    /// Called by McpUiBridge when safe mode is active.
+    /// Called by McpUiBridge when an MCP call requires approval.
     /// Puts the UI into approval state: shows Accept/Reject buttons, highlights MCP rows.
     /// Also brings the main window to the foreground so the user notices the pending confirmation.
     /// </summary>

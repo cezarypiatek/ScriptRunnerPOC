@@ -90,7 +90,7 @@
         </Style>
     </Style>
 
-    <!-- MCP safe-mode Accept button (orange) -->
+    <!-- MCP approval Accept button (orange) -->
     <Style Selector="Button.mcpAccept">
         <Setter Property="Background" Value="#FF8C00" />
         <Setter Property="Foreground" Value="White" />
@@ -106,7 +106,7 @@
         </Style>
     </Style>
 
-    <!-- MCP safe-mode Reject button (secondary-style) -->
+    <!-- MCP approval Reject button (secondary-style) -->
     <Style Selector="Button.mcpReject">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="#FF8C00" />

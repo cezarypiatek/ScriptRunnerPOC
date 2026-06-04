@@ -61,22 +61,22 @@ public class McpConfigWindowViewModel : ViewModelBase
     /// <summary>True when per-action output toggles should be interactive (i.e. output master switch is OFF).</summary>
     public bool CanConfigureIndividualOutput => !_exposeOutputForAllActions;
 
-    private bool _safeModeForAllActions;
-    public bool SafeModeForAllActions
+    private bool _braveModeForAllActions;
+    public bool BraveModeForAllActions
     {
-        get => _safeModeForAllActions;
+        get => _braveModeForAllActions;
         set
         {
-            this.RaiseAndSetIfChanged(ref _safeModeForAllActions, value);
-            this.RaisePropertyChanged(nameof(CanConfigureIndividualSafeMode));
-            // Push updated value to each row so CanEditSafeMode updates immediately
+            this.RaiseAndSetIfChanged(ref _braveModeForAllActions, value);
+            this.RaisePropertyChanged(nameof(CanConfigureIndividualBraveMode));
+            // Push updated value to each row so CanEditBraveMode updates immediately
             foreach (var row in AvailableActions)
-                row.CanConfigureIndividualSafeMode = !value;
+                row.CanConfigureIndividualBraveMode = !value;
         }
     }
 
-    /// <summary>True when per-action safe mode toggles should be interactive (i.e. safe mode master switch is OFF).</summary>
-    public bool CanConfigureIndividualSafeMode => !_safeModeForAllActions;
+    /// <summary>True when per-action brave mode toggles should be interactive (i.e. brave mode master switch is OFF).</summary>
+    public bool CanConfigureIndividualBraveMode => !_braveModeForAllActions;
 
     private bool _fireAndForgetForAllActions;
     public bool FireAndForgetForAllActions
@@ -149,11 +149,11 @@ public class McpConfigWindowViewModel : ViewModelBase
         _port = settings.Port;
         _exposeAllActions = settings.ExposeAllActions;
         _exposeOutputForAllActions = settings.ExposeOutputForAllActions;
-        _safeModeForAllActions = settings.SafeModeForAllActions;
+        _braveModeForAllActions = settings.BraveModeForAllActions;
         _fireAndForgetForAllActions = settings.FireAndForgetForAllActions;
         _exposePredefinedParameterSets = settings.ExposePredefinedParameterSets;
 
-        PopulateAvailableActions(settings.ActionOverrides, settings.ActionOutputOverrides, settings.ActionSafeModeOverrides, settings.ActionFireAndForgetOverrides, settings.ActionPredefinedSetsOverrides);
+        PopulateAvailableActions(settings.ActionOverrides, settings.ActionOutputOverrides, settings.ActionBraveModeOverrides, settings.ActionFireAndForgetOverrides, settings.ActionPredefinedSetsOverrides);
 
         // Refresh the list when actions are reloaded while the dialog is open
         _mainVm.ActionsReloaded += OnActionsReloaded;
@@ -162,7 +162,7 @@ public class McpConfigWindowViewModel : ViewModelBase
     private void PopulateAvailableActions(
         Dictionary<string, bool> overrides,
         Dictionary<string, bool>? outputOverrides = null,
-        Dictionary<string, bool>? safeModeOverrides = null,
+        Dictionary<string, bool>? braveModeOverrides = null,
         Dictionary<string, bool>? fireAndForgetOverrides = null,
         Dictionary<string, bool>? predefinedSetsOverrides = null)
     {
@@ -171,7 +171,7 @@ public class McpConfigWindowViewModel : ViewModelBase
         {
             var enabled = overrides.TryGetValue(action.FullName, out var val) && val;
             var exposeOutput = outputOverrides != null && outputOverrides.TryGetValue(action.FullName, out var outVal) && outVal;
-            var safeMode = safeModeOverrides != null && safeModeOverrides.TryGetValue(action.FullName, out var smVal) && smVal;
+            var braveMode = braveModeOverrides != null && braveModeOverrides.TryGetValue(action.FullName, out var bmVal) && bmVal;
             var fireAndForget = fireAndForgetOverrides != null && fireAndForgetOverrides.TryGetValue(action.FullName, out var ffVal) && ffVal;
             var includePredefinedSets = predefinedSetsOverrides != null && predefinedSetsOverrides.TryGetValue(action.FullName, out var psVal) && psVal;
             var hasPredefinedSets = action.PredefinedArgumentSets.Any(s => s.Description != "<default>");
@@ -183,8 +183,8 @@ public class McpConfigWindowViewModel : ViewModelBase
                 IsEnabled = enabled,
                 ExposeOutput = exposeOutput,
                 CanConfigureIndividualOutput = !_exposeOutputForAllActions,
-                SafeMode = safeMode,
-                CanConfigureIndividualSafeMode = !_safeModeForAllActions,
+                BraveMode = braveMode,
+                CanConfigureIndividualBraveMode = !_braveModeForAllActions,
                 FireAndForget = fireAndForget,
                 CanConfigureIndividualFireAndForget = !_fireAndForgetForAllActions,
                 IncludePredefinedSets = includePredefinedSets,
@@ -198,10 +198,10 @@ public class McpConfigWindowViewModel : ViewModelBase
         // Preserve the current toggle states when refreshing after a reload
         var current = AvailableActions.ToDictionary(a => a.Key, a => a.IsEnabled);
         var currentOutput = AvailableActions.ToDictionary(a => a.Key, a => a.ExposeOutput);
-        var currentSafeMode = AvailableActions.ToDictionary(a => a.Key, a => a.SafeMode);
+        var currentBraveMode = AvailableActions.ToDictionary(a => a.Key, a => a.BraveMode);
         var currentFireAndForget = AvailableActions.ToDictionary(a => a.Key, a => a.FireAndForget);
         var currentPredefinedSets = AvailableActions.ToDictionary(a => a.Key, a => a.IncludePredefinedSets);
-        PopulateAvailableActions(current, currentOutput, currentSafeMode, currentFireAndForget, currentPredefinedSets);
+        PopulateAvailableActions(current, currentOutput, currentBraveMode, currentFireAndForget, currentPredefinedSets);
     }
 
     public IReadOnlyList<string> ExposedTools => _mcpHost.GetCurrentToolNames();
@@ -210,7 +210,7 @@ public class McpConfigWindowViewModel : ViewModelBase
     {
         var overrides = AvailableActions.ToDictionary(a => a.Key, a => a.IsEnabled);
         var outputOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.ExposeOutput);
-        var safeModeOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.SafeMode);
+        var braveModeOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.BraveMode);
         var fireAndForgetOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.FireAndForget);
         var predefinedSetsOverrides = AvailableActions.ToDictionary(a => a.Key, a => a.IncludePredefinedSets);
         var settings = new McpServerSettings
@@ -221,8 +221,8 @@ public class McpConfigWindowViewModel : ViewModelBase
             ActionOverrides = overrides,
             ExposeOutputForAllActions = ExposeOutputForAllActions,
             ActionOutputOverrides = outputOverrides,
-            SafeModeForAllActions = SafeModeForAllActions,
-            ActionSafeModeOverrides = safeModeOverrides,
+            BraveModeForAllActions = BraveModeForAllActions,
+            ActionBraveModeOverrides = braveModeOverrides,
             FireAndForgetForAllActions = FireAndForgetForAllActions,
             ActionFireAndForgetOverrides = fireAndForgetOverrides,
             ExposePredefinedParameterSets = ExposePredefinedParameterSets,

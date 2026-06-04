@@ -83,14 +83,14 @@
             </Grid>
         </Border>
 
-        <!-- Master "safe mode for all" toggle -->
+        <!-- Master "brave mode for all" toggle -->
         <Border Grid.Row="3" Padding="10" Margin="0,0,0,8" BorderThickness="1" CornerRadius="4" BorderBrush="#FF8C00">
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
-                    <TextBlock FontSize="13" FontWeight="SemiBold" Text="Safe mode for all actions"/>
-                    <TextBlock FontSize="11" Foreground="#858585" TextWrapping="Wrap" Text="When on, MCP-populated parameters are highlighted and execution requires manual confirmation"/>
+                    <TextBlock FontSize="13" FontWeight="SemiBold" Text="Brave mode for all actions"/>
+                    <TextBlock FontSize="11" Foreground="#858585" TextWrapping="Wrap" Text="When off, MCP-populated parameters are highlighted and execution requires manual confirmation"/>
                 </StackPanel>
-                <ToggleSwitch Grid.Column="1" IsChecked="{Binding SafeModeForAllActions}" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                <ToggleSwitch Grid.Column="1" IsChecked="{Binding BraveModeForAllActions}" VerticalAlignment="Center" OnContent="" OffContent=""/>
             </Grid>
         </Border>
 
@@ -132,7 +132,7 @@
                 <TextBlock Grid.Column="0" FontSize="11" Foreground="#666" Text="Action"/>
                 <TextBlock Grid.Column="1" FontSize="11" Foreground="#60A5FA" HorizontalAlignment="Center" Text="Exposed"/>
                 <TextBlock Grid.Column="2" FontSize="11" Foreground="#C084FC" HorizontalAlignment="Center" Text="Return output"/>
-                <TextBlock Grid.Column="3" FontSize="11" Foreground="#FF8C00" HorizontalAlignment="Center" Text="Safe mode"/>
+                <TextBlock Grid.Column="3" FontSize="11" Foreground="#FF8C00" HorizontalAlignment="Center" Text="Brave mode"/>
                 <TextBlock Grid.Column="4" FontSize="11" Foreground="#4CAF50" HorizontalAlignment="Center" Text="Fire &amp; forget"/>
                 <TextBlock Grid.Column="5" FontSize="11" Foreground="#2DD4BF" HorizontalAlignment="Center" Text="Param sets"/>
             </Grid>
@@ -164,12 +164,12 @@
                                                    HorizontalAlignment="Center"
                                                    OnContent="" OffContent=""
                                                    Margin="0,0,0,0"/>
-                                     <ToggleSwitch Grid.Column="3"
-                                                   IsChecked="{Binding SafeMode}"
-                                                   IsEnabled="{Binding CanEditSafeMode}"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Center"
-                                                   OnContent="" OffContent=""
+                                      <ToggleSwitch Grid.Column="3"
+                                                    IsChecked="{Binding BraveMode}"
+                                                    IsEnabled="{Binding CanEditBraveMode}"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Center"
+                                                    OnContent="" OffContent=""
                                                    Margin="0,0,0,0"/>
                                      <ToggleSwitch Grid.Column="4"
                                                    IsChecked="{Binding FireAndForget}"

@@ -325,14 +325,14 @@
             </ScrollViewer>
           </Border>
           <Grid Grid.Row="4" Margin="0,15,0,15" HorizontalAlignment="Stretch" IsEnabled="{Binding SelectedActionInstalled}">
-            <!-- Normal run button — hidden while awaiting MCP safe-mode approval -->
+            <!-- Normal run button — hidden while awaiting MCP approval -->
             <Button Classes="primary"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
                     Command="{Binding RunScript}"
                     IsVisible="{Binding !IsAwaitingMcpApproval}">Run</Button>
 
-            <!-- Safe-mode approval buttons — visible only while an MCP call is pending confirmation -->
+            <!-- MCP approval buttons — visible only while an MCP call is pending confirmation -->
             <Grid ColumnDefinitions="*,*"
                   HorizontalAlignment="Stretch"
                   IsVisible="{Binding IsAwaitingMcpApproval}">
