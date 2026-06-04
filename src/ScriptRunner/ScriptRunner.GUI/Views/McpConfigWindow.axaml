@@ -121,14 +121,24 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" FontSize="12" FontWeight="SemiBold" Foreground="#858585" Margin="0,0,0,4"
                        Text="Individual actions:"/>
 
+            <TextBox Grid.Row="1"
+                     Text="{Binding ActionFilter}"
+                     Watermark="Search actions..."
+                     Margin="0,0,0,6"
+                     Padding="10,6"
+                     BorderThickness="1"
+                     BorderBrush="#3f3f46"
+                     Background="#252526"/>
+
             <!-- Column headers -->
-            <Grid Grid.Row="1" Margin="8,0,8,2" ColumnDefinitions="*,90,110,100,110,100">
+            <Grid Grid.Row="2" Margin="8,0,8,2" ColumnDefinitions="*,90,110,100,110,100">
                 <TextBlock Grid.Column="0" FontSize="11" Foreground="#666" Text="Action"/>
                 <TextBlock Grid.Column="1" FontSize="11" Foreground="#60A5FA" HorizontalAlignment="Center" Text="Exposed"/>
                 <TextBlock Grid.Column="2" FontSize="11" Foreground="#C084FC" HorizontalAlignment="Center" Text="Return output"/>
@@ -137,9 +147,9 @@
                 <TextBlock Grid.Column="5" FontSize="11" Foreground="#2DD4BF" HorizontalAlignment="Center" Text="Param sets"/>
             </Grid>
 
-            <Border Grid.Row="2" BorderThickness="1" BorderBrush="#333" CornerRadius="4">
+            <Border Grid.Row="3" BorderThickness="1" BorderBrush="#333" CornerRadius="4">
                 <ScrollViewer>
-                    <ItemsControl ItemsSource="{Binding AvailableActions}">
+                    <ItemsControl ItemsSource="{Binding FilteredAvailableActions}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:McpActionToggleViewModel">
                                 <Grid Margin="8,2" ColumnDefinitions="*,90,110,100,110,100">
