@@ -13,7 +13,7 @@ namespace ScriptRunner.GUI.Mcp;
 /// <summary>
 /// Result of a single MCP tool execution.
 /// </summary>
-/// <param name="Rejected">True when the user rejected the action in safe mode (no execution took place).</param>
+/// <param name="Rejected">True when the user rejected the action during approval (no execution took place).</param>
 /// <param name="StillRunning">True when fire-and-forget mode timed out before the job finished; the job continues in the background.</param>
 public record JobResult(bool Success, int? ExitCode, TimeSpan Elapsed, string Output, bool Rejected = false, bool StillRunning = false);
 
@@ -41,7 +41,7 @@ public class McpUiBridge
         ScriptConfig action,
         IReadOnlyDictionary<string, string> args,
         CancellationToken ct,
-        bool safeMode = false,
+        bool braveMode = false,
         IReadOnlySet<string>? explicitKeys = null,
         bool fireAndForget = false,
         ArgumentSet? argumentSet = null)
@@ -51,22 +51,22 @@ public class McpUiBridge
         {
             if (!fireAndForget)
             {
-                return await ExecuteOnUiThreadAsync(action, args, ct, safeMode, explicitKeys,
+                return await ExecuteOnUiThreadAsync(action, args, ct, braveMode, explicitKeys,
                     startedTcs: null, detach: null, argumentSet: argumentSet);
             }
 
             // Fire-and-forget path ------------------------------------------------
             // startedTcs is signalled the moment RunScript() is actually called so the
-            // 3-second window begins only when execution truly starts (after any safe-mode
+            // 3-second window begins only when execution truly starts (after any approval
             // approval).  detach prevents the ct.Register callback from cancelling a job
             // that we intentionally released.
             var startedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             var detach = new StrongBox<bool>(false);
 
-            var completionTask = ExecuteOnUiThreadAsync(action, args, ct, safeMode, explicitKeys,
+            var completionTask = ExecuteOnUiThreadAsync(action, args, ct, braveMode, explicitKeys,
                 startedTcs, detach, argumentSet);
 
-            // Phase 1: wait until execution starts (handles safe-mode approval delay)
+            // Phase 1: wait until execution starts (handles approval delay)
             // or until the job completes/is rejected before even starting.
             var firstDone = await Task.WhenAny(completionTask, startedTcs.Task);
             if (firstDone == completionTask)
@@ -109,7 +109,7 @@ public class McpUiBridge
         ScriptConfig action,
         IReadOnlyDictionary<string, string> args,
         CancellationToken ct,
-        bool safeMode,
+        bool braveMode,
         IReadOnlySet<string>? explicitKeys,
         TaskCompletionSource<bool>? startedTcs,
         StrongBox<bool>? detach,
@@ -144,7 +144,7 @@ public class McpUiBridge
                 }
 
                 // 3. Push MCP-supplied values into the freshly rendered form controls
-                _vm.ApplyMcpParameterValues(args, safeMode ? explicitKeys : null);
+                _vm.ApplyMcpParameterValues(args, braveMode ? null : explicitKeys);
 
                 // 4. Subscribe to the next job's completion event *before* invoking RunScript
                 void OnCompleted(object? sender, EventArgs _)
@@ -172,7 +172,7 @@ public class McpUiBridge
                     // If we've been detached (fire-and-forget timeout), leave the running job alone.
                     if (detach?.Value == true) return;
 
-                    // Try to cancel the job if it was started, or cancel a pending safe-mode approval
+                    // Try to cancel the job if it was started, or cancel a pending approval
                     Dispatcher.UIThread.Post(() => _vm.CancelMcpApproval());
 
                     if (_vm.RunningJobs.Count > jobCountBefore)
@@ -183,9 +183,9 @@ public class McpUiBridge
                     tcs.TrySetCanceled(ct);
                 });
 
-                if (!safeMode)
+                if (braveMode)
                 {
-                    // Normal (non-safe) path: execute immediately
+                    // Brave mode path: execute immediately
 
                     // 5. Run
                     _vm.RunScript();
@@ -207,7 +207,7 @@ public class McpUiBridge
                 }
                 else
                 {
-                    // Safe-mode path: defer execution to manual Accept/Reject by the user.
+                    // Approval-required path: defer execution to manual Accept/Reject by the user.
                     _vm.BeginMcpApproval(
                         onAccept: () =>
                         {

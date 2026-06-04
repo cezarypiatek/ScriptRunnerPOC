@@ -27,7 +27,7 @@ public class McpActionToggleViewModel : ReactiveObject
         {
             this.RaiseAndSetIfChanged(ref _isEnabled, value);
             this.RaisePropertyChanged(nameof(CanEditExposeOutput));
-            this.RaisePropertyChanged(nameof(CanEditSafeMode));
+            this.RaisePropertyChanged(nameof(CanEditBraveMode));
             this.RaisePropertyChanged(nameof(CanEditFireAndForget));
             this.RaisePropertyChanged(nameof(CanEditIncludePredefinedSets));
         }
@@ -62,34 +62,34 @@ public class McpActionToggleViewModel : ReactiveObject
     /// </summary>
     public bool CanEditExposeOutput => _isEnabled && _canConfigureIndividualOutput;
 
-    private bool _safeMode;
-    /// <summary>When true, MCP calls to this action require manual user confirmation before executing.</summary>
-    public bool SafeMode
+    private bool _braveMode;
+    /// <summary>When true, MCP calls to this action execute immediately without manual confirmation.</summary>
+    public bool BraveMode
     {
-        get => _safeMode;
-        set => this.RaiseAndSetIfChanged(ref _safeMode, value);
+        get => _braveMode;
+        set => this.RaiseAndSetIfChanged(ref _braveMode, value);
     }
 
-    private bool _canConfigureIndividualSafeMode;
+    private bool _canConfigureIndividualBraveMode;
     /// <summary>
-    /// Pushed from the parent VM whenever <see cref="McpConfigWindowViewModel.CanConfigureIndividualSafeMode"/> changes.
-    /// Combines with <see cref="IsEnabled"/> to produce <see cref="CanEditSafeMode"/>.
+    /// Pushed from the parent VM whenever <see cref="McpConfigWindowViewModel.CanConfigureIndividualBraveMode"/> changes.
+    /// Combines with <see cref="IsEnabled"/> to produce <see cref="CanEditBraveMode"/>.
     /// </summary>
-    public bool CanConfigureIndividualSafeMode
+    public bool CanConfigureIndividualBraveMode
     {
-        get => _canConfigureIndividualSafeMode;
+        get => _canConfigureIndividualBraveMode;
         set
         {
-            this.RaiseAndSetIfChanged(ref _canConfigureIndividualSafeMode, value);
-            this.RaisePropertyChanged(nameof(CanEditSafeMode));
+            this.RaiseAndSetIfChanged(ref _canConfigureIndividualBraveMode, value);
+            this.RaisePropertyChanged(nameof(CanEditBraveMode));
         }
     }
 
     /// <summary>
-    /// True when the "Safe mode" toggle for this row should be interactive:
-    /// the action must be exposed AND the master safe mode switch must be OFF.
+    /// True when the "Brave mode" toggle for this row should be interactive:
+    /// the action must be exposed AND the master brave mode switch must be OFF.
     /// </summary>
-    public bool CanEditSafeMode => _isEnabled && _canConfigureIndividualSafeMode;
+    public bool CanEditBraveMode => _isEnabled && _canConfigureIndividualBraveMode;
 
     private bool _fireAndForget;
     /// <summary>When true, the MCP call returns after 3 seconds with a background-running notice if the job hasn't finished yet.</summary>

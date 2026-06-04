@@ -139,8 +139,8 @@ public class ScriptRunnerMcpHost : ReactiveObject
             // All flags are keyed by the *parent* action's FullName — predefined-set tools inherit them.
             var includeOutput = settings.ExposeOutputForAllActions
                 || (settings.ActionOutputOverrides.TryGetValue(t.Action.FullName, out var v) && v);
-            var safeMode = settings.SafeModeForAllActions
-                || (settings.ActionSafeModeOverrides.TryGetValue(t.Action.FullName, out var sm) && sm);
+            var braveMode = settings.BraveModeForAllActions
+                || (settings.ActionBraveModeOverrides.TryGetValue(t.Action.FullName, out var bm) && bm);
             var fireAndForget = settings.FireAndForgetForAllActions
                 || (settings.ActionFireAndForgetOverrides.TryGetValue(t.Action.FullName, out var ff) && ff);
             var docsResourceUri = docsByToolName.ContainsKey(t.ToolName)
@@ -149,7 +149,7 @@ public class ScriptRunnerMcpHost : ReactiveObject
             var docsHttpUri = docsByToolName.ContainsKey(t.ToolName)
                 ? $"http://127.0.0.1:{settings.Port}{ActionDocsResources.CreateHttpPath(t.ToolName)}"
                 : null;
-            return McpToolBuilder.CreateTool(t.Action, t.ToolName, docsResourceUri, docsHttpUri, bridge, includeOutput, safeMode, fireAndForget, t.ArgumentSet);
+            return McpToolBuilder.CreateTool(t.Action, t.ToolName, docsResourceUri, docsHttpUri, bridge, includeOutput, braveMode, fireAndForget, t.ArgumentSet);
         }).ToList();
 
         var builder = WebApplication.CreateSlimBuilder();

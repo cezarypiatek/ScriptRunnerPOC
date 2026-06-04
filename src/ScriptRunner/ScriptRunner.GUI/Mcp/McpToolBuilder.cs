@@ -222,9 +222,10 @@ public static class McpToolBuilder
     /// When true the full visible job output (blended stdout+stderr, ANSI-stripped) is appended
     /// to the response in addition to the status line.
     /// </param>
-    /// <param name="safeMode">
-    /// When true, the action will not execute automatically. Instead the UI presents Accept/Reject
-    /// buttons and the MCP call blocks until the user makes a choice.
+    /// <param name="braveMode">
+    /// When true, the action executes immediately without manual approval.
+    /// When false, the UI presents Accept/Reject buttons and the MCP call blocks until the user
+    /// makes a choice.
     /// </param>
     /// <param name="fireAndForget">
     /// When true, the MCP call returns immediately with a "running in background" message if the
@@ -243,7 +244,7 @@ public static class McpToolBuilder
         string? docsHttpUri,
         McpUiBridge bridge,
         bool includeOutput = false,
-        bool safeMode = false,
+        bool braveMode = false,
         bool fireAndForget = false,
         ArgumentSet? argumentSet = null)
     {
@@ -283,7 +284,7 @@ public static class McpToolBuilder
 
                 // Track which keys were explicitly supplied by the AI (before filling defaults).
                 // Pre-filled set values are NOT included — they are treated as approved defaults
-                // and should not be highlighted in safe mode.
+                // and should not be highlighted when approval is required.
                 var explicitKeys = new HashSet<string>(stringArgs.Keys, StringComparer.OrdinalIgnoreCase);
 
                 // Fill in defaults for params not provided by the caller.
@@ -302,7 +303,7 @@ public static class McpToolBuilder
                         stringArgs[param.Name] = effectiveDefault;
                 }
 
-                var result = await bridge.ExecuteActionAsync(action, stringArgs, ct, safeMode, explicitKeys, fireAndForget, argumentSet);
+                var result = await bridge.ExecuteActionAsync(action, stringArgs, ct, braveMode, explicitKeys, fireAndForget, argumentSet);
 
                 if (result.Rejected)
                 {
@@ -310,7 +311,7 @@ public static class McpToolBuilder
                     {
                         Content = new List<ContentBlock>
                         {
-                            new TextContentBlock { Text = $"Action '{action.FullName}' was rejected by the user in safe mode." }
+                            new TextContentBlock { Text = $"Action '{action.FullName}' was rejected by the user during approval." }
                         },
                         IsError = true
                     };

@@ -35,19 +35,19 @@ public class McpServerSettings
     public Dictionary<string, bool> ActionOutputOverrides { get; set; } = new();
 
     /// <summary>
-    /// When true, all exposed actions require manual user confirmation before executing.
-    /// Parameters set by MCP are highlighted with an orange border and the user must click
-    /// Accept or Reject instead of the action running automatically.
-    /// Default is false (original auto-execute behavior).
+    /// When true, all exposed actions run without manual confirmation.
+    /// When false, parameters set by MCP are highlighted with an orange border and the user
+    /// must click Accept or Reject before execution starts.
+    /// Default is false (approval required).
     /// </summary>
-    public bool SafeModeForAllActions { get; set; } = false;
+    public bool BraveModeForAllActions { get; set; } = false;
 
     /// <summary>
-    /// Per-action safe-mode map. Key is ScriptConfig.FullName.
-    /// Only used when <see cref="SafeModeForAllActions"/> is false.
-    /// Missing key means safe mode is off for the action.
+    /// Per-action brave-mode map. Key is ScriptConfig.FullName.
+    /// Only used when <see cref="BraveModeForAllActions"/> is false.
+    /// Missing key means brave mode is off for the action (approval required).
     /// </summary>
-    public Dictionary<string, bool> ActionSafeModeOverrides { get; set; } = new();
+    public Dictionary<string, bool> ActionBraveModeOverrides { get; set; } = new();
 
     /// <summary>
     /// When true, all exposed actions use fire-and-forget mode: the MCP call returns after a 3-second
@@ -67,7 +67,7 @@ public class McpServerSettings
     /// <summary>
     /// When true, each exposed action's predefined parameter sets (excluding the default set) are
     /// also exposed as individual MCP tools. The set-specific tools inherit all settings (output,
-    /// safe mode, fire-and-forget) from their parent action.
+    /// brave mode, fire-and-forget) from their parent action.
     /// When false, only the base action tools are exposed (original behavior).
     /// </summary>
     public bool ExposePredefinedParameterSets { get; set; } = false;
