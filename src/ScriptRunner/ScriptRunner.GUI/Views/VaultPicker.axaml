@@ -6,7 +6,7 @@
         xmlns:avalonia="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         mc:Ignorable="d" 
         Width="500"
-        Height="300"
+        Height="380"
         x:Class="ScriptRunner.GUI.Views.VaultPicker"
         WindowStartupLocation="CenterOwner"
         Title="Select Vault Secret"
@@ -51,10 +51,26 @@
                 <Border BorderThickness="1" BorderBrush="#4E4E4E" 
                         Background="#252525" CornerRadius="3" Padding="12">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <CheckBox Name="Remember" VerticalAlignment="Center"/>
+                        <CheckBox Name="Remember" VerticalAlignment="Center"
+                                  IsCheckedChanged="Remember_OnIsCheckedChanged"/>
                         <StackPanel Spacing="2">
                             <TextBlock Text="Remember this binding" FontWeight="SemiBold"/>
                             <TextBlock Text="This secret will be automatically selected next time" 
+                                       FontSize="12" 
+                                       Foreground="#B0B0B0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Remember Binding for Parameter Set Option -->
+                <Border BorderThickness="1" BorderBrush="#4E4E4E" 
+                        Background="#252525" CornerRadius="3" Padding="12">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <CheckBox Name="RememberForSet" VerticalAlignment="Center"
+                                  IsCheckedChanged="RememberForSet_OnIsCheckedChanged"/>
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Remember for parameter set" FontWeight="SemiBold"/>
+                            <TextBlock Text="Only applies when this parameter set is active" 
                                        FontSize="12" 
                                        Foreground="#B0B0B0"/>
                         </StackPanel>

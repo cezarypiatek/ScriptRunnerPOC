@@ -28,6 +28,40 @@
       ]
     },
     {
+      "name": "Test Bindings",
+      "command": "pwsh.exe -NoProfile -Command Write-Host \"{user} {password}\"",
+      "params": [
+        {
+          "name": "user",
+          "prompt": "text"
+        },
+        {
+          "name": "password",
+          "prompt": "password"
+        }
+      ],
+      "predefinedArgumentSets": [
+        {
+          "description": "First user set",
+          "arguments": {
+            "user": "User 1"
+          }
+        },
+        {
+          "description": "Second user set",
+          "arguments": {
+            "user": "User 2"
+          }
+        },
+        {
+          "description": "Third user set",
+          "arguments": {
+            "user": "User 2"
+          }
+        }
+      ]
+    },
+    {
       "name": "FallbackToExisting Demo",
       "description": "Demonstrates the fallbackToExisting feature",
       "command": "echo Server: {server}, Port: {port}, Username: {username}",

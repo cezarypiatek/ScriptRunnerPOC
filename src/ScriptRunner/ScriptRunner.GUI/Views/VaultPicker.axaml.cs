@@ -54,16 +54,30 @@ namespace ScriptRunner.GUI.Views
                 Close(new VaultEntryChoice()
                 {
                     RememberBinding = this.Remember.IsChecked ?? false,
+                    RememberBindingForSet = this.RememberForSet.IsChecked ?? false,
                     SelectedEntry = selectedEntry
                 });
             }
             
+        }
+
+        private void Remember_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
+        {
+            if (Remember.IsChecked == true)
+                RememberForSet.IsChecked = false;
+        }
+
+        private void RememberForSet_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
+        {
+            if (RememberForSet.IsChecked == true)
+                Remember.IsChecked = false;
         }
     }
 
     public class VaultEntryChoice
     {
         public bool RememberBinding { get; set; }
+        public bool RememberBindingForSet { get; set; }
         public VaultEntry SelectedEntry { get; set; }
     }
 }

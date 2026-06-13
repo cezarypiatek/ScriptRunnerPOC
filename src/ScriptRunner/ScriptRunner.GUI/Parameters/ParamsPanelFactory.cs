@@ -39,7 +39,7 @@ public class ParamsPanelFactory
         _vaultProvider = vaultProvider;
     }
     
-    public ParamsPanel Create(ScriptConfig action, Dictionary<string, string> values, Func<string, string, Task<string?>> commandExecutor)
+    public ParamsPanel Create(ScriptConfig action, Dictionary<string, string> values, Func<string, string, Task<string?>> commandExecutor, string? parameterSetName = null)
     {
         var paramsPanel = new StackPanel
         {
@@ -56,7 +56,7 @@ public class ParamsPanelFactory
         foreach (var (param,i) in action.Params.Select((x,i)=>(x,i)))
         {
             values.TryGetValue(param.Name, out var value);
-            var controlRecord = CreateControlRecord(param, value, i, action, secretBindings, commandExecutor);
+            var controlRecord = CreateControlRecord(param, value, i, action, secretBindings, commandExecutor, parameterSetName);
             controlRecord.Name = param.Name;
             if (controlRecord.Control is Layoutable l)
             {
@@ -71,7 +71,7 @@ public class ParamsPanelFactory
             {
                 Orientation = Orientation.Horizontal,
                 Spacing = 6,
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Top
             };
 
             labelContent.Children.Add(new TextBlock
@@ -324,7 +324,7 @@ public class ParamsPanelFactory
 
     private IControlRecord CreateControlRecord(ScriptParam p, string? value, int index,
         ScriptConfig scriptConfig, List<VaultBinding> secretBindings,
-        Func<string, string, Task<string?>> commandExecutor)
+        Func<string, string, Task<string?>> commandExecutor, string? parameterSetName = null)
     {
         switch (p.Prompt)
         {
@@ -350,7 +350,14 @@ public class ParamsPanelFactory
 
                 var vaultKey = value?.StartsWith(MainWindowViewModel.VaultReferencePrefix) == true
                         ? value.Substring(MainWindowViewModel.VaultReferencePrefix.Length)
-                        : secretBindings.FirstOrDefault(x => x.ActionName == scriptConfig.Name && x.ParameterName == p.Name)?.VaultKey;
+                        : secretBindings.FirstOrDefault(x =>
+                              x.ActionName == scriptConfig.Name &&
+                              x.ParameterName == p.Name &&
+                              x.ParameterSetName == parameterSetName)?.VaultKey
+                          ?? secretBindings.FirstOrDefault(x =>
+                              x.ActionName == scriptConfig.Name &&
+                              x.ParameterName == p.Name &&
+                              x.ParameterSetName == null)?.VaultKey;
                 
                 if (string.IsNullOrWhiteSpace(vaultKey) == false )
                 {
@@ -368,7 +375,17 @@ public class ParamsPanelFactory
                 
                 passwordBox.VaultBindingChanged += (sender, args) =>
                 {
-                    if (args.VaultEntryChoice.RememberBinding)
+                    if (args.VaultEntryChoice.RememberBindingForSet)
+                    {
+                        AppSettingsService.UpdateVaultBindingsForParameterSet(new VaultBinding
+                        {
+                            ActionName = scriptConfig.Name,
+                            ParameterName = p.Name,
+                            VaultKey = args.VaultEntryChoice.SelectedEntry.Name,
+                            ParameterSetName = parameterSetName
+                        });
+                    }
+                    else if (args.VaultEntryChoice.RememberBinding)
                     {
                         AppSettingsService.UpdateVaultBindings(new VaultBinding
                         {

@@ -941,13 +941,13 @@ public class MainWindowViewModel : ReactiveObject
                     }
                 }
 
-                RenderParameterForm(selectedAction, arguments);
+                RenderParameterForm(selectedAction, arguments, setName);
             }
         }
     }
 
 
-    private void RenderParameterForm(ScriptConfig action, Dictionary<string, string> parameterValues)
+    private void RenderParameterForm(ScriptConfig action, Dictionary<string, string> parameterValues, string? parameterSetName = null)
     {
         ActionParametersPanel.Clear();
 
@@ -977,7 +977,7 @@ public class MainWindowViewModel : ReactiveObject
             }
 
             return Task.FromResult("");
-        });
+        }, parameterSetName);
 
         // Add panel with param controls to action panel
         //actionPanel.Children.Add(paramsPanel.Panel);

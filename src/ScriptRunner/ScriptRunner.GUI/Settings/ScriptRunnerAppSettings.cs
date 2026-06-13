@@ -34,6 +34,7 @@ public class VaultBinding
     public string ActionName { get; set; }
     public string ParameterName { get; set; }
     public string VaultKey { get; set; }
+    public string? ParameterSetName { get; set; }
 }
 
 public class ActionDefaultOverrides

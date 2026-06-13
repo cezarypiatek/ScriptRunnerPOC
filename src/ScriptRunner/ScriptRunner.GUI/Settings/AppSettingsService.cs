@@ -159,7 +159,27 @@ public class AppSettingsService
     {
         var allSettings = Load();
         allSettings.VaultBindings ??= new List<VaultBinding>();
-        var existingBinding = allSettings.VaultBindings.FirstOrDefault(x => x.ActionName == binding.ActionName && x.ParameterName == binding.ParameterName);
+        var existingBinding = allSettings.VaultBindings.FirstOrDefault(x => x.ActionName == binding.ActionName && x.ParameterName == binding.ParameterName && x.ParameterSetName == null);
+        if (existingBinding != null)
+        {
+            existingBinding.VaultKey = binding.VaultKey;
+        }
+        else
+        {
+            allSettings.VaultBindings.Add(binding);
+        }
+
+        Save(allSettings);
+    }
+
+    public static void UpdateVaultBindingsForParameterSet(VaultBinding binding)
+    {
+        var allSettings = Load();
+        allSettings.VaultBindings ??= new List<VaultBinding>();
+        var existingBinding = allSettings.VaultBindings.FirstOrDefault(x =>
+            x.ActionName == binding.ActionName &&
+            x.ParameterName == binding.ParameterName &&
+            x.ParameterSetName == binding.ParameterSetName);
         if (existingBinding != null)
         {
             existingBinding.VaultKey = binding.VaultKey;
