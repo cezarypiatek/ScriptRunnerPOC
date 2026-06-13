@@ -81,8 +81,24 @@
     {
       "name": "AllControlsTest",
       "description": "Demo of all available controls",
-      "command": "pwsh.exe -NoProfile -Command Write-Host '{p1} {p2} {p3} {p4} {p5} {p6} {p7} {p8} {p9} {p10} {p11} {p12}'",
+      "command": "pwsh.exe -NoProfile -Command Write-Host '{scheduledAt} {p1} {p2} {p3} {p4} {p5} {p6} {p7} {p8} {p9} {p10} {p11} {p12}'",
       "params": [
+        {
+          "name": "sampleDatePicker",
+          "prompt": "datePicker",
+          "promptSettings": {
+            "todayAsDefault": "true"
+          }
+        },
+        {
+          "name": "scheduledAt",
+          "prompt": "dateTimePicker",
+          "description": "Schedule date and time",
+          "promptSettings": {
+            "format": "yyyy-MM-dd HH:mm:ss",
+            "todayAsDefault": "true"
+          }
+        },        
         {
           "name": "p1",
           "description": "Text parameter",

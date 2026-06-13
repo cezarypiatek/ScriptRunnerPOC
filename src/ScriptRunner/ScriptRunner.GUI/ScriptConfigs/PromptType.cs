@@ -13,5 +13,6 @@ public enum PromptType
     DirectoryPicker,
     Numeric,
     TimePicker,
-    FileContent
+    FileContent,
+    DateTimePicker
 }

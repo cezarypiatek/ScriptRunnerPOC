@@ -183,7 +183,7 @@ Each parameter object can shape both the UI control and how ScriptRunner constru
 
 ### Prompt Types
 
-The `prompt` property determines which control ScriptRunner renders for a parameter (text box, dropdown, checkbox, file picker, etc.) and which `promptSettings` are available. For the full catalog of controls, supported settings, and sample JSON snippets, see the dedicated [Prompt Types guide](docs/PromptTypes.md).
+The `prompt` property determines which control ScriptRunner renders for a parameter (text box, dropdown, checkbox, file picker, etc.) and which `promptSettings` are available. Available types include: `text`, `password`, `multilineText`, `checkbox`, `numeric`, `dropdown`, `multiSelect`, `datePicker`, `timePicker`, `dateTimePicker`, `filePicker`, `directoryPicker`, `fileContent`. For the full catalog of controls, supported settings, and sample JSON snippets, see the dedicated [Prompt Types guide](docs/PromptTypes.md).
 
 
 ## Environment variables

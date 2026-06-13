@@ -61,7 +61,7 @@ public class ParamsPanelFactory
             if (controlRecord.Control is Layoutable l)
             {
                 // Don't set MaxWidth for multiline/file content controls since they have resize handles
-                if (param.Prompt is not (PromptType.Multilinetext or PromptType.FileContent))
+                if (param.Prompt is not (PromptType.Multilinetext or PromptType.FileContent or PromptType.DateTimePicker))
                 {
                     l.MaxWidth = 500;
                 }
@@ -584,6 +584,41 @@ public class ParamsPanelFactory
                         IsTabStop = true
                     },
                     Format = p.GetPromptSettings("format", out var timeFormat) ? timeFormat : null,
+                };
+            case PromptType.DateTimePicker:
+                var dtCulture = p.GetPromptSettings("culture", CultureInfo.GetCultureInfo, CultureInfo.CurrentCulture);
+                DateTime? dtInitial = null;
+                if (string.IsNullOrWhiteSpace(value) == false)
+                    dtInitial = DateTime.TryParse(value, dtCulture, DateTimeStyles.None, out var parsedDt) ? parsedDt : (DateTime?)null;
+                else if (p.GetPromptSettings("todayAsDefault", bool.Parse, false))
+                    dtInitial = DateTime.Now;
+                var dateControl = new CalendarDatePicker
+                {
+                    SelectedDate = dtInitial?.Date,
+                    IsTodayHighlighted = true,
+                    TabIndex = index,
+                    IsTabStop = true,
+                    FirstDayOfWeek = DayOfWeek.Monday
+                };
+                var timeControl = new ScriptRunner.GUI.Views.Controls.TimePickerInput
+                {
+                    SelectedTime = dtInitial?.TimeOfDay,
+                    TabIndex = index + 1,
+                    IsTabStop = true
+                };
+                var dateTimePanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 5,
+                    Children = { dateControl, timeControl }
+                };
+                return new DateTimePickerControl
+                {
+                    Control = dateTimePanel,
+                    DateControl = dateControl,
+                    TimeControl = timeControl,
+                    Format = p.GetPromptSettings("format", out var dtFormat) ? dtFormat : null,
+                    Culture = dtCulture
                 };
             case PromptType.Checkbox:
                 var (defaultChecked, defaultUnchecked) = scriptConfig.AutoParameterBuilderStyle == "powershell" ? ("$true", "$false") : ("true", "false");

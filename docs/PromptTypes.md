@@ -369,25 +369,29 @@ Folder browser. Paths are expanded relative to the action's working directory.
 
 ---
 
-## `timePicker` + `datePicker` combo example
+## `dateTimePicker`
 
-Want a full timestamp? Combine two parameters and reference both placeholders in your command:
+Combined date and time picker rendered as a calendar input and a clock selector side by side on a single row. Produces a single formatted `DateTime` string, so you only need one parameter instead of separate date and time parameters.
+
+Returns an empty string when neither the date nor the time has been set.
+
+| Setting | Type | Description |
+| --- | --- | --- |
+| `format` | string | .NET `DateTime` format string applied when saving/loading (default `yyyy-MM-dd HH:mm`). |
+| `todayAsDefault` | string | `"true"` pre-fills the current date and time when no value exists. |
+| `culture` | string | Culture name used for parsing and formatting (e.g. `en-US`). |
+
+**Example**
 
 ```json
 {
-  "params": [
-    {
-      "name": "deployDate",
-      "prompt": "datePicker",
-      "promptSettings": { "format": "yyyy-MM-dd" }
-    },
-    {
-      "name": "deployTime",
-      "prompt": "timePicker",
-      "promptSettings": { "format": "HH:mm" }
-    }
-  ],
-  "command": "./scripts/schedule.sh --at {deployDate}T{deployTime}:00Z"
+  "name": "scheduledAt",
+  "description": "Schedule date and time",
+  "prompt": "dateTimePicker",
+  "promptSettings": {
+    "format": "yyyy-MM-dd HH:mm:ss",
+    "todayAsDefault": "true"
+  }
 }
 ```
 

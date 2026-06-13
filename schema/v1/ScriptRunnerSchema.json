@@ -169,7 +169,8 @@
                                         "datePicker",
                                         "numeric",
                                         "timePicker",
-                                        "fileContent"
+                                        "fileContent",
+                                        "dateTimePicker"
                                     ]
                                 }
                             },
@@ -227,6 +228,33 @@
                                                 "format": {
                                                     "type": "string",
                                                     "description":"Custom time format string applied when serializing the value."
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": ["prompt"]
+                                },
+                                {
+                                    "properties": {
+                                        "prompt": {
+                                            "const": "dateTimePicker"
+                                        },
+                                        "promptSettings": {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "description":"Tuning for the combined date and time picker control.",
+                                            "properties": {
+                                                "format": {
+                                                    "type": "string",
+                                                    "description":"Combined DateTime format string applied when serializing the value (default: yyyy-MM-dd HH:mm)."
+                                                },
+                                                "todayAsDefault": {
+                                                    "type": "string",
+                                                    "description":"\"true\" sets the default to the current date and time when no stored value exists."
+                                                },
+                                                "culture": {
+                                                    "type": "string",
+                                                    "description":"Culture name used for parsing and formatting (e.g. en-US)."
                                                 }
                                             }
                                         }
