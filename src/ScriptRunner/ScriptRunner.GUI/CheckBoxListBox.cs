@@ -51,7 +51,7 @@ public class CheckBoxListBox : ListBox
         {
             Setters =
             {
-                new Setter(ContentPresenter.PaddingProperty, new Thickness(10,5)) // Adjust the padding value
+                new Setter(ContentPresenter.PaddingProperty, new Thickness(10,0)) // Adjust the padding value
             }
         };
         this.Styles.Add(style);
