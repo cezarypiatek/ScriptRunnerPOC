@@ -9,7 +9,7 @@
              Width="120">
     <Panel>
         <TextBox Name="TimeTextBox" MinWidth="0" Watermark="00:00" VerticalAlignment="Center" Height="32" Padding="10, 5, 30, 5" CornerRadius="4" HorizontalAlignment="Stretch" />
-        <Button Name="OpenPopupButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,2,0" Width="28" Height="28" Background="Transparent" BorderThickness="0" CornerRadius="4" ZIndex="1">
+        <Button Name="OpenPopupButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,2,0" Width="32" Height="32" Background="Transparent" BorderThickness="0" CornerRadius="4" ZIndex="1">
             <i:Icon Value="far fa-clock" FontSize="14" />
         </Button>
 
