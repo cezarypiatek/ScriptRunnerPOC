@@ -114,20 +114,39 @@
     },
     {
       "name": "AllControlsTest",
-      "description": "Demo of all available controls",
+      "description": "Demo of all available controls and parameter grouping features",
       "command": "pwsh.exe -NoProfile -Command Write-Host '{scheduledAt} {p1} {p2} {p3} {p4} {p5} {p6} {p7} {p8} {p9} {p10} {p11} {p12}'",
+      "parameterGroups": [
+        {
+          "key": "date",
+          "label": "Date and time",
+          "description": "Date, time, and scheduling controls grouped using declared metadata."
+        },
+        {
+          "key": "text",
+          "label": "Text and editors",
+          "description": "Single-line inputs and multiline editors with different syntax modes."
+        },
+        {
+          "key": "files",
+          "label": "Files and folders",
+          "description": "Controls used to select files and directories."
+        }
+      ],
       "params": [
         {
           "name": "sampleDatePicker",
           "prompt": "datePicker",
+          "group": "date",
           "promptSettings": {
             "todayAsDefault": "true"
           }
         },
         {
           "name": "scheduledAt",
-          "prompt": "dateTimePicker",
+          "prompt": "dateTimePicker",          
           "description": "Schedule date and time",
+          "group": "date",
           "promptSettings": {
             "format": "yyyy-MM-dd HH:mm:ss",
             "todayAsDefault": "true"
@@ -136,18 +155,21 @@
         {
           "name": "p1",
           "description": "Text parameter",
+          "group": "text",
           "default": "v1",
           "prompt": "text"
         },
         {
           "name": "p2",
           "description": "Multiline Text parameter",
+          "group": "text",
           "default": "Line 1\r\n Line 2",
           "prompt": "multilineText"
         },
         {
           "name": "p3",
           "description": "Multiline JSON",
+          "group": "text",
           "default": "Line 1\r\n Line 2",
           "prompt": "multilineText",
           "promptSettings": {
@@ -157,6 +179,7 @@
         {
           "name": "p31",
           "description": "Multiline C# code",
+          "group": "text",
           "default": "Line 1\r\n Line 2",
           "prompt": "multilineText",
           "promptSettings": {
@@ -167,6 +190,7 @@
           "name": "p32",
           "description": "SQL code",
           "details": "This is a multiline sql code with sqlserver syntax\r\n but postgres might be supported as well",
+          "group": "text",
           "default": "Line 1\r\n Line 2",
           "prompt": "multilineText",
           "promptSettings": {
@@ -175,7 +199,8 @@
         },
         {
           "name": "p4",
-          "description": "Fil Content",
+          "description": "File Content",
+          "group": "text",
           "default": "using System;\r\n\r\nclass Program {\r\n    static void Main() {\r\n        Console.WriteLine(\"Hello, World!\");\r\n    }\r\n}",
           "prompt": "fileContent",
           "promptSettings": {
@@ -196,6 +221,7 @@
         {
           "name": "p6",
           "description": "Date parameter",
+          "group": "date",
           "default": "2022-05-03",
           "prompt": "datePicker",
           "promptSettings":{
@@ -205,6 +231,7 @@
         {
           "name": "p7",
           "description": "Year-Month parameter",
+          "group": "date",
           "default": "2022-05",
           "prompt": "datePicker",
           "promptSettings":{
@@ -234,24 +261,28 @@
         {
           "name": "p10",
           "description": "Password parameter",
+          "group": "security",
           "default": "secret",
           "prompt": "password"
         },
         {
           "name": "p11",
           "description": "File parameter",
+          "group": "files",
           "default": "c:\\Windows\\explorer.exe",
           "prompt": "filePicker"
         },
         {
           "name": "p12",
           "description": "Directory parameter",
+          "group": "files",
           "default": "c:\\Windows\\",
           "prompt": "directoryPicker"
         },
         {
           "name": "p14",
           "description": "Numeric parameter",
+          "group": "advanced",
           "default": "7",
           "prompt": "numeric",
           "promptSettings": {
@@ -263,6 +294,7 @@
         {
           "name": "p15",
           "description": "Time parameter",
+          "group": "advanced",
           "default": "7:30",
           "prompt": "timePicker",
           "promptSettings": {

@@ -115,6 +115,30 @@
                         "type":"string",
                         "description": "path to markdown file with documentation"
                     },
+                    "parameterGroups": {
+                        "type": "array",
+                        "description": "Optional metadata for parameter groups. Parameters reference a group by its key; referenced keys without metadata use the key as their label.",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["key"],
+                            "properties": {
+                                "key": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Unique key referenced by a parameter's group property."
+                                },
+                                "label": {
+                                    "type": "string",
+                                    "description": "Tab label. Defaults to key when omitted."
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "Optional explanatory text rendered above the group's parameters."
+                                }
+                            }
+                        }
+                    },
                     "params": {
                         "type": "array",
                         "description":"Ordered list of parameter prompts that ScriptRunner renders before launching the command.",
@@ -125,6 +149,11 @@
                                 "name": {
                                     "type": "string",
                                     "description":"Identifier used in {paramName} placeholders, preset dictionaries and environment-variable substitutions."
+                                },
+                                "group": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Optional parameter-group key. Parameters without a group belong to the implicit default group."
                                 },
                                 "description": {
                                     "type": "string",
