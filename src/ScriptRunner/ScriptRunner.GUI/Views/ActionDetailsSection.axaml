@@ -69,7 +69,29 @@
                 </StackPanel>
 
                 <!-- Actions Column -->
-                <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top" Spacing="8">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top" Spacing="4">
+                  <!-- Compact details toggle shares the header action area to avoid a full-width footer row. -->
+                  <Button
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="8"
+                    Cursor="Hand"
+                    ToolTip.Tip="Show action details"
+                    Click="ToggleDetailsButton_Click">
+                    <Button.Styles>
+                      <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#303035"/>
+                      </Style>
+                      <Style Selector="Button:pressed /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#151518"/>
+                      </Style>
+                    </Button.Styles>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <TextBlock x:Name="ToggleDetailsText" Text="Show details" FontSize="12" FontWeight="SemiBold" Foreground="#4A9EFF" VerticalAlignment="Center"/>
+                      <avalonia:Icon x:Name="ToggleDetailsIcon" Value="fas fa-chevron-down" Width="10" Height="10" Foreground="#4A9EFF" VerticalAlignment="Center"/>
+                    </StackPanel>
+                  </Button>
+
                   <!-- Settings Menu -->
                   <Button HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Padding="8" Cursor="Hand" ToolTip.Tip="Action Settings">
                     <avalonia:Icon Value="fas fa-cog" Width="16" Height="16" Foreground="#A0A0A0" />
@@ -191,30 +213,6 @@
                 </StackPanel>
               </Border>
 
-              <!-- Footer / Toggle -->
-              <Button 
-                    HorizontalAlignment="Stretch" 
-                    VerticalAlignment="Bottom"
-                    Margin="0"
-                    Background="Transparent"
-                    BorderThickness="0,1,0,0"
-                    BorderBrush="#2A2A30"
-                    Padding="4"
-                    Cursor="Hand"
-                    Click="ToggleDetailsButton_Click">
-                    <Button.Styles>
-                      <Style Selector="Button:pointerover /template/ ContentPresenter">
-                        <Setter Property="Background" Value="#25252A"/>
-                      </Style>
-                      <Style Selector="Button:pressed /template/ ContentPresenter">
-                        <Setter Property="Background" Value="#151518"/>
-                      </Style>
-                    </Button.Styles>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                       <TextBlock x:Name="ToggleDetailsText" Text="Show details" FontSize="12" FontWeight="SemiBold" Foreground="#4A9EFF" VerticalAlignment="Center"/>
-                       <avalonia:Icon x:Name="ToggleDetailsIcon" Value="fas fa-chevron-down" Width="10" Height="10" Foreground="#4A9EFF" VerticalAlignment="Center"/>
-                    </StackPanel>
-              </Button>
             </StackPanel>
           </Border>
               
@@ -223,11 +221,11 @@
           <StackPanel Grid.Row="2"  IsEnabled="{Binding SelectedActionInstalled}">
             <StackPanel IsVisible="{Binding HasParams}">
               <Border Background="#2A2A2E" BorderBrush="#48484E" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,15" BoxShadow="0 4 12 #60000000">
-                   <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                   <Grid Margin="10,0,0,0" ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                    
                 <TextBlock Classes="h2"
                            VerticalAlignment="Center"
-                           Text="Predefined parameters: "
+                           Text="Presets: "
                            FontWeight="SemiBold"
                            Foreground="#D0D0D0"
                            Grid.Column="0"></TextBlock>
@@ -249,7 +247,7 @@
                     avalonia:Attached.Icon="far fa-save"
                     Padding="8"
                     Margin="0"
-                    ToolTip.Tip="Save current parameters as predefined set"  
+                    ToolTip.Tip="Save current parameters as preset"
                     Click="SaveCurrentParametersAsPredefined" 
                     VerticalAlignment="Center"
                     Background="Transparent"
