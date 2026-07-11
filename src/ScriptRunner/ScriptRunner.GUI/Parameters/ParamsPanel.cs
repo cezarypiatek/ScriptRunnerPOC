@@ -16,6 +16,11 @@ public class ParamsPanel
     /// Used to apply/clear the orange MCP-modified highlight.
     /// </summary>
     public Dictionary<string, Border> ParameterContainers { get; set; } = new();
+
+    /// <summary>
+    /// Maps parameter names to their group tabs so MCP-modified groups can be indicated.
+    /// </summary>
+    public Dictionary<string, TabItem> ParameterGroupTabs { get; set; } = new(System.StringComparer.OrdinalIgnoreCase);
 }
 
 public class ParameterFitHost : Grid

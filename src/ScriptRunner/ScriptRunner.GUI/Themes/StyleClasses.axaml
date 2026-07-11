@@ -212,9 +212,20 @@
                             Grid.RowSpan="2"
                             Padding="{TemplateBinding Padding}"
                             Background="{TemplateBinding Background}">
-                        <ContentPresenter Content="{TemplateBinding Header}"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="7"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <ContentPresenter Content="{TemplateBinding Header}"
+                                              VerticalAlignment="Center" />
+                            <Border x:Name="McpModifiedIndicator"
+                                    Width="7"
+                                    Height="7"
+                                    CornerRadius="4"
+                                    Background="#FF8C00"
+                                    VerticalAlignment="Center"
+                                    IsVisible="False" />
+                        </StackPanel>
                     </Border>
                     <Border x:Name="SelectionIndicator"
                             Grid.Row="1"
@@ -246,6 +257,10 @@
     </Style>
 
     <Style Selector="TabItem.paramGroupTab:selected /template/ Border#SelectionIndicator">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="TabItem.paramGroupTab.mcpModified /template/ Border#McpModifiedIndicator">
         <Setter Property="IsVisible" Value="True" />
     </Style>
 

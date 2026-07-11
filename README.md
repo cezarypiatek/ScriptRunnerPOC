@@ -27,6 +27,7 @@ ScriptRunner is a UI application designed to act as a shell for any command line
   - [.NET hello prompt](#net-hello-prompt)
   - [TypeScript Node hello prompt](#typescript-node-hello-prompt)
 - [Schema](#schema)
+- [Parameter groups](#parameter-groups)
 - [Predefined argument sets](#predefined-argument-sets)
 - [Interactive inputs](#interactive-inputs)
 - [Troubleshooting alerts](#troubleshooting-alerts)
@@ -161,6 +162,7 @@ Each action object describes how a single automation should be rendered and exec
 - `environmentVariables`: Key/value map (values can embed `{paramName}` placeholders) injected into the spawned process.
 - `autoParameterBuilderStyle` / `autoParameterBuilderPattern`: Configure how parameters are appended to the command automatically.
 - `predefinedArgumentSets` + optional `predefinedArgumentSetsOrdering`: Named presets that pre-fill parameter values (ScriptRunner always adds a `<default>` set, but you can add more).
+- `parameterGroups`: Optional labels and descriptions for parameter tabs.
 - `params`: Array of parameter definitions (see the next section).
 - `interactiveInputs`: Map console output patterns to quick-reply buttons that feed text back to STDIN.
 - `troubleshooting` / `installTroubleshooting`: Regex-driven alerts displayed when the main or install command writes matching output.
@@ -173,6 +175,7 @@ Each parameter object can shape both the UI control and how ScriptRunner constru
 - `name` *(required)*: Identifier used for placeholders (`{name}`), predefined argument sets, and environment-variable substitutions.
 - `description`: Text shown next to the control; falls back to `name` when omitted.
 - `details`: Extended helper text shown in a hover tooltip from the info icon next to the parameter label.
+- `group`: Optional key that places the parameter in a grouped tab.
 - `default`: Value pre-populated in the UI and stored in the automatically generated `<default>` argument set.
 - `prompt` *(required)*: Chooses the control type (text box, dropdown, checkbox, etc.). See [Prompt Types](docs/PromptTypes.md).
 - `promptSettings`: Control-specific settings (date format, dropdown options, file template, etc.).
@@ -180,6 +183,51 @@ Each parameter object can shape both the UI control and how ScriptRunner constru
 - `valueGeneratorCommand`: Optional helper command that runs on demand and fills the control with its stdout (relative paths are resolved from the action file).
 - `valueGeneratorLabel`: Custom tooltip/label for the auto-fill button triggered by `valueGeneratorCommand`.
 - `skipFromAutoParameterBuilder`: When `true`, excludes the parameter from `auto parameter builder` (useful when parameter is used only in `value generators` of other parameters).
+
+### Parameter groups
+
+Use parameter groups to split longer forms into tabs. Assign a group key to each parameter with `group`, then optionally add display metadata in the action's `parameterGroups` array:
+
+```json
+{
+  "name": "Deploy application",
+  "command": "deploy --environment {environment} --token {token} --verbose {verbose}",
+  "parameterGroups": [
+    {
+      "key": "deployment",
+      "label": "Deployment",
+      "description": "Select where the application will be deployed."
+    },
+    {
+      "key": "security",
+      "label": "Security"
+    }
+  ],
+  "params": [
+    {
+      "name": "environment",
+      "group": "deployment",
+      "prompt": "dropdown",
+      "promptSettings": {
+        "options": ["Development", "Production"]
+      }
+    },
+    {
+      "name": "token",
+      "group": "security",
+      "prompt": "password"
+    },
+    {
+      "name": "verbose",
+      "prompt": "checkbox"
+    }
+  ]
+}
+```
+
+The `key` connects a `parameterGroups` entry to each parameter's `group`. The optional `label` changes the tab title, while `description` adds explanatory text above its controls. A referenced key does not need a metadata entry; in that case, the key itself becomes the tab label.
+
+Parameters without `group` belong to `#General`. When other groups exist, `#General` is the first tab and the remaining tabs follow the order in which their parameters first occur. If every parameter belongs to `#General`, ScriptRunner displays the form directly without a tab bar.
 
 ### Prompt Types
 

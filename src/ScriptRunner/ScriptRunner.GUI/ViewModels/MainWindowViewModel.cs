@@ -772,6 +772,7 @@ public class MainWindowViewModel : ReactiveObject
     }
     private IEnumerable<IControlRecord> _controlRecords;
     private Dictionary<string, Avalonia.Controls.Border> _parameterContainers = new();
+    private Dictionary<string, Avalonia.Controls.TabItem> _parameterGroupTabs = new(StringComparer.OrdinalIgnoreCase);
 
     //private ActionsConfig config;
     
@@ -988,6 +989,7 @@ public class MainWindowViewModel : ReactiveObject
         // Write down param controls to read easier later - TODO: figure out better way, support multiple actions
         _controlRecords = paramsPanel.ControlRecords;
         _parameterContainers = paramsPanel.ParameterContainers;
+        _parameterGroupTabs = paramsPanel.ParameterGroupTabs;
 
         // Clear any pending MCP approval when the action changes
         CancelMcpApproval();
@@ -1180,12 +1182,25 @@ public class MainWindowViewModel : ReactiveObject
             else
                 border.Classes.Remove("mcpModified");
         }
+
+        foreach (var tab in _parameterGroupTabs.Values.Distinct())
+            tab.Classes.Remove("mcpModified");
+
+        var modifiedTabs = names
+            .Select(name => _parameterGroupTabs.TryGetValue(name, out var tab) ? tab : null)
+            .Where(tab => tab != null)
+            .Distinct();
+        foreach (var tab in modifiedTabs)
+            tab!.Classes.Add("mcpModified");
     }
 
     private void ClearMcpHighlight()
     {
         foreach (var border in _parameterContainers.Values)
             border.Classes.Remove("mcpModified");
+
+        foreach (var tab in _parameterGroupTabs.Values.Distinct())
+            tab.Classes.Remove("mcpModified");
     }
 
     public void ForceRefresh()

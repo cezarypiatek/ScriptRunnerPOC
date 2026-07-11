@@ -33,6 +33,9 @@ namespace ScriptRunner.GUI;
 
 public class ParamsPanelFactory
 {
+    private const string GeneralGroupKey = "\0#General";
+    private const string GeneralGroupLabel = "#General";
+
     private readonly VaultProvider _vaultProvider;
 
     public ParamsPanelFactory(VaultProvider vaultProvider)
@@ -56,6 +59,8 @@ public class ParamsPanelFactory
         var secretBindings = appSettings.VaultBindings ?? new List<VaultBinding>();
         var groupPanels = new Dictionary<string, StackPanel>(StringComparer.Ordinal);
         var groupOrder = new List<string>();
+        var parameterGroupKeys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var groupTabs = new Dictionary<string, TabItem>(StringComparer.Ordinal);
         foreach (var (param,i) in action.Params.Select((x,i)=>(x,i)))
         {
             values.TryGetValue(param.Name, out var value);
@@ -288,23 +293,31 @@ public class ParamsPanelFactory
                 Classes = { "paramRowBorder" },
                 Child = actionPanel
             };
-            var groupKey = string.IsNullOrWhiteSpace(param.Group) ? "default" : param.Group;
+            var groupKey = string.IsNullOrWhiteSpace(param.Group) ? GeneralGroupKey : param.Group;
             if (!groupPanels.TryGetValue(groupKey, out var groupPanel))
             {
                 groupPanel = new StackPanel { Classes = { "paramGroupPanel" } };
                 groupPanels[groupKey] = groupPanel;
-                groupOrder.Add(groupKey);
+                if (groupKey == GeneralGroupKey)
+                {
+                    groupOrder.Insert(0, groupKey);
+                }
+                else
+                {
+                    groupOrder.Add(groupKey);
+                }
             }
             groupPanel.Children.Add(rowBorder);
             parameterContainers[param.Name] = rowBorder;
+            parameterGroupKeys[param.Name] = groupKey;
             controlRecords.Add(controlRecord);
         }
 
-        if (groupOrder.Count == 1 && groupOrder[0] == "default")
+        if (groupOrder.Count == 1 && groupOrder[0] == GeneralGroupKey)
         {
-            foreach (var child in groupPanels["default"].Children.ToList())
+            foreach (var child in groupPanels[GeneralGroupKey].Children.ToList())
             {
-                groupPanels["default"].Children.Remove(child);
+                groupPanels[GeneralGroupKey].Children.Remove(child);
                 paramsPanel.Children.Add(child);
             }
         }
@@ -328,6 +341,7 @@ public class ParamsPanelFactory
             });
             foreach (var groupKey in groupOrder)
             {
+                var isGeneralGroup = groupKey == GeneralGroupKey;
                 definitions.TryGetValue(groupKey, out var definition);
                 var content = new Grid
                 {
@@ -348,21 +362,30 @@ public class ParamsPanelFactory
                 var fitHost = new ParameterFitHost(groupPanels[groupKey]);
                 Grid.SetRow(fitHost, 1);
                 content.Children.Add(fitHost);
-                tabs.Items.Add(new TabItem
+                var tab = new TabItem
                 {
                     Classes = { "paramGroupTab" },
-                    Header = string.IsNullOrWhiteSpace(definition?.Label) ? groupKey : definition.Label,
+                    Header = isGeneralGroup
+                        ? GeneralGroupLabel
+                        : string.IsNullOrWhiteSpace(definition?.Label) ? groupKey : definition.Label,
                     Content = content
-                });
+                };
+                groupTabs[groupKey] = tab;
+                tabs.Items.Add(tab);
             }
             paramsPanel.Children.Add(tabs);
         }
+
+        var parameterGroupTabs = parameterGroupKeys
+            .Where(pair => groupTabs.ContainsKey(pair.Value))
+            .ToDictionary(pair => pair.Key, pair => groupTabs[pair.Value], StringComparer.OrdinalIgnoreCase);
 
         return new ParamsPanel
         {
             Panel = paramsPanel,
             ControlRecords = controlRecords,
-            ParameterContainers = parameterContainers
+            ParameterContainers = parameterContainers,
+            ParameterGroupTabs = parameterGroupTabs
         };    }
 
     private static Control CreateParameterDetailsTooltip(ScriptParam param)

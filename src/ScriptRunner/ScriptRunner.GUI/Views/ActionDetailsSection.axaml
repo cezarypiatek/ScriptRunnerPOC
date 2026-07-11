@@ -225,7 +225,7 @@
                    
                 <TextBlock Classes="h2"
                            VerticalAlignment="Center"
-                           Text="Presets: "
+                           Text="Presets"
                            FontWeight="SemiBold"
                            Foreground="#D0D0D0"
                            Grid.Column="0"></TextBlock>
