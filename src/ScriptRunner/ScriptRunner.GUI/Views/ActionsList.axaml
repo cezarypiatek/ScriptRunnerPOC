@@ -127,7 +127,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
                             <Border CornerRadius="4"
-                                    Padding="12,12"
+                                    Padding="12,8"
                                     Margin="4,2"
                                     Cursor="Hand"
                                     Classes="actionTile"

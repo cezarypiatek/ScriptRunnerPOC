@@ -42,16 +42,8 @@
               <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
             
-              <Border Background="#474747" 
-                      CornerRadius="0" 
-                      BorderBrush="#6e6e6e" 
-                      Padding="5" 
-                      Margin="0, 5,5, 10" 
-                      BorderThickness="1">
-                <SelectableTextBlock TextWrapping="Wrap" 
-                                     Margin="0"
-                                     Classes="consoleOutput" 
-                                     Inlines="{Binding ExecutedCommandFormatted}" />
+              <Border BorderBrush="#3E3E36" BorderThickness="1">
+                  <SelectableTextBlock Margin="0" TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding ExecutedCommandFormatted}" FontFamily="Cascadia Code, Consolas, Monospace" FontSize="13"/>    
               </Border>
               <Panel Grid.Row="1" IsVisible="{Binding CurrentTroubleshootingMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{Binding CurrentTroubleShootingSeverity, Converter={x:Static viewModels:TroubleShootingSeverityToBrushConverter.Instance}}" Opacity="0.5" ZIndex="10"></Panel>
               <ScrollViewer Grid.Row="1" IsVisible="{Binding CurrentTroubleshootingMessage, Converter={x:Static ObjectConverters.IsNotNull}}" ZIndex="11">
