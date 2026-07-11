@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -19,6 +20,9 @@ public partial class ActionDetailsSection : UserControl
     private Border? _detailsSection;
     private TextBlock? _toggleDetailsText;
     private Projektanker.Icons.Avalonia.Icon? _toggleDetailsIcon;
+    private ScrollViewer? _actionParametersScrollViewer;
+    private Viewbox? _actionParametersViewbox;
+    private ItemsControl? _actionParametersItemsControl;
 
     public ActionDetailsSection()
     {
@@ -31,6 +35,9 @@ public partial class ActionDetailsSection : UserControl
         _detailsSection = this.FindControl<Border>("DetailsSection");
         _toggleDetailsText = this.FindControl<TextBlock>("ToggleDetailsText");
         _toggleDetailsIcon = this.FindControl<Projektanker.Icons.Avalonia.Icon>("ToggleDetailsIcon");
+        _actionParametersScrollViewer = this.FindControl<ScrollViewer>("ActionParametersScrollViewer");
+        _actionParametersViewbox = this.FindControl<Viewbox>("ActionParametersViewbox");
+        _actionParametersItemsControl = this.FindControl<ItemsControl>("ActionParametersItemsControl");
     }
 
     private void InitializeComponent()
@@ -89,6 +96,33 @@ public partial class ActionDetailsSection : UserControl
         {
             sc.ScrollToHome();
         }
+    }
+
+    private void FitParametersToggle_IsCheckedChanged(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not ToggleButton toggle ||
+            _actionParametersScrollViewer == null ||
+            _actionParametersViewbox == null ||
+            _actionParametersItemsControl == null)
+        {
+            return;
+        }
+
+        var fitToArea = toggle.IsChecked == true;
+
+        if (fitToArea)
+        {
+            _actionParametersScrollViewer.Content = null;
+            _actionParametersViewbox.Child = _actionParametersItemsControl;
+        }
+        else
+        {
+            _actionParametersViewbox.Child = null;
+            _actionParametersScrollViewer.Content = _actionParametersItemsControl;
+        }
+
+        _actionParametersScrollViewer.IsVisible = !fitToArea;
+        _actionParametersViewbox.IsVisible = fitToArea;
     }
 
     private void ToggleDetailsButton_Click(object? sender, RoutedEventArgs e)
