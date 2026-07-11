@@ -1488,27 +1488,9 @@ public class MainWindowViewModel : ReactiveObject
 
         var executedCommand = $"{commandPath} {maskedArgs}";
         
-        // Create formatted version with highlighted parameter values
-        var formattedCommand = executedCommand;
-        foreach (var (paramName, value, masked, description) in parameterReplacements)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                formattedCommand = formattedCommand.Replace(value, $"[!@#]{value}[!@#]");
-            }
-        }
-        
-        var executedCommandFormatted = formattedCommand.Split("[!@#]").Select(x =>
-        {
-            var inline = new Run(x);
-            // Check if this is a parameter value (not the original text)
-            var matchingParam = parameterReplacements.FirstOrDefault(p => p.value == x && !string.IsNullOrWhiteSpace(x));
-            if (matchingParam != default)
-            {
-                inline.Foreground = ParameterBrush;
-            }
-            return inline;
-        }).ToList();
+        var executedCommandFormatted = FormatParameterValues(
+            executedCommand,
+            parameterReplacements.Select(parameter => parameter.value));
 
         var job = new RunningJobViewModel
         {
@@ -1689,6 +1671,47 @@ public class MainWindowViewModel : ReactiveObject
         var collection = new InlineCollection();
         collection.Add(new Run(command));
         return collection;
+    }
+
+    private static IReadOnlyList<Run> FormatParameterValues(string command, IEnumerable<string> parameterValues)
+    {
+        var highlighted = new bool[command.Length];
+
+        foreach (var value in parameterValues.Where(value => !string.IsNullOrWhiteSpace(value)).Distinct())
+        {
+            var searchStart = 0;
+            while (searchStart < command.Length)
+            {
+                var matchStart = command.IndexOf(value, searchStart, StringComparison.Ordinal);
+                if (matchStart < 0)
+                {
+                    break;
+                }
+
+                Array.Fill(highlighted, true, matchStart, value.Length);
+                searchStart = matchStart + value.Length;
+            }
+        }
+
+        var runs = new List<Run>();
+        var runStart = 0;
+        while (runStart < command.Length)
+        {
+            var isHighlighted = highlighted[runStart];
+            var runEnd = runStart + 1;
+            while (runEnd < command.Length && highlighted[runEnd] == isHighlighted)
+            {
+                runEnd++;
+            }
+
+            runs.Add(new Run(command[runStart..runEnd])
+            {
+                Foreground = isHighlighted ? ParameterBrush : Brushes.White
+            });
+            runStart = runEnd;
+        }
+
+        return runs;
     }
 }
 
