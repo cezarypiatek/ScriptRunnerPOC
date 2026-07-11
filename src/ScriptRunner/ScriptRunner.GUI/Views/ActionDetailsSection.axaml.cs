@@ -10,6 +10,8 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using ScriptRunner.GUI.ViewModels;
 
 namespace ScriptRunner.GUI.Views;
@@ -38,6 +40,7 @@ public partial class ActionDetailsSection : UserControl
         _actionParametersScrollViewer = this.FindControl<ScrollViewer>("ActionParametersScrollViewer");
         _actionParametersViewbox = this.FindControl<Viewbox>("ActionParametersViewbox");
         _actionParametersItemsControl = this.FindControl<ItemsControl>("ActionParametersItemsControl");
+        _actionParametersItemsControl?.AddHandler(SelectingItemsControl.SelectionChangedEvent, OnParameterGroupSelectionChanged);
     }
 
     private void InitializeComponent()
@@ -110,6 +113,19 @@ public partial class ActionDetailsSection : UserControl
 
         var fitToArea = toggle.IsChecked == true;
 
+        var groupFitHosts = _actionParametersItemsControl
+            .GetVisualDescendants()
+            .OfType<ParameterFitHost>()
+            .ToList();
+        if (groupFitHosts.Count > 0)
+        {
+            foreach (var host in groupFitHosts)
+            {
+                host.SetFitToArea(fitToArea);
+            }
+            return;
+        }
+
         if (fitToArea)
         {
             _actionParametersScrollViewer.Content = null;
@@ -123,6 +139,21 @@ public partial class ActionDetailsSection : UserControl
 
         _actionParametersScrollViewer.IsVisible = !fitToArea;
         _actionParametersViewbox.IsVisible = fitToArea;
+    }
+
+    private void OnParameterGroupSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            var fitToArea = this.FindControl<ToggleButton>("FitParametersToggle")?.IsChecked == true;
+            var hosts = _actionParametersItemsControl?
+                .GetVisualDescendants()
+                .OfType<ParameterFitHost>() ?? Enumerable.Empty<ParameterFitHost>();
+            foreach (var host in hosts)
+            {
+                host.SetFitToArea(fitToArea);
+            }
+        });
     }
 
     private void ToggleDetailsButton_Click(object? sender, RoutedEventArgs e)

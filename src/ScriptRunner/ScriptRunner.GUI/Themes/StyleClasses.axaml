@@ -249,7 +249,7 @@
         <Setter Property="IsVisible" Value="True" />
     </Style>
 
-    <Style Selector="StackPanel.paramGroupContent">
+    <Style Selector="Grid.paramGroupContent">
         <Setter Property="Margin" Value="0,8,0,0" />
     </Style>
 

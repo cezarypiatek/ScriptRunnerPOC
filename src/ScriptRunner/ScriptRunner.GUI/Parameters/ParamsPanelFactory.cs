@@ -10,6 +10,7 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -318,20 +319,35 @@ public class ParamsPanelFactory
             {
                 Classes = { "parameterGroupsTabs" }
             };
+            tabs.Bind(Layoutable.HeightProperty, new Binding("Viewport.Height")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
+                {
+                    AncestorType = typeof(ScrollViewer)
+                }
+            });
             foreach (var groupKey in groupOrder)
             {
                 definitions.TryGetValue(groupKey, out var definition);
-                var content = new StackPanel { Classes = { "paramGroupContent" } };
+                var content = new Grid
+                {
+                    Classes = { "paramGroupContent" },
+                    RowDefinitions = new RowDefinitions("Auto,*")
+                };
                 if (string.IsNullOrWhiteSpace(definition?.Description) == false)
                 {
-                    content.Children.Add(new TextBlock
+                    var description = new TextBlock
                     {
                         Classes = { "paramGroupDescription" },
                         Text = definition.Description,
                         TextWrapping = TextWrapping.Wrap
-                    });
+                    };
+                    Grid.SetRow(description, 0);
+                    content.Children.Add(description);
                 }
-                content.Children.Add(groupPanels[groupKey]);
+                var fitHost = new ParameterFitHost(groupPanels[groupKey]);
+                Grid.SetRow(fitHost, 1);
+                content.Children.Add(fitHost);
                 tabs.Items.Add(new TabItem
                 {
                     Classes = { "paramGroupTab" },
