@@ -312,15 +312,40 @@
             
           </StackPanel>
           <Border Grid.Row="3" Background="#2A2A2E" BorderBrush="#48484E" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,0" BoxShadow="0 4 12 #60000000" IsEnabled="{Binding SelectedActionInstalled}">
-            <ScrollViewer ScrollChanged="OnActionPanelScrollChange"  BringIntoViewOnFocusChange="False" >
-              <ItemsControl ItemsSource="{Binding ActionParametersPanel}">
+            <Grid>
+              <ToggleButton x:Name="FitParametersToggle"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            ZIndex="10"
+                            Margin="0,0,5,0"
+                            Padding="8,4"
+                            IsCheckedChanged="FitParametersToggle_IsCheckedChanged"
+                            ToolTip.Tip="Scale all parameters to fit the available area">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <avalonia:Icon Value="fas fa-expand-arrows-alt" Width="12" Height="12"/>
+                  <TextBlock Text="Fit to area" FontSize="12"/>
+                </StackPanel>
+              </ToggleButton>
+
+              <ScrollViewer x:Name="ActionParametersScrollViewer"
+                            ScrollChanged="OnActionPanelScrollChange"
+                            BringIntoViewOnFocusChange="False">
+                <ItemsControl x:Name="ActionParametersItemsControl" ItemsSource="{Binding ActionParametersPanel}">
                 <ItemsControl.Styles>
                   <Style Selector="ItemsPresenter">
                     <Setter Property="(KeyboardNavigation.TabNavigation)" Value="Continue" />
                   </Style>
                 </ItemsControl.Styles>
-              </ItemsControl>
-            </ScrollViewer>
+                </ItemsControl>
+              </ScrollViewer>
+
+              <Viewbox x:Name="ActionParametersViewbox"
+                       IsVisible="False"
+                       Stretch="Uniform"
+                       StretchDirection="DownOnly"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"/>
+            </Grid>
           </Border>
           <Grid Grid.Row="4" Margin="0,15,0,15" HorizontalAlignment="Stretch" IsEnabled="{Binding SelectedActionInstalled}">
             <!-- Normal run button — hidden while awaiting MCP approval -->
