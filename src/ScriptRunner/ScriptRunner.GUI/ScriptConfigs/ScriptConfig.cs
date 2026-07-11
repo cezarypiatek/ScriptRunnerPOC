@@ -28,6 +28,7 @@ public class ScriptConfig
     public bool RunInstallCommandAsAdmin { get; set; }
     public string? WorkingDirectory { get; set; }
     public List<ScriptParam> Params { get; set; } = new();
+    public List<ParameterGroup> ParameterGroups { get; set; } = new();
     public PredefinedArgumentSetsOrdering? PredefinedArgumentSetsOrdering { get; set; }
     public List<ArgumentSet> PredefinedArgumentSets { get; set; } = new();
     public Dictionary<string, string?> EnvironmentVariables { get; set; } = new();
@@ -67,6 +68,7 @@ public enum PredefinedArgumentSetsOrdering
 public class ScriptParam
 {
     public string Name { get; set; }
+    public string? Group { get; set; }
     public string Description { get; set; }
     public string? Details { get; set; }
     public PromptType Prompt { get; set; }
@@ -145,6 +147,13 @@ public class ScriptParam
 
         return new List<DropdownOption>();
     }
+}
+
+public class ParameterGroup
+{
+    public string Key { get; set; }
+    public string? Label { get; set; }
+    public string? Description { get; set; }
 }
 
 public class InteractiveInputDescription

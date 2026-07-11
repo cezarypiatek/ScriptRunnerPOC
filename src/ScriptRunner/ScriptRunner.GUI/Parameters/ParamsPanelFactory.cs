@@ -53,6 +53,8 @@ public class ParamsPanelFactory
         var parameterContainers = new Dictionary<string, Border>();
         var appSettings = AppSettingsService.Load();
         var secretBindings = appSettings.VaultBindings ?? new List<VaultBinding>();
+        var groupPanels = new Dictionary<string, StackPanel>(StringComparer.Ordinal);
+        var groupOrder = new List<string>();
         foreach (var (param,i) in action.Params.Select((x,i)=>(x,i)))
         {
             values.TryGetValue(param.Name, out var value);
@@ -285,9 +287,59 @@ public class ParamsPanelFactory
                 Classes = { "paramRowBorder" },
                 Child = actionPanel
             };
-            paramsPanel.Children.Add(rowBorder);
+            var groupKey = string.IsNullOrWhiteSpace(param.Group) ? "default" : param.Group;
+            if (!groupPanels.TryGetValue(groupKey, out var groupPanel))
+            {
+                groupPanel = new StackPanel { Classes = { "paramGroupPanel" } };
+                groupPanels[groupKey] = groupPanel;
+                groupOrder.Add(groupKey);
+            }
+            groupPanel.Children.Add(rowBorder);
             parameterContainers[param.Name] = rowBorder;
             controlRecords.Add(controlRecord);
+        }
+
+        if (groupOrder.Count == 1 && groupOrder[0] == "default")
+        {
+            foreach (var child in groupPanels["default"].Children.ToList())
+            {
+                groupPanels["default"].Children.Remove(child);
+                paramsPanel.Children.Add(child);
+            }
+        }
+        else if (groupOrder.Count > 0)
+        {
+            var definitions = action.ParameterGroups
+                .Where(group => string.IsNullOrWhiteSpace(group.Key) == false)
+                .GroupBy(group => group.Key, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+            paramsPanel.Classes.Add("groupedParamsPanel");
+            var tabs = new TabControl
+            {
+                Classes = { "parameterGroupsTabs" }
+            };
+            foreach (var groupKey in groupOrder)
+            {
+                definitions.TryGetValue(groupKey, out var definition);
+                var content = new StackPanel { Classes = { "paramGroupContent" } };
+                if (string.IsNullOrWhiteSpace(definition?.Description) == false)
+                {
+                    content.Children.Add(new TextBlock
+                    {
+                        Classes = { "paramGroupDescription" },
+                        Text = definition.Description,
+                        TextWrapping = TextWrapping.Wrap
+                    });
+                }
+                content.Children.Add(groupPanels[groupKey]);
+                tabs.Items.Add(new TabItem
+                {
+                    Classes = { "paramGroupTab" },
+                    Header = string.IsNullOrWhiteSpace(definition?.Label) ? groupKey : definition.Label,
+                    Content = content
+                });
+            }
+            paramsPanel.Children.Add(tabs);
         }
 
         return new ParamsPanel

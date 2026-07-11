@@ -181,6 +181,89 @@
         <Setter Property="Margin" Value="0, 10"></Setter>
     </Style>
 
+    <!-- Parameter grouping tabs -->
+    <Style Selector="StackPanel.paramsPanel.groupedParamsPanel">
+        <Setter Property="Margin" Value="0" />
+    </Style>
+
+    <Style Selector="TabControl.parameterGroupsTabs">
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+
+    <Style Selector="TabItem.paramGroupTab">
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="16,9" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="#C0C0C6" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid RowDefinitions="*,Auto">
+                    <Border x:Name="TabHeaderBackground"
+                            Grid.RowSpan="2"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}">
+                        <ContentPresenter Content="{TemplateBinding Header}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <Border x:Name="SelectionIndicator"
+                            Grid.Row="1"
+                            Height="2"
+                            Margin="0,10,0,0"
+                            Background="#4A9EFF"
+                            IsVisible="False" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="TabItem.paramGroupTab:pointerover /template/ Border#TabHeaderBackground">
+        <Setter Property="Background" Value="#303035" />
+    </Style>
+
+    <Style Selector="TabItem.paramGroupTab:pointerover">
+        <Setter Property="Foreground" Value="#F0F0F0" />
+    </Style>
+
+    <Style Selector="TabItem.paramGroupTab:pressed /template/ Border#TabHeaderBackground">
+        <Setter Property="Background" Value="#38383E" />
+    </Style>
+
+    <Style Selector="TabItem.paramGroupTab:selected">
+        <Setter Property="Foreground" Value="#4A9EFF" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TabItem.paramGroupTab:selected /template/ Border#SelectionIndicator">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="StackPanel.paramGroupContent">
+        <Setter Property="Margin" Value="0,8,0,0" />
+    </Style>
+
+    <Style Selector="StackPanel.paramGroupPanel">
+        <Setter Property="Margin" Value="0" />
+    </Style>
+
+    <Style Selector="TextBlock.paramGroupDescription">
+        <Setter Property="Margin" Value="6,2,6,10" />
+        <Setter Property="Foreground" Value="#A0A0A8" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="LineHeight" Value="19" />
+    </Style>
+
     <Style Selector="StackPanel.paramRow">
         <Setter Property="Margin" Value="2,4"></Setter>
         <Setter Property="Orientation" Value="Horizontal"></Setter>
