@@ -116,6 +116,7 @@ public class RunningJobViewModel : ViewModelBase
         
         Task.Factory.StartNew(async () =>
         {
+            var startedOn = DateTime.Now;
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             var rawOutput = new StringBuilder();
@@ -213,7 +214,7 @@ public class RunningJobViewModel : ViewModelBase
                 stopWatch.Stop();
                 Elapsed = stopWatch.Elapsed;
                 AppendToOutput("---------------------------------------------", ConsoleOutputLevel.Normal);
-                AppendToOutput($"Execution finished after {stopWatch.Elapsed}", ConsoleOutputLevel.Normal);
+                AppendToOutput($"Started at {startedOn} · Duration: {stopWatch.Elapsed:hh\\:mm\\:ss}", ConsoleOutputLevel.Normal);
                 
 
                 Dispatcher.UIThread.Post(() =>
