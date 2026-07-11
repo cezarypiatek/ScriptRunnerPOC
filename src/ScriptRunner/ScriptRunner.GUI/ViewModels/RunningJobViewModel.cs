@@ -214,7 +214,7 @@ public class RunningJobViewModel : ViewModelBase
                 stopWatch.Stop();
                 Elapsed = stopWatch.Elapsed;
                 AppendToOutput("---------------------------------------------", ConsoleOutputLevel.Normal);
-                AppendToOutput($"Started at {startedOn} · Duration: {stopWatch.Elapsed:hh\\:mm\\:ss}", ConsoleOutputLevel.Normal);
+                AppendToOutput($"Started at {startedOn} · Duration: {stopWatch.Elapsed:hh\\:mm\\:ss\\.fff}", ConsoleOutputLevel.Normal);
                 
 
                 Dispatcher.UIThread.Post(() =>
