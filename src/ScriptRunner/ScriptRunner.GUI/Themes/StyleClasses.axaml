@@ -137,6 +137,10 @@
         <Setter Property="BorderBrush" Value="#FF8C00" />
         <Setter Property="Background" Value="#11FF8C00" />
     </Style>
+    <Style Selector="Border.paramRowBorder.validationFailed">
+        <Setter Property="BorderBrush" Value="#E5484D" />
+        <Setter Property="Background" Value="#18E5484D" />
+    </Style>
     <Style Selector="Button.secondary">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="#333338" />
@@ -218,11 +222,11 @@
                                     VerticalAlignment="Center">
                             <ContentPresenter Content="{TemplateBinding Header}"
                                               VerticalAlignment="Center" />
-                            <Border x:Name="McpModifiedIndicator"
+                            <Border x:Name="ParameterStatusIndicator"
                                     Width="7"
                                     Height="7"
                                     CornerRadius="4"
-                                    Background="#FF8C00"
+                                    Background="#4A9EFF"
                                     VerticalAlignment="Center"
                                     IsVisible="False" />
                         </StackPanel>
@@ -260,8 +264,20 @@
         <Setter Property="IsVisible" Value="True" />
     </Style>
 
-    <Style Selector="TabItem.paramGroupTab.mcpModified /template/ Border#McpModifiedIndicator">
+    <!-- Status priority is defined by order: required (blue), MCP (orange), validation (red). -->
+    <Style Selector="TabItem.paramGroupTab.hasRequiredParameters /template/ Border#ParameterStatusIndicator">
         <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Background" Value="#4A9EFF" />
+    </Style>
+
+    <Style Selector="TabItem.paramGroupTab.mcpModified /template/ Border#ParameterStatusIndicator">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Background" Value="#FF8C00" />
+    </Style>
+
+    <Style Selector="TabItem.paramGroupTab.validationFailed /template/ Border#ParameterStatusIndicator">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Background" Value="#E5484D" />
     </Style>
 
     <Style Selector="Grid.paramGroupContent">

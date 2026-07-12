@@ -66,6 +66,7 @@ public class ParamsPanelFactory
             values.TryGetValue(param.Name, out var value);
             var controlRecord = CreateControlRecord(param, value, i, action, secretBindings, commandExecutor, parameterSetName);
             controlRecord.Name = param.Name;
+            controlRecord.Required = param.Required;
             if (controlRecord.Control is Layoutable l)
             {
                 // Don't set MaxWidth for multiline/file content controls since they have resize handles
@@ -89,6 +90,21 @@ public class ParamsPanelFactory
                 MaxWidth = 280,
                 VerticalAlignment = VerticalAlignment.Center
             });
+
+            if (param.Required)
+            {
+                var requiredIndicator = new Border
+                {
+                    Width = 7,
+                    Height = 7,
+                    CornerRadius = new CornerRadius(4),
+                    Background = new SolidColorBrush(Color.Parse("#4A9EFF")),
+                    Margin = new Thickness(3, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                ToolTip.SetTip(requiredIndicator, "Required parameter");
+                labelContent.Children.Add(requiredIndicator);
+            }
 
             if (string.IsNullOrWhiteSpace(param.Details) == false)
             {
@@ -370,6 +386,12 @@ public class ParamsPanelFactory
                         : string.IsNullOrWhiteSpace(definition?.Label) ? groupKey : definition.Label,
                     Content = content
                 };
+                if (action.Params.Any(param =>
+                        param.Required &&
+                        (string.IsNullOrWhiteSpace(param.Group) ? GeneralGroupKey : param.Group) == groupKey))
+                {
+                    tab.Classes.Add("hasRequiredParameters");
+                }
                 groupTabs[groupKey] = tab;
                 tabs.Items.Add(tab);
             }
@@ -657,7 +679,18 @@ public class ParamsPanelFactory
                 var monthVisible = p.GetPromptSettings("monthVisible", bool.Parse, true);
                 var dayVisible = p.GetPromptSettings("dayVisible", bool.Parse, true);
                 var culture = p.GetPromptSettings("culture", CultureInfo.GetCultureInfo, CultureInfo.CurrentCulture);
-                DateTimeOffset? selectedDate = string.IsNullOrWhiteSpace(value)?(p.GetPromptSettings("todayAsDefault", bool.Parse, false)? DateTimeOffset.Now.Date:null) : DateTimeOffset.Parse(value, culture);
+                DateTimeOffset? selectedDate = null;
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    if (p.GetPromptSettings("todayAsDefault", bool.Parse, false))
+                    {
+                        selectedDate = DateTimeOffset.Now.Date;
+                    }
+                }
+                else if (DateTimeOffset.TryParse(value, culture, DateTimeStyles.None, out var parsedDate))
+                {
+                    selectedDate = parsedDate;
+                }
                 return new DatePickerControl
                 {
                     Culture = culture,

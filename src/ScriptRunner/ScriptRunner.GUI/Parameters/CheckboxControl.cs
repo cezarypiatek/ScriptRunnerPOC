@@ -12,6 +12,8 @@ public class CheckboxControl : IControlRecord
         return ((CheckBox)Control).IsChecked == true ? CheckedValue: UncheckedValue;
     }
 
+    public bool IsNotEmpty() => true;
+
     public void SetValueFromString(string value)
     {
         ((CheckBox)Control).IsChecked = value == CheckedValue ||
@@ -21,4 +23,5 @@ public class CheckboxControl : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
 }

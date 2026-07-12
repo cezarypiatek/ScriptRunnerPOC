@@ -27,6 +27,8 @@ public class DateTimePickerControl : IControlRecord
         return dt.ToString(fmt, Culture);
     }
 
+    public bool IsNotEmpty() => DateControl.SelectedDate != null || TimeControl.SelectedTime != null;
+
     public void SetValueFromString(string value)
     {
         if (DateTime.TryParse(value, Culture, DateTimeStyles.None, out var dt))
@@ -38,4 +40,5 @@ public class DateTimePickerControl : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
 }

@@ -1445,10 +1445,36 @@ public class MainWindowViewModel : ReactiveObject
     }
 
 
-    public void RunScript()
+    public async void RunScript()
     {
         if (SelectedAction is { } selectedAction)
         {
+            var missingParameters = _controlRecords
+                .Where(record => record.Required && !record.IsNotEmpty())
+                .ToList();
+            HighlightValidationFailures(missingParameters.Select(record => record.Name));
+            if (missingParameters.Count > 0)
+            {
+                var labels = missingParameters.Select(record =>
+                {
+                    var parameter = selectedAction.Params.FirstOrDefault(param =>
+                        string.Equals(param.Name, record.Name, StringComparison.OrdinalIgnoreCase));
+                    return string.IsNullOrWhiteSpace(parameter?.Description) ? record.Name : parameter.Description;
+                });
+                var message = "Provide values for the following required parameters:\n\n" +
+                              string.Join("\n", labels.Select(label => $"• {label}"));
+                var messageBox = MessageBoxManager.GetMessageBoxStandard(
+                    "Missing required parameters",
+                    message,
+                    icon: MsBox.Avalonia.Enums.Icon.Warning,
+                    windowStartupLocation: WindowStartupLocation.CenterOwner);
+                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    await messageBox.ShowWindowDialogAsync(desktop.MainWindow);
+                }
+                return;
+            }
+
             if (selectedAction.RunCommandAsAdmin && IsAdministrator() == false)
             {
                 NotifyAboutMissingAdminRights();
@@ -1470,6 +1496,35 @@ public class MainWindowViewModel : ReactiveObject
             AppSettingsService.UpdateExecutionLog(ExecutionLog.ToList());
         }
         
+    }
+
+    private void HighlightValidationFailures(IEnumerable<string> paramNames)
+    {
+        var names = new HashSet<string>(paramNames, StringComparer.OrdinalIgnoreCase);
+        foreach (var (name, border) in _parameterContainers)
+        {
+            if (names.Contains(name))
+            {
+                border.Classes.Add("validationFailed");
+            }
+            else
+            {
+                border.Classes.Remove("validationFailed");
+            }
+        }
+
+        foreach (var tab in _parameterGroupTabs.Values.Distinct())
+        {
+            tab.Classes.Remove("validationFailed");
+        }
+
+        foreach (var tab in names
+                     .Select(name => _parameterGroupTabs.TryGetValue(name, out var groupTab) ? groupTab : null)
+                     .Where(tab => tab != null)
+                     .Distinct())
+        {
+            tab!.Classes.Add("validationFailed");
+        }
     }
 
     private void ExecuteCommand(string command, ScriptConfig selectedAction, bool useSystemShell, string? title = null, Action<string>? onComplete = null)

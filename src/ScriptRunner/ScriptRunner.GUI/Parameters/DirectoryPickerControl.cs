@@ -20,6 +20,8 @@ public class DirectoryPickerControl : IControlRecord
         return _useWslPathForDirPicker ? WslPathConverter.ConvertToWslPath(path) : path;
     }
 
+    public bool IsNotEmpty() => !string.IsNullOrWhiteSpace(((DirectoryPicker)Control).DirPath);
+
     public void SetValueFromString(string value)
     {
         ((DirectoryPicker)Control).DirPath = value;
@@ -27,4 +29,5 @@ public class DirectoryPickerControl : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
 }

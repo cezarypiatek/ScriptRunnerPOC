@@ -156,7 +156,7 @@
           "name": "p1",
           "description": "Text parameter",
           "group": "text",
-          "default": "v1",
+          "required": true,
           "prompt": "text"
         },
         {
@@ -189,6 +189,7 @@
         {
           "name": "p32",
           "description": "SQL code",
+          "required": true,
           "details": "This is a multiline sql code with sqlserver syntax\r\n but postgres might be supported as well",
           "group": "text",
           "default": "Line 1\r\n Line 2",
@@ -283,7 +284,7 @@
           "name": "p14",
           "description": "Numeric parameter",
           "group": "advanced",
-          "default": "7",
+          "required": true,          
           "prompt": "numeric",
           "promptSettings": {
             "min": "5",

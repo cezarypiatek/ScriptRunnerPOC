@@ -177,6 +177,7 @@ Each parameter object can shape both the UI control and how ScriptRunner constru
 - `details`: Extended helper text shown in a hover tooltip from the info icon next to the parameter label.
 - `group`: Optional key that places the parameter in a grouped tab.
 - `default`: Value pre-populated in the UI and stored in the automatically generated `<default>` argument set.
+- `required`: Optional boolean. Required parameters display a blue dot and must contain a value before the action can run. Missing values are highlighted in red, including their group tabs.
 - `prompt` *(required)*: Chooses the control type (text box, dropdown, checkbox, etc.). See [Prompt Types](docs/PromptTypes.md).
 - `promptSettings`: Control-specific settings (date format, dropdown options, file template, etc.).
 - `autoParameterBuilderPattern`: Overrides the action-level pattern when auto-appending this parameter to the command.

@@ -18,6 +18,8 @@ public class TextControl : IControlRecord
         };
     }
 
+    public bool IsNotEmpty() => !string.IsNullOrWhiteSpace(GetFormattedValue());
+
     public void SetValueFromString(string value)
     {
         switch (Control)
@@ -33,4 +35,5 @@ public class TextControl : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
 }

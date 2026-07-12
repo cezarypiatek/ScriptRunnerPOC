@@ -12,6 +12,8 @@ public class PasswordControl : IControlRecord
         return ((PasswordBox)Control).Password;
     }
 
+    public bool IsNotEmpty() => !string.IsNullOrWhiteSpace(((PasswordBox)Control).Password);
+
     public void SetValueFromString(string value)
     {
         ((PasswordBox)Control).Password = value;
@@ -19,4 +21,5 @@ public class PasswordControl : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
 }

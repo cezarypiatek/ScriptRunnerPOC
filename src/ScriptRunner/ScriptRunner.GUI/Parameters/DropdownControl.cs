@@ -39,6 +39,8 @@ public class DropdownControl : IControlRecord
         return selectedItem?.ToString() ?? string.Empty;
     }
 
+    public bool IsNotEmpty() => !string.IsNullOrWhiteSpace(GetFormattedValue());
+
     public void SetValueFromString(string value)
     {
         // Find matching option by value or label
@@ -59,4 +61,5 @@ public class DropdownControl : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
 }

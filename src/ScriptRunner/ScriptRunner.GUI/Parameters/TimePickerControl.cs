@@ -17,6 +17,8 @@ public class TimePickerControl : IControlRecord
         return selectedTime?.ToString() ?? string.Empty;
     }
 
+    public bool IsNotEmpty() => ((ScriptRunner.GUI.Views.Controls.TimePickerInput)Control).SelectedTime != null;
+
     public void SetValueFromString(string value)
     {
         if (TimeSpan.TryParse(value, out var ts))
@@ -25,6 +27,7 @@ public class TimePickerControl : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
 
     public string? Format { get; set; }
 }

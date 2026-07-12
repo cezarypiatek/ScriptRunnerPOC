@@ -167,6 +167,11 @@
                                     "type": "string",
                                     "description":"Initial value for the control and the default argument set."
                                 },
+                                "required": {
+                                    "type": "boolean",
+                                    "default": false,
+                                    "description":"When true, the action cannot run until the user provides a non-empty value."
+                                },
                                 "autoParameterBuilderPattern":{
                                     "type": "string",
                                     "description":"Overrides the action-level autoParameterBuilderPattern for this parameter only."

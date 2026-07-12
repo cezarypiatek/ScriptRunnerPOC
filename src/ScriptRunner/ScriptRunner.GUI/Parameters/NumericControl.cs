@@ -12,6 +12,8 @@ public class NumericControl : IControlRecord
         return ((NumericUpDown)Control).Text;
     }
 
+    public bool IsNotEmpty() => !string.IsNullOrWhiteSpace(((NumericUpDown)Control).Text);
+
     public void SetValueFromString(string value)
     {
         if (decimal.TryParse(value, out var num))
@@ -20,4 +22,5 @@ public class NumericControl : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
 }

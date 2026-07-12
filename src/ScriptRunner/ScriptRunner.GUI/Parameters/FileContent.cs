@@ -36,6 +36,17 @@ public class FileContent : IControlRecord
         return _useWslPath ? WslPathConverter.ConvertToWslPath(FileName) : FileName;
     }
 
+    public bool IsNotEmpty()
+    {
+        var content = Control switch
+        {
+            TextBox textBox => textBox.Text,
+            TextEditor textEditor => textEditor.Text,
+            _ => string.Empty
+        };
+        return !string.IsNullOrWhiteSpace(content);
+    }
+
     public void SetValueFromString(string value)
     {
         switch (Control)
@@ -69,6 +80,7 @@ public class FileContent : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
 }
 
 public static class WslPathConverter

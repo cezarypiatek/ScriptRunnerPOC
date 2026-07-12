@@ -23,6 +23,13 @@ public class DatePickerControl : IControlRecord
         return selectedDateTime?.ToString() ?? string.Empty;
     }
 
+    public bool IsNotEmpty() => Control switch
+    {
+        DatePicker datePicker => datePicker.SelectedDate != null,
+        CalendarDatePicker calendarDatePicker => calendarDatePicker.SelectedDate != null,
+        _ => false
+    };
+
     public void SetValueFromString(string value)
     {
         if (DateTime.TryParse(value, out var dt))
@@ -41,6 +48,7 @@ public class DatePickerControl : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
 
     public string? Format { get; set; }
     public CultureInfo Culture { get; set; }

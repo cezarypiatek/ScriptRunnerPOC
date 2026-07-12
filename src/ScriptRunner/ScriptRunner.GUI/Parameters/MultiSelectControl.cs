@@ -31,6 +31,8 @@ public class MultiSelectControl : IControlRecord
         return string.Join(Delimiter, copy);
     }
 
+    public bool IsNotEmpty() => ((ListBox)Control).SelectedItems?.Count > 0;
+
     public void SetValueFromString(string value)
     {
         var lb = (ListBox)Control;
@@ -67,6 +69,7 @@ public class MultiSelectControl : IControlRecord
 
     public string Name { get; set; }
     public bool MaskingRequired { get; set; }
+    public bool Required { get; set; }
     public string Delimiter { get; set; }
 
 }
