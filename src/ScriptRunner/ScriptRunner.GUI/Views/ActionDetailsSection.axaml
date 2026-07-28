@@ -30,10 +30,10 @@
       </Grid.ColumnDefinitions>
       <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Margin="20, 0"  IsVisible="{Binding IsActionSelected, Mode=OneWay}">
       <!-- Custom collapsible header section -->
-          <Border Background="#2A2A2E" BorderBrush="#48484E" BorderThickness="1" CornerRadius="8" Margin="0,0,0,15" BoxShadow="0 4 12 #60000000">
+          <Border Background="#2A2A2E" BorderBrush="#48484E" BorderThickness="1" CornerRadius="8" Margin="0,0,0,12" BoxShadow="0 4 12 #60000000">
             <StackPanel>
               <!-- Header that's always visible -->
-              <Grid ColumnDefinitions="*, Auto" Margin="16,16,16,4">
+              <Grid ColumnDefinitions="*, Auto" Margin="16,4,16,4">
                 <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="8">
                   <Grid ColumnDefinitions="*, Auto">
                     <StackPanel Grid.Column="0" Orientation="Vertical">
@@ -216,11 +216,11 @@
             </StackPanel>
           </Border>
               
-          <Button Grid.Row="1"  Margin="0,10,0,0" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
+          <Button Grid.Row="1"  Margin="0,8,0,8" IsVisible="{Binding !SelectedActionInstalled}" Command="{Binding InstallScript}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Install</Button>
              
           <StackPanel Grid.Row="2"  IsEnabled="{Binding SelectedActionInstalled}">
             <StackPanel IsVisible="{Binding HasParams}">
-              <Border Background="#2A2A2E" BorderBrush="#48484E" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,15" BoxShadow="0 4 12 #60000000">
+              <Border Background="#2A2A2E" BorderBrush="#48484E" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,12" BoxShadow="0 4 12 #60000000">
                    <Grid Margin="10,0,0,0" ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                    
                 <TextBlock Classes="h2"
