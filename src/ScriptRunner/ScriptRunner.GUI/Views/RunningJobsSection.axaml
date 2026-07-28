@@ -63,7 +63,7 @@
                           </ItemsRepeater.Layout>
                           <ItemsRepeater.ItemTemplate>
                               <DataTemplate x:DataType="scriptConfigs:InteractiveInputItem">
-                                  <Button Classes="secondary" Padding="20,5" Content="{Binding Label}" Command="{Binding $parent[ItemsRepeater].DataContext.ExecuteInteractiveInput}" CommandParameter="{Binding Value}"></Button>
+                                  <Button Classes="interactiveAnswer" Content="{Binding Label}" Command="{Binding $parent[ItemsRepeater].DataContext.ExecuteInteractiveInput}" CommandParameter="{Binding Value}"></Button>
                               </DataTemplate>
                           </ItemsRepeater.ItemTemplate>
                       

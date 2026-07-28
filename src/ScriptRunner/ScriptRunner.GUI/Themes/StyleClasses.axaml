@@ -154,6 +154,26 @@
             <Setter Property="Foreground" Value="White" />
         </Style>
     </Style>
+
+    <Style Selector="Button.interactiveAnswer">
+        <Setter Property="Background" Value="#234A73" />
+        <Setter Property="BorderBrush" Value="#6CB6FF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="20,5" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Style Selector="^:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#32679B" />
+            <Setter Property="BorderBrush" Value="#9ACDFF" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="^:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#193A5A" />
+            <Setter Property="BorderBrush" Value="#D1E8FF" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+    </Style>
     
     <Style Selector="TextBlock.h1">
         <Setter Property="FontSize" Value="24" />
