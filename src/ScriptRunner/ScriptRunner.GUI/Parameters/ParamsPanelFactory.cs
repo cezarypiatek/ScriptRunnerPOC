@@ -716,21 +716,29 @@ public class ParamsPanelFactory
                     Format = p.GetPromptSettings("format", out var format) ? format : null,
                 };
             case PromptType.TimePicker:
+                var configuredTimeFormat = p.GetPromptSettings("format", out var timeFormat) ? timeFormat : null;
                 return new TimePickerControl
                 {
                     Control = new ScriptRunner.GUI.Views.Controls.TimePickerInput
                     {
-                        SelectedTime = string.IsNullOrWhiteSpace(value) ? null: TimeSpan.TryParse(value, out var ft)? ft : null,
+                        SelectedTime = string.IsNullOrWhiteSpace(value)
+                            ? null
+                            : TimePickerControl.TryParseValue(value, configuredTimeFormat, out var parsedTime)
+                                ? parsedTime
+                                : null,
                         TabIndex = index,
                         IsTabStop = true
                     },
-                    Format = p.GetPromptSettings("format", out var timeFormat) ? timeFormat : null,
+                    Format = configuredTimeFormat,
                 };
             case PromptType.DateTimePicker:
                 var dtCulture = p.GetPromptSettings("culture", CultureInfo.GetCultureInfo, CultureInfo.CurrentCulture);
+                var configuredDateTimeFormat = p.GetPromptSettings("format", out var dtFormat) ? dtFormat : null;
                 DateTime? dtInitial = null;
                 if (string.IsNullOrWhiteSpace(value) == false)
-                    dtInitial = DateTime.TryParse(value, dtCulture, DateTimeStyles.None, out var parsedDt) ? parsedDt : (DateTime?)null;
+                    dtInitial = DateTimePickerControl.TryParseValue(value, configuredDateTimeFormat, dtCulture, out var parsedDt)
+                        ? parsedDt
+                        : null;
                 else if (p.GetPromptSettings("todayAsDefault", bool.Parse, false))
                     dtInitial = DateTime.Now;
                 var dateControl = new CalendarDatePicker
@@ -758,7 +766,7 @@ public class ParamsPanelFactory
                     Control = dateTimePanel,
                     DateControl = dateControl,
                     TimeControl = timeControl,
-                    Format = p.GetPromptSettings("format", out var dtFormat) ? dtFormat : null,
+                    Format = configuredDateTimeFormat,
                     Culture = dtCulture
                 };
             case PromptType.Checkbox:
@@ -835,10 +843,10 @@ public class ParamsPanelFactory
                 return new NumericControl
                 {
                     Control = new NumericUpDown{
-                        Value = decimal.TryParse(value, out var valueDouble)? valueDouble: 0,
-                        Minimum = p.GetPromptSettings("min", out var minValue) && decimal.TryParse(minValue, out var mindDouble)? mindDouble : decimal.MinValue,
-                        Maximum = p.GetPromptSettings("max", out var maxValue) && decimal.TryParse(maxValue, out var maxDouble)? maxDouble: decimal.MaxValue,
-                        Increment = p.GetPromptSettings("step", out var stepValue) && decimal.TryParse(stepValue, out var stepDouble)? (int)stepDouble: 1,
+                        Value = NumericControl.TryParseValue(value, out var numericValue) ? numericValue : null,
+                        Minimum = p.GetPromptSettings("min", out var minValue) && NumericControl.TryParseValue(minValue, out var minimum) ? minimum : decimal.MinValue,
+                        Maximum = p.GetPromptSettings("max", out var maxValue) && NumericControl.TryParseValue(maxValue, out var maximum) ? maximum : decimal.MaxValue,
+                        Increment = p.GetPromptSettings("step", out var stepValue) && NumericControl.TryParseValue(stepValue, out var increment) ? increment : 1,
                         ParsingNumberStyle = NumberStyles.Integer,
                         TabIndex = index,
                         IsTabStop = true

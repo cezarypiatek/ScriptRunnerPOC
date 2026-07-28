@@ -9,15 +9,29 @@ public class NumericControl : IControlRecord
 
     public string GetFormattedValue()
     {
-        return ((NumericUpDown)Control).Text;
+        return ((NumericUpDown)Control).Value?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;
     }
 
-    public bool IsNotEmpty() => !string.IsNullOrWhiteSpace(((NumericUpDown)Control).Text);
+    public bool IsNotEmpty() => ((NumericUpDown)Control).Value.HasValue;
 
     public void SetValueFromString(string value)
     {
-        if (decimal.TryParse(value, out var num))
+        if (TryParseValue(value, out var num))
             ((NumericUpDown)Control).Value = num;
+    }
+
+    internal static bool TryParseValue(string? value, out decimal number)
+    {
+        return decimal.TryParse(
+                   value,
+                   System.Globalization.NumberStyles.Number,
+                   System.Globalization.CultureInfo.InvariantCulture,
+                   out number)
+               || decimal.TryParse(
+                   value,
+                   System.Globalization.NumberStyles.Number,
+                   System.Globalization.CultureInfo.CurrentCulture,
+                   out number);
     }
 
     public string Name { get; set; }

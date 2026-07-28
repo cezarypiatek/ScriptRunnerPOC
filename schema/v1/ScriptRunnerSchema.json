@@ -261,7 +261,7 @@
                                             "properties": {
                                                 "format": {
                                                     "type": "string",
-                                                    "description":"Custom time format string applied when serializing the value."
+                                                    "description":".NET custom TimeSpan format string used for parsing and serialization (for example hh\\:mm; colons must be escaped)."
                                                 }
                                             }
                                         }

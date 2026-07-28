@@ -21,8 +21,15 @@ public class TimePickerControl : IControlRecord
 
     public void SetValueFromString(string value)
     {
-        if (TimeSpan.TryParse(value, out var ts))
+        if (TryParseValue(value, Format, out var ts))
             ((ScriptRunner.GUI.Views.Controls.TimePickerInput)Control).SelectedTime = ts;
+    }
+
+    internal static bool TryParseValue(string value, string? format, out TimeSpan time)
+    {
+        return string.IsNullOrWhiteSpace(format)
+            ? TimeSpan.TryParse(value, System.Globalization.CultureInfo.CurrentCulture, out time)
+            : TimeSpan.TryParseExact(value, format, System.Globalization.CultureInfo.CurrentCulture, out time);
     }
 
     public string Name { get; set; }

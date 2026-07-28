@@ -186,6 +186,16 @@ public static class McpToolBuilder
                     : $"{parameterDescription}\n\nDetails: {p.Details.Trim()}";
             }
 
+            if (p.Prompt is PromptType.Datepicker or PromptType.TimePicker or PromptType.DateTimePicker
+                && p.GetPromptSettings("format", out var configuredFormat)
+                && string.IsNullOrWhiteSpace(configuredFormat) == false)
+            {
+                var formatDescription = $"Expected value format (.NET format string): {configuredFormat}";
+                parameterDescription = string.IsNullOrWhiteSpace(parameterDescription)
+                    ? formatDescription
+                    : $"{parameterDescription}\n\n{formatDescription}";
+            }
+
             if (string.IsNullOrWhiteSpace(parameterDescription) == false)
                 propSchema["description"] = parameterDescription;
 

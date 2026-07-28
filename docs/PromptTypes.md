@@ -247,11 +247,11 @@ Calendar/date input. Values are serialized as strings using the optional format/
 
 ## `timePicker`
 
-Clock selector returning a `HH:mm:ss` style value.
+Clock selector returning a time value formatted with a .NET custom `TimeSpan` format string.
 
 | Setting | Type | Description |
 | --- | --- | --- |
-| `format` | string | Custom time format (defaults to 24h `HH:mm`). |
+| `format` | string | .NET custom `TimeSpan` format, for example `hh\:mm`. Colons must be escaped. |
 
 **Example**
 
@@ -261,7 +261,7 @@ Clock selector returning a `HH:mm:ss` style value.
   "default": "22:00",
   "prompt": "timePicker",
   "promptSettings": {
-    "format": "HH:mm"
+    "format": "hh\\:mm"
   }
 }
 ```

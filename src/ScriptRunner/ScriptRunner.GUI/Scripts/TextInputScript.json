@@ -296,11 +296,46 @@
           "name": "p15",
           "description": "Time parameter",
           "group": "advanced",
-          "default": "7:30",
+          "default": "07:30",
           "prompt": "timePicker",
           "promptSettings": {
             "format": "hh\\:mm"
           }
+        }
+      ]
+    },
+    {
+      "name": "Test Timepicker",
+      "command": "pwsh.exe -NoProfile -Command Write-Host \"{time1} {date1} {number}\"",
+      "params": [
+        {
+          "name": "time1",
+          "prompt": "timePicker",
+          "default": "07:30",
+          "required": true,
+          "promptSettings": {
+            "format": "hh\\:mm"
+          }
+        },
+        {
+          "name": "date1",
+          "prompt": "dateTimePicker",
+          "default": "2022-05-01 7:30",
+          "required": true
+        },
+        {
+          "name": "time2",
+          "prompt": "timePicker",
+          "default": "07:30",
+          "required": true,
+          "promptSettings": {
+            "format": "hh\\:mm"
+          }
+        },
+        {
+          "name": "number",
+          "prompt": "numeric",          
+          "required": true
         }
       ]
     }
