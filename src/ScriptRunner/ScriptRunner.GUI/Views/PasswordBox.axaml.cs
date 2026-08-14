@@ -14,6 +14,7 @@ namespace ScriptRunner.GUI.Views
     public partial class PasswordBox : UserControl
     {
         private string? _vaultPassword;
+        private DateTimeOffset? _vaultExpiresAt;
 
         public PasswordBox()
         {
@@ -23,6 +24,7 @@ namespace ScriptRunner.GUI.Views
                 if (VaultKey != null && Password != _vaultPassword)
                 {
                     _vaultPassword = null;
+                    _vaultExpiresAt = null;
                     VaultKey = null;
                 }
             };
@@ -40,21 +42,26 @@ namespace ScriptRunner.GUI.Views
             get => _vaultKey;
             set
             {
-                if (_vaultKey == value)
-                {
-                    return;
-                }
-
                 _vaultKey = value;
                 var isBoundToVault = !string.IsNullOrWhiteSpace(value);
-                this.FindControl<Border>("VaultBindingInfo").IsVisible = isBoundToVault;
+                var bindingInfo = this.FindControl<Border>("VaultBindingInfo");
+                bindingInfo.IsVisible = isBoundToVault;
                 this.FindControl<TextBlock>("VaultKeyText").Text = value;
+
+                var isExpired = isBoundToVault &&
+                                _vaultExpiresAt is { } expiry &&
+                                expiry.Date < DateTimeOffset.Now.Date;
+                bindingInfo.Classes.Set("expired", isExpired);
+                var expiryText = this.FindControl<TextBlock>("VaultExpiryText");
+                expiryText.IsVisible = isExpired;
+                expiryText.Text = isExpired ? $"Expired on {_vaultExpiresAt:yyyy-MM-dd}" : null;
             }
         }
 
-        public void SetVaultValue(string vaultKey, string? password)
+        public void SetVaultValue(string vaultKey, string? password, DateTimeOffset? expiresAt)
         {
             _vaultPassword = password;
+            _vaultExpiresAt = expiresAt;
             Password = password;
             VaultKey = vaultKey;
         }
@@ -74,7 +81,7 @@ namespace ScriptRunner.GUI.Views
                     OnVaultBindingChanged(new VaultBindingChangedEventArgs(choice));
                     Dispatcher.UIThread.Post(() =>
                     {
-                        SetVaultValue(choice.SelectedEntry.Name, choice.SelectedEntry.Secret);
+                        SetVaultValue(choice.SelectedEntry.Name!, choice.SelectedEntry.Secret, choice.SelectedEntry.ExpiresAt);
                     });
                 }
             }

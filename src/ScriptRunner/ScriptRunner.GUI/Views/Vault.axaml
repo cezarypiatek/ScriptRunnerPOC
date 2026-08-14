@@ -17,6 +17,25 @@
         <viewModels:VaultViewModel />
     </Design.DataContext>
 
+    <Window.Styles>
+        <Style Selector="Border.vaultEntry">
+            <Setter Property="BorderBrush" Value="#4E4E4E" />
+            <Setter Property="Background" Value="#2B2B2B" />
+        </Style>
+        <Style Selector="Border.vaultEntry.expired">
+            <Setter Property="BorderBrush" Value="#D55454" />
+            <Setter Property="BorderThickness" Value="3,1,1,1" />
+            <Setter Property="Background" Value="#382525" />
+        </Style>
+        <Style Selector="TextBlock.expiryStatus">
+            <Setter Property="Foreground" Value="#A8A8A8" />
+        </Style>
+        <Style Selector="TextBlock.expiryStatus.expired">
+            <Setter Property="Foreground" Value="#FF7777" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </Window.Styles>
+
     <Grid x:Name="MainGrid" KeyboardNavigation.TabNavigation="Local">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -46,11 +65,13 @@
             <ItemsRepeater ItemsSource="{Binding FilteredEntries}">
                 <ItemsRepeater.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:VaultEntry">
-                        <Border Margin="10,5,10,5" Padding="15" 
-                                BorderThickness="1" BorderBrush="#4E4E4E" 
-                                Background="#2B2B2B" CornerRadius="3"
+                        <Border Margin="10,5,10,5" Padding="15"
+                                Classes="vaultEntry"
+                                Classes.expired="{Binding IsExpired}"
+                                BorderThickness="1" CornerRadius="3"
                                 IsTabStop="False">
-                            <Grid KeyboardNavigation.TabNavigation="Local">
+                            <Grid KeyboardNavigation.TabNavigation="Local"
+                                  RowDefinitions="Auto,Auto">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" MinWidth="80"></ColumnDefinition>
                                     <ColumnDefinition Width="*" MinWidth="200"></ColumnDefinition>
@@ -106,6 +127,74 @@
                                         </Style>
                                     </Button.Styles>
                                 </Button>
+
+                                <!-- Optional expiry -->
+                                <Expander Grid.Row="1" Grid.ColumnSpan="6"
+                                          Margin="0,10,0,0"
+                                          Background="#252525"
+                                          HorizontalAlignment="Stretch">
+                                    <Expander.Header>
+                                        <Grid ColumnDefinitions="Auto,Auto,*" Margin="2,3">
+                                            <avalonia:Icon Value="far fa-calendar"
+                                                           FontSize="13"
+                                                           Margin="0,0,8,0"
+                                                           Foreground="#85DFFF"
+                                                           VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="Expiration"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2"
+                                                       Margin="12,0,4,0"
+                                                       HorizontalAlignment="Right"
+                                                       Text="{Binding ExpiryDisplay}"
+                                                       Classes="expiryStatus"
+                                                       Classes.expired="{Binding IsExpired}"
+                                                       FontSize="12"
+                                                       VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Expander.Header>
+
+                                     <Grid RowDefinitions="Auto,Auto"
+                                              ColumnDefinitions="Auto,Auto,*">
+                                            <TextBlock Text="Specific expiry date"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Grid.Column="1"
+                                                       Margin="12,0,0,0"
+                                                       Text="Validity period"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold" />
+
+                                            <DatePicker Grid.Row="1"
+                                                        Margin="0,5,0,0"
+                                                        SelectedDate="{Binding ExpiresAt, Mode=TwoWay}"
+                                                        HorizontalAlignment="Left" />
+                                            <Grid Grid.Row="1" Grid.Column="1"
+                                                  Margin="12,5,0,0"
+                                                  ColumnDefinitions="*,Auto">
+                                                <NumericUpDown Value="{Binding ValidForDays, Mode=TwoWay}"
+                                                               Minimum="0"
+                                                               Increment="1"
+                                                               FormatString="0"
+                                                               Watermark="Days"
+                                                               ShowButtonSpinner="False"
+                                                               HorizontalAlignment="Stretch" />
+                                                <TextBlock Grid.Column="1"
+                                                           Margin="8,0,0,0"
+                                                           Text="days"
+                                                           Foreground="#B0B0B0"
+                                                           VerticalAlignment="Center" />
+                                            </Grid>
+                                            <Button Grid.Row="1" Grid.Column="2"
+                                                    Margin="12,5,0,0"
+                                                    Content="Clear expiration"
+                                                    Padding="10,5"
+                                                    IsEnabled="{Binding HasExpiry}"
+                                                    Command="{Binding ElementName=MainGrid, Path=DataContext.ClearExpiryCommand}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                </Expander>
                             </Grid>
                         </Border>
                     </DataTemplate>

@@ -16,6 +16,16 @@
     <Design.DataContext>
       <vm:VaultPickerViewModel />
     </Design.DataContext>
+
+    <Window.Styles>
+        <Style Selector="TextBlock.expiryLabel">
+            <Setter Property="Foreground" Value="#9D9D9D" />
+        </Style>
+        <Style Selector="TextBlock.expired">
+            <Setter Property="Foreground" Value="#FF6B6B" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </Window.Styles>
     
     <Grid>
         <Grid.RowDefinitions>
@@ -42,7 +52,18 @@
                               MinHeight="34">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}" />
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                    <TextBlock Text="{Binding Name}"
+                                               Classes.expired="{Binding IsExpired}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1"
+                                               Margin="12,0,2,0"
+                                               Text="{Binding ExpiryDisplay}"
+                                               Classes="expiryLabel"
+                                               Classes.expired="{Binding IsExpired}"
+                                               FontSize="11"
+                                               VerticalAlignment="Center" />
+                                </Grid>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
