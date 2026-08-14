@@ -477,8 +477,7 @@ public class ParamsPanelFactory
                     var vaultEntries = _vaultProvider.ReadFromVault();
                     if (vaultEntries.FirstOrDefault(x => x.Name == vaultKey) is { } vaultEntry)
                     {
-                        passwordBox.VaultKey = vaultEntry.Name;
-                        passwordBox.Password = vaultEntry.Secret;
+                        passwordBox.SetVaultValue(vaultEntry.Name, vaultEntry.Secret);
                     }
                 }
                 else

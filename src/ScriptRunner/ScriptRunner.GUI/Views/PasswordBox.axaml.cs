@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -14,13 +13,19 @@ namespace ScriptRunner.GUI.Views
 {
     public partial class PasswordBox : UserControl
     {
+        private string? _vaultPassword;
+
         public PasswordBox()
         {
             InitializeComponent();
-            this.FindControl<TextBox>("PasswordTextBox").AddHandler(TextInputEvent, (sender, args) =>
+            this.FindControl<TextBox>("PasswordTextBox").TextChanged += (_, _) =>
             {
-                VaultKey = null;
-            }, RoutingStrategies.Tunnel);
+                if (VaultKey != null && Password != _vaultPassword)
+                {
+                    _vaultPassword = null;
+                    VaultKey = null;
+                }
+            };
         }
 
         private void InitializeComponent()
@@ -28,7 +33,31 @@ namespace ScriptRunner.GUI.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        public string VaultKey { get; set; }
+        private string? _vaultKey;
+
+        public string? VaultKey
+        {
+            get => _vaultKey;
+            set
+            {
+                if (_vaultKey == value)
+                {
+                    return;
+                }
+
+                _vaultKey = value;
+                var isBoundToVault = !string.IsNullOrWhiteSpace(value);
+                this.FindControl<Border>("VaultBindingInfo").IsVisible = isBoundToVault;
+                this.FindControl<TextBlock>("VaultKeyText").Text = value;
+            }
+        }
+
+        public void SetVaultValue(string vaultKey, string? password)
+        {
+            _vaultPassword = password;
+            Password = password;
+            VaultKey = vaultKey;
+        }
 
         private async void PickFromVault(object? sender, RoutedEventArgs e)
         {
@@ -42,11 +71,10 @@ namespace ScriptRunner.GUI.Views
                 var sourceWindow = (sender as Control)?.GetVisualRoot() as Window ?? desktop.MainWindow;
                 if (await pickerDialog.ShowDialog<VaultEntryChoice>(sourceWindow) is { } choice)
                 {
-                    VaultKey = choice.SelectedEntry.Name;
                     OnVaultBindingChanged(new VaultBindingChangedEventArgs(choice));
                     Dispatcher.UIThread.Post(() =>
                     {
-                        Password = choice.SelectedEntry.Secret;
+                        SetVaultValue(choice.SelectedEntry.Name, choice.SelectedEntry.Secret);
                     });
                 }
             }
