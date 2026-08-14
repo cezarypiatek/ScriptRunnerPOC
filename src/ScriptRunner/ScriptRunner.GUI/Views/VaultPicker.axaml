@@ -5,8 +5,9 @@
         xmlns:vm="clr-namespace:ScriptRunner.GUI.Views"
         xmlns:avalonia="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         mc:Ignorable="d" 
-        Width="500"
-        Height="380"
+        Width="460"
+        SizeToContent="Height"
+        CanResize="False"
         x:Class="ScriptRunner.GUI.Views.VaultPicker"
         WindowStartupLocation="CenterOwner"
         Title="Select Vault Secret"
@@ -18,17 +19,17 @@
     
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
         
         <!-- Content Section -->
-        <Border Grid.Row="0" Margin="15,15,15,10" Padding="20" 
+        <Border Grid.Row="0" Margin="12" Padding="16" 
                 BorderThickness="1" BorderBrush="#4E4E4E" 
-                Background="#2B2B2B" CornerRadius="3">
-            <StackPanel Spacing="15">
+                Background="#2B2B2B" CornerRadius="5">
+            <StackPanel Spacing="12">
                 <!-- Secret Selection -->
-                <StackPanel Spacing="8">
+                <StackPanel Spacing="6">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <avalonia:Icon Value="fas fa-lock" FontSize="14" Foreground="#85DFFF" VerticalAlignment="Center"/>
                         <TextBlock Text="Secret Key" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -38,7 +39,7 @@
                               SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
                               HorizontalAlignment="Stretch"
                               Background="#1e1e1e"
-                              MinHeight="32">
+                              MinHeight="34">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}" />
@@ -47,9 +48,14 @@
                     </ComboBox>
                 </StackPanel>
                 
+                <TextBlock Text="Binding preference (optional)"
+                           Margin="0,2,0,-4"
+                           FontSize="11"
+                           Foreground="#A8A8A8" />
+
                 <!-- Remember Binding Option -->
                 <Border BorderThickness="1" BorderBrush="#4E4E4E" 
-                        Background="#252525" CornerRadius="3" Padding="12">
+                        Background="#252525" CornerRadius="4" Padding="10,9">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <CheckBox Name="Remember" VerticalAlignment="Center"
                                   IsCheckedChanged="Remember_OnIsCheckedChanged"/>
@@ -64,13 +70,13 @@
 
                 <!-- Remember Binding for Parameter Set Option -->
                 <Border BorderThickness="1" BorderBrush="#4E4E4E" 
-                        Background="#252525" CornerRadius="3" Padding="12">
+                        Background="#252525" CornerRadius="4" Padding="10,9">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <CheckBox Name="RememberForSet" VerticalAlignment="Center"
                                   IsCheckedChanged="RememberForSet_OnIsCheckedChanged"/>
                         <StackPanel Spacing="2">
-                            <TextBlock Text="Remember for parameter set" FontWeight="SemiBold"/>
-                            <TextBlock Text="Only applies when this parameter set is active" 
+                            <TextBlock Text="Remember for current preset" FontWeight="SemiBold"/>
+                            <TextBlock Text="Only applies when this preset is selected" 
                                        FontSize="12" 
                                        Foreground="#B0B0B0"/>
                         </StackPanel>
@@ -81,11 +87,12 @@
         
         <!-- Bottom Action Bar -->
         <Border Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="#4E4E4E" 
-                Background="#252525" Padding="15">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+                Background="#252525" Padding="12">
+            <Grid>
                 <Button Click="Accept"
-                        Padding="20,8"
-                        MinWidth="120"
+                        Padding="16,7"
+                        MinWidth="112"
+                        HorizontalAlignment="Center"
                         Background="#007BFF"
                         Classes="primary">
                     <Button.Styles>
@@ -98,7 +105,7 @@
                         <TextBlock Text="Use Secret" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Button>
-            </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </Window>

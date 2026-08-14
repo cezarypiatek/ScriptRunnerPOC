@@ -61,6 +61,8 @@ namespace ScriptRunner.GUI.Views
             
         }
 
+        private void Cancel(object? sender, RoutedEventArgs e) => Close();
+
         private void Remember_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
         {
             if (Remember.IsChecked == true)
