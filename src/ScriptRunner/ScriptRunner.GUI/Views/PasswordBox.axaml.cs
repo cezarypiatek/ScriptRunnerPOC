@@ -13,6 +13,8 @@ namespace ScriptRunner.GUI.Views
 {
     public partial class PasswordBox : UserControl
     {
+        private const int ExpiryWarningDays = 7;
+
         private string? _vaultPassword;
         private DateTimeOffset? _vaultExpiresAt;
 
@@ -48,13 +50,25 @@ namespace ScriptRunner.GUI.Views
                 bindingInfo.IsVisible = isBoundToVault;
                 this.FindControl<TextBlock>("VaultKeyText").Text = value;
 
-                var isExpired = isBoundToVault &&
-                                _vaultExpiresAt is { } expiry &&
-                                expiry.Date < DateTimeOffset.Now.Date;
+                var daysUntilExpiry = _vaultExpiresAt is { } expiry
+                    ? (int)(expiry.Date - DateTimeOffset.Now.Date).TotalDays
+                    : (int?)null;
+                var isExpired = isBoundToVault && daysUntilExpiry < 0;
+                var isExpiringSoon = isBoundToVault &&
+                                     daysUntilExpiry is >= 0 and <= ExpiryWarningDays;
                 bindingInfo.Classes.Set("expired", isExpired);
+                bindingInfo.Classes.Set("expiringSoon", isExpiringSoon);
                 var expiryText = this.FindControl<TextBlock>("VaultExpiryText");
-                expiryText.IsVisible = isExpired;
-                expiryText.Text = isExpired ? $"Expired on {_vaultExpiresAt:yyyy-MM-dd}" : null;
+                expiryText.IsVisible = isExpired || isExpiringSoon;
+                expiryText.Text = isExpired
+                    ? $"Expired on {_vaultExpiresAt:yyyy-MM-dd}"
+                    : daysUntilExpiry switch
+                    {
+                        0 => $"Expires today ({_vaultExpiresAt:yyyy-MM-dd})",
+                        1 => $"Expires in 1 day, on {_vaultExpiresAt:yyyy-MM-dd}",
+                        > 1 => $"Expires in {daysUntilExpiry} days, on {_vaultExpiresAt:yyyy-MM-dd}",
+                        _ => null
+                    };
             }
         }
 
