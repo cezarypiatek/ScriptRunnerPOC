@@ -1260,8 +1260,15 @@ public class MainWindowViewModel : ReactiveObject
 
                     OutOfDateConfigRepositories.Remove(record);
                     RefreshSettings();
-                    var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandard("What's new", string.Join("\r\n", releaseNotes), icon: MsBox.Avalonia.Enums.Icon.Info, windowStartupLocation:WindowStartupLocation.CenterOwner);
-                    await messageBoxStandardWindow.ShowAsync();
+                    var changesWindow = new RepositoryChangesWindow(releaseNotes);
+                    if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } owner })
+                    {
+                        await changesWindow.ShowDialog(owner);
+                    }
+                    else
+                    {
+                        changesWindow.Show();
+                    }
                 }
             }
             

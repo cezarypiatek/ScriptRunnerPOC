@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
+        xmlns:icons="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        x:Class="ScriptRunner.GUI.Views.RepositoryChangesWindow"
+        x:DataType="views:RepositoryChangesWindow"
+        mc:Ignorable="d"
+        Title="What's new"
+        Width="620"
+        Height="560"
+        MinWidth="440"
+        MinHeight="320"
+        MaxWidth="760"
+        MaxHeight="650"
+        WindowStartupLocation="CenterOwner"
+        Background="#212222"
+        FontFamily="Segoe UI Variable">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Border Grid.Row="0" Padding="22,20" Background="#252525"
+                BorderBrush="#3F4242" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                <Border Width="42" Height="42" CornerRadius="21" Background="#173E36">
+                    <icons:Icon Value="fas fa-code-branch" FontSize="18" Foreground="#65D6B0"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Text="Repository updated" FontSize="19" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Summary}" Foreground="#AEB4B4" FontSize="13" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Margin="18" Background="#292A2A" BorderBrush="#454848"
+                BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding Changes}" Margin="8">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="12,10" BorderBrush="#3D4040" BorderThickness="0,0,0,1">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <Ellipse Width="6" Height="6" Fill="#65D6B0"
+                                             VerticalAlignment="Top" Margin="2,7,0,0" />
+                                    <TextBlock Grid.Column="1" Text="{Binding}" TextWrapping="Wrap"
+                                               FontSize="13.5" LineHeight="20" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <Border Grid.Row="2" Padding="18,12" Background="#252525"
+                BorderBrush="#3F4242" BorderThickness="0,1,0,0">
+            <Button Content="Done" Click="CloseWindow" HorizontalAlignment="Right"
+                    HorizontalContentAlignment="Center" MinWidth="100" Padding="20,8"
+                    Classes="primary" />
+        </Border>
+    </Grid>
+</Window>
