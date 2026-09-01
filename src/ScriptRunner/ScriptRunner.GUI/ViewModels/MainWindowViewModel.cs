@@ -1478,7 +1478,7 @@ public class MainWindowViewModel : ReactiveObject
                 {
                     var parameter = selectedAction.Params.FirstOrDefault(param =>
                         string.Equals(param.Name, record.Name, StringComparison.OrdinalIgnoreCase));
-                    return string.IsNullOrWhiteSpace(parameter?.Description) ? record.Name : parameter.Description;
+                    return parameter?.DisplayLabel ?? record.Name;
                 });
                 var message = "Provide values for the following required parameters:\n\n" +
                               string.Join("\n", labels.Select(label => $"• {label}"));

@@ -85,7 +85,7 @@ public class ParamsPanelFactory
 
             labelContent.Children.Add(new TextBlock
             {
-                Text = string.IsNullOrWhiteSpace(param.Description) ? param.Name : param.Description,
+                Text = param.DisplayLabel,
                 TextWrapping = TextWrapping.Wrap,
                 MaxWidth = 280,
                 VerticalAlignment = VerticalAlignment.Center
@@ -106,7 +106,7 @@ public class ParamsPanelFactory
                 labelContent.Children.Add(requiredIndicator);
             }
 
-            if (string.IsNullOrWhiteSpace(param.Details) == false)
+            if (param.Hint is not null)
             {
                 var detailsIconContainer = new Border
                 {
@@ -432,7 +432,7 @@ public class ParamsPanelFactory
                 },
                 new TextBlock
                 {
-                    Text = param.Details ?? string.Empty,
+                    Text = param.Hint ?? string.Empty,
                     TextWrapping = TextWrapping.Wrap,
                     MaxWidth = 420
                 }

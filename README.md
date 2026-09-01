@@ -173,8 +173,9 @@ Each action object describes how a single automation should be rendered and exec
 Each parameter object can shape both the UI control and how ScriptRunner constructs the final command. The most common properties are:
 
 - `name` *(required)*: Identifier used for placeholders (`{name}`), predefined argument sets, and environment-variable substitutions.
-- `description`: Text shown next to the control; falls back to `name` when omitted.
-- `details`: Extended helper text shown in a hover tooltip from the info icon next to the parameter label.
+- `label`: Optional form label; falls back to `description`, then `name`.
+- `description`: Parameter description. For backward compatibility it remains the form label when `label` is omitted. When `label` is present, it is shown as helper text in the info tooltip.
+- `details` *(deprecated)*: Legacy tooltip helper text. It remains the fallback when a parameter has no tooltip `description`.
 - `group`: Optional key that places the parameter in a grouped tab.
 - `default`: Value pre-populated in the UI and stored in the automatically generated `<default>` argument set.
 - `required`: Optional boolean. Required parameters display a blue dot and must contain a value before the action can run. Missing values are highlighted in red, including their group tabs.

@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ScriptRunner.GUI.ViewModels;
 
 
@@ -69,7 +70,8 @@ public class ScriptParam
 {
     public string Name { get; set; }
     public string? Group { get; set; }
-    public string Description { get; set; }
+    public string? Label { get; set; }
+    public string? Description { get; set; }
     public string? Details { get; set; }
     public PromptType Prompt { get; set; }
     public string Default { get; set; }
@@ -79,6 +81,17 @@ public class ScriptParam
     public string? ValueGeneratorLabel { get; set; }
     public bool SkipFromAutoParameterBuilder { get; set; }
     public bool Required { get; set; }
+
+    [JsonIgnore]
+    public string DisplayLabel => FirstNonBlank(Label, Description, Name) ?? string.Empty;
+
+    [JsonIgnore]
+    public string? Hint => string.IsNullOrWhiteSpace(Label)
+        ? FirstNonBlank(Details)
+        : FirstNonBlank(Description, Details);
+
+    private static string? FirstNonBlank(params string?[] values) =>
+        values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim();
 
     public bool GetPromptSettings(string name, [NotNullWhen(true)] out string? value)
     {

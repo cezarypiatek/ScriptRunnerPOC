@@ -155,13 +155,18 @@
                                     "minLength": 1,
                                     "description": "Optional parameter-group key. Parameters without a group belong to the implicit default group."
                                 },
+                                "label": {
+                                    "type": "string",
+                                    "description":"Optional form label. Takes precedence over description; falls back to description and then the parameter name."
+                                },
                                 "description": {
                                     "type": "string",
-                                    "description":"Helper text shown next to the control; falls back to the parameter name when not provided."
+                                    "description":"Parameter description. Used as the form label for backward compatibility when label is omitted; when label is present, shown as helper text in the info tooltip."
                                 },
                                 "details": {
                                     "type": "string",
-                                    "description":"Extended parameter guidance shown in an info tooltip next to the label."
+                                    "deprecated": true,
+                                    "description":"Deprecated helper text shown in the info tooltip. When label is present, description takes precedence over details."
                                 },
                                 "default": {
                                     "type": "string",

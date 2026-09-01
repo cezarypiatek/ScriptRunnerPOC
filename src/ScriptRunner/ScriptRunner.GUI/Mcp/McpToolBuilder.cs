@@ -178,13 +178,8 @@ public static class McpToolBuilder
                     break;
             }
 
-            var parameterDescription = string.IsNullOrWhiteSpace(p.Description) ? null : p.Description.Trim();
-            if (string.IsNullOrWhiteSpace(p.Details) == false)
-            {
-                parameterDescription = string.IsNullOrWhiteSpace(parameterDescription)
-                    ? p.Details.Trim()
-                    : $"{parameterDescription}\n\nDetails: {p.Details.Trim()}";
-            }
+            propSchema["title"] = p.DisplayLabel;
+            var parameterDescription = p.Hint;
 
             if (p.Prompt is PromptType.Datepicker or PromptType.TimePicker or PromptType.DateTimePicker
                 && p.GetPromptSettings("format", out var configuredFormat)
