@@ -1,12 +1,12 @@
 {
     "$schema": "http://json-schema.org/schema",
     "$id": "ScriptRunnerSchema",
-    "title": "Product",
-    "description": "ScriptRunnerSchema",
+    "title": "ScriptRunner configuration",
+    "description": "Describes the actions that ScriptRunner presents to the user, the commands behind them, and the parameter controls used to collect command arguments.",
     "type": "object",
     "properties": {
         "actions": {
-            "description": "A list of available actions",
+            "description": "Actions loaded from this configuration file and displayed in the ScriptRunner action list.",
             "type": "array",
             "items": {
                 "type": "object",
@@ -84,7 +84,7 @@
                                 },
                                 "fallbackToExisting":{
                                     "type":"boolean",
-                                    "description":"When true preserves current field values when switching to this set if the set doesn't define a value or has an empty value for a parameter. Works with fallbackToDefault."
+                        "description":"When true, selecting this set preserves each current non-empty form value for which the set has no value or an empty value. If fallbackToDefault is also true, non-empty defaults are merged first and therefore take precedence over current values."
                                 },
                                 "arguments":{
                                     "type":"object",
@@ -113,7 +113,7 @@
                     },
                     "docs":{
                         "type":"string",
-                        "description": "path to markdown file with documentation"
+                        "description": "Optional path to a Markdown file displayed as this action's documentation. Relative paths are resolved against the configuration file's directory; documentation is available only when the resolved file exists."
                     },
                     "parameterGroups": {
                         "type": "array",
@@ -323,10 +323,12 @@
                                                                 "required": ["label", "value"],
                                                                 "properties": {
                                                                     "label": {
-                                                                        "type": "string"
+                                                                        "type": "string",
+                                                                        "description": "Text displayed to the user for this option."
                                                                     },
                                                                     "value": {
-                                                                        "type": "string"
+                                                                        "type": "string",
+                                                                        "description": "Value written to the parameter when this option is selected."
                                                                     }
                                                                 }
                                                             }
@@ -335,12 +337,12 @@
                                                 },
                                                 "searchable": {
                                                     "type": "boolean",
-                                                    "description":"Switches the control to the SearchableComboBox implementation."
+                                                    "description":"When true, renders a filterable dropdown. In this mode option labels are displayed and returned as the parameter value, so distinct label/value mappings are not preserved."
                                                 },
                                                 "optionsGeneratorCommand":
                                                 {
                                                     "type": "string",
-                                                    "description":"Command executed on demand to refresh the available options."
+                                                    "description":"Command executed to refresh the available options. Its standard output is split on newlines and delimiter, de-duplicated, sorted, and used as both labels and values. A searchable dropdown runs it on first focus; all dropdowns expose a refresh button."
                                                 },
                                                 "delimiter":
                                                 {
@@ -380,10 +382,12 @@
                                                                 "required": ["label", "value"],
                                                                 "properties": {
                                                                     "label": {
-                                                                        "type": "string"
+                                                                        "type": "string",
+                                                                        "description": "Text displayed beside the option's checkbox."
                                                                     },
                                                                     "value": {
-                                                                        "type": "string"
+                                                                        "type": "string",
+                                                                        "description": "Value included in the parameter result when this option is selected."
                                                                     }
                                                                 }
                                                             }
@@ -392,7 +396,7 @@
                                                 },
                                                 "delimiter": {
                                                     "type": "string",
-                                                    "description":"Separator applied when storing multiple selected values."
+                                                    "description":"Separator used both to parse string-based options/defaults and to join the selected option values into the parameter result. Defaults to a comma."
                                                 }
                                             }
                                         }
@@ -581,7 +585,7 @@
                                             },
                                             "value":{
                                                 "type":"string",
-                                                "description":"Raw text that will be sent to the process input stream when the button is clicked."
+                                    "description":"Text submitted to the running process's standard input when the button is clicked."
                                             }
                                         }
                                     }
