@@ -156,7 +156,7 @@
                       </TextBlock.Text>
                     </TextBlock>
                   </StackPanel>
-                  
+
                   <!-- Command Section -->
                   <Border Background="#121212" 
                            CornerRadius="6" 
@@ -210,6 +210,29 @@
                       </StackPanel>
                     </Border>
                   </StackPanel>
+
+                  <!-- Selected-action MCP configuration entry point -->
+                  <Border Background="#222226"
+                          CornerRadius="6"
+                          BorderBrush="#60A5FA"
+                          BorderThickness="1"
+                          Padding="12"
+                          Margin="0,16,0,0">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                      <avalonia:Icon Grid.Column="0" Value="fas fa-plug" Width="14" Height="14" Foreground="#60A5FA" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="MCP exposure" FontSize="13" FontWeight="SemiBold" Foreground="#D0D0D0"/>
+                        <TextBlock Text="Configure availability, output, approval, background execution, and predefined sets for this action."
+                                   FontSize="11" Foreground="#858585" TextWrapping="Wrap" Margin="0,2,12,0"/>
+                      </StackPanel>
+                      <Button Grid.Column="2"
+                              Command="{Binding OpenSelectedActionMcpConfigWindow}"
+                              VerticalAlignment="Center"
+                              Padding="12,6"
+                              Cursor="Hand"
+                              Content="Configure MCP"/>
+                    </Grid>
+                  </Border>
                 </StackPanel>
               </Border>
 

@@ -15,6 +15,13 @@ public partial class McpConfigWindow : Window
         DataContext = ViewModel = new McpConfigWindowViewModel();
     }
 
+    public McpConfigWindow(string actionKey)
+    {
+        InitializeComponent();
+        DataContext = ViewModel = new McpConfigWindowViewModel(actionKey);
+        Title = $"MCP Configuration - {actionKey}";
+    }
+
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
@@ -23,5 +30,6 @@ public partial class McpConfigWindow : Window
     private async void OnSaveClicked(object? sender, RoutedEventArgs e)
     {
         await ViewModel.SaveAndApplyAsync();
+        Close();
     }
 }

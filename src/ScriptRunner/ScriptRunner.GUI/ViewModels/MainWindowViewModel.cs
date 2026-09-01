@@ -1084,6 +1084,18 @@ public class MainWindowViewModel : ReactiveObject
         }
     }
 
+    public void OpenSelectedActionMcpConfigWindow()
+    {
+        if (SelectedAction is not { } selectedAction)
+            return;
+
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime {MainWindow: {} mainWindow})
+        {
+            var window = new McpConfigWindow(selectedAction.FullName);
+            window.Show(mainWindow);
+        }
+    }
+
     /// <summary>
     /// Fired after actions are reloaded so the MCP host can refresh its tool list.
     /// </summary>

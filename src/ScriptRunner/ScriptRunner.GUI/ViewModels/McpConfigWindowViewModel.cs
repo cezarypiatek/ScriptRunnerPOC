@@ -140,6 +140,11 @@ public class McpConfigWindowViewModel : ViewModelBase
     {
     }
 
+    public McpConfigWindowViewModel(string initialActionFilter) : this()
+    {
+        ActionFilter = initialActionFilter;
+    }
+
     public McpConfigWindowViewModel(ScriptRunnerMcpHost mcpHost, MainWindowViewModel mainVm)
     {
         _mcpHost = mcpHost;
