@@ -375,9 +375,14 @@ public class ParamsPanelFactory
                     Grid.SetRow(description, 0);
                     content.Children.Add(description);
                 }
-                var fitHost = new ParameterFitHost(groupPanels[groupKey]);
-                Grid.SetRow(fitHost, 1);
-                content.Children.Add(fitHost);
+                var groupScrollViewer = new ScrollViewer
+                {
+                    Content = groupPanels[groupKey],
+                    HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+                    VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+                };
+                Grid.SetRow(groupScrollViewer, 1);
+                content.Children.Add(groupScrollViewer);
                 var tab = new TabItem
                 {
                     Classes = { "paramGroupTab" },
