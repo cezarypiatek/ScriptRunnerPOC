@@ -71,6 +71,35 @@ public class VtOutputTokenizerTests
         Assert.Equal("label", result);
     }
 
+    [Fact]
+    public void StreamTokenizer_reassembles_sequence_split_across_chunks()
+    {
+        var tokenizer = new VtOutputStreamTokenizer();
+
+        var first = tokenizer.TokenizeChunk($"plain{Escape}[38;2;10");
+        var second = tokenizer.TokenizeChunk(";20;30mcolored");
+
+        Assert.Collection(first, token => AssertText(token, "plain"));
+        Assert.Collection(second,
+            token => Assert.Equal(VtOutputTokenKind.Csi, token.Kind),
+            token => AssertText(token, "colored"));
+        Assert.False(tokenizer.HasPendingSequence);
+    }
+
+    [Fact]
+    public void Tokenize_consumes_unsupported_dcs_payload()
+    {
+        var input = $"before{Escape}P1;2|payload{Escape}\\after";
+
+        var tokens = VtOutputTokenizer.Tokenize(input);
+
+        Assert.Collection(tokens,
+            token => AssertText(token, "before"),
+            token => Assert.Equal(VtOutputTokenKind.Control, token.Kind),
+            token => AssertText(token, "after"));
+        Assert.Equal("beforeafter", VtOutputTokenizer.StripControlSequences(input));
+    }
+
     private static void AssertText(VtOutputToken token, string expected)
     {
         Assert.Equal(VtOutputTokenKind.Text, token.Kind);

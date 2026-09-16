@@ -179,12 +179,12 @@ public class RunningJobViewModel : ViewModelBase
                         {
                             rawOutput.AppendLine(s);
                             AppendToOutput(s, ConsoleOutputLevel.Normal);
-                        }))
+                        }, Encoding.UTF8))
                         .WithStandardErrorPipe(PipeTarget.ToDelegate(s =>
                         {
                             rawErrorOutput.Append(s);
                             AppendToOutput(s, ConsoleOutputLevel.Error);
-                        }))
+                        }, Encoding.UTF8))
                         .WithValidation(CommandResultValidation.None)
                         .WithEnvironmentVariables(EnvironmentVariables ?? new())
                         .ExecuteAsync(KillCancellation.Token, GracefulCancellation.Token);
@@ -384,11 +384,17 @@ public class RunningJobViewModel : ViewModelBase
 
     private IBrush currentConsoleTextColor = Brushes.White;
     private IBrush currentConsoleBackgroundColor = Brushes.Transparent;
+    private IBrush? currentUnderlineColor;
 
     private bool underline = false;
+    private bool doubleUnderline = false;
     private bool bold = false;
+    private bool faint = false;
     private bool italic = false;
     private bool strikethrough = false;
+    private bool overline = false;
+    private bool inverse = false;
+    private bool concealed = false;
 
     public ObservableCollection<InteractiveInputItem> CurrentInteractiveInputs { get; set; } = new();
 
@@ -471,14 +477,309 @@ public class RunningJobViewModel : ViewModelBase
     {
 
     });
-    private bool wasFallbackFromTransparent = false;
     private string? currentHyperlinkTarget;
+    private readonly VtOutputStreamTokenizer vtStreamTokenizer = new();
+
+    internal void ApplyCsiSequence(string sequence)
+    {
+        if (!TryGetCsiCommand(sequence, out var parameters, out var command) || command != 'm')
+        {
+            return;
+        }
+
+        if (parameters.Length == 0)
+        {
+            ResetSgr();
+            return;
+        }
+
+        var groups = parameters.Split(';');
+        for (var index = 0; index < groups.Length; index++)
+        {
+            var group = groups[index];
+            if (group.Contains(':'))
+            {
+                ApplyColonSgr(group);
+                continue;
+            }
+
+            var code = ParseSgrValue(group, 0);
+            if (code is 38 or 48 or 58)
+            {
+                index += ApplyExtendedColor(groups, index, code);
+                continue;
+            }
+
+            ApplySgrCode(code);
+        }
+    }
+
+    private static bool TryGetCsiCommand(string sequence, out string parameters, out char command)
+    {
+        parameters = string.Empty;
+        command = '\0';
+        if (sequence.Length < 2)
+        {
+            return false;
+        }
+
+        var parameterStart = sequence.StartsWith("\u001b[", StringComparison.Ordinal) ? 2 :
+            sequence[0] == '\u009b' ? 1 : -1;
+        if (parameterStart < 0)
+        {
+            return false;
+        }
+
+        command = sequence[^1];
+        parameters = sequence[parameterStart..^1];
+        return true;
+    }
+
+    private void ApplyColonSgr(string group)
+    {
+        var values = group.Split(':');
+        var code = ParseSgrValue(values[0], 0);
+        if (code is not (38 or 48 or 58) || values.Length < 3)
+        {
+            ApplySgrCode(code);
+            return;
+        }
+
+        var mode = ParseSgrValue(values[1], -1);
+        if (mode == 5 && TryParseByte(values[^1], out var paletteIndex))
+        {
+            SetExtendedColor(code, GetIndexedColor(paletteIndex));
+        }
+        else if (mode == 2 && values.Length >= 5 &&
+                 TryParseByte(values[^3], out var red) &&
+                 TryParseByte(values[^2], out var green) &&
+                 TryParseByte(values[^1], out var blue))
+        {
+            SetExtendedColor(code, new ImmutableSolidColorBrush(Color.FromRgb(red, green, blue)));
+        }
+    }
+
+    private int ApplyExtendedColor(string[] groups, int index, int code)
+    {
+        if (index + 2 >= groups.Length)
+        {
+            return 0;
+        }
+
+        var mode = ParseSgrValue(groups[index + 1], -1);
+        if (mode == 5 && TryParseByte(groups[index + 2], out var paletteIndex))
+        {
+            SetExtendedColor(code, GetIndexedColor(paletteIndex));
+            return 2;
+        }
+
+        if (mode == 2 && index + 4 < groups.Length &&
+            TryParseByte(groups[index + 2], out var red) &&
+            TryParseByte(groups[index + 3], out var green) &&
+            TryParseByte(groups[index + 4], out var blue))
+        {
+            SetExtendedColor(code, new ImmutableSolidColorBrush(Color.FromRgb(red, green, blue)));
+            return 4;
+        }
+
+        return 0;
+    }
+
+    private void SetExtendedColor(int code, IBrush brush)
+    {
+        switch (code)
+        {
+            case 38:
+                currentConsoleTextColor = brush;
+                break;
+            case 48:
+                currentConsoleBackgroundColor = brush;
+                break;
+            case 58:
+                currentUnderlineColor = brush;
+                break;
+        }
+    }
+
+    private void ApplySgrCode(int code)
+    {
+        switch (code)
+        {
+            case 0:
+                ResetSgr();
+                break;
+            case 1:
+                bold = true;
+                break;
+            case 2:
+                faint = true;
+                break;
+            case 3:
+                italic = true;
+                break;
+            case 4:
+                underline = true;
+                doubleUnderline = false;
+                break;
+            case 5:
+            case 6:
+                // Blinking is intentionally rendered as steady text.
+                break;
+            case 7:
+                inverse = true;
+                break;
+            case 8:
+                concealed = true;
+                break;
+            case 9:
+                strikethrough = true;
+                break;
+            case 21:
+                underline = true;
+                doubleUnderline = true;
+                break;
+            case 22:
+                bold = false;
+                faint = false;
+                break;
+            case 23:
+                italic = false;
+                break;
+            case 24:
+                underline = false;
+                doubleUnderline = false;
+                break;
+            case 25:
+                break;
+            case 27:
+                inverse = false;
+                break;
+            case 28:
+                concealed = false;
+                break;
+            case 29:
+                strikethrough = false;
+                break;
+            case >= 30 and <= 37:
+                currentConsoleTextColor = GetBasicColor(code - 30, bright: false);
+                break;
+            case 39:
+                currentConsoleTextColor = Brushes.White;
+                break;
+            case >= 40 and <= 47:
+                currentConsoleBackgroundColor = GetBasicColor(code - 40, bright: false);
+                break;
+            case 49:
+                currentConsoleBackgroundColor = Brushes.Transparent;
+                break;
+            case 53:
+                overline = true;
+                break;
+            case 55:
+                overline = false;
+                break;
+            case 59:
+                currentUnderlineColor = null;
+                break;
+            case >= 90 and <= 97:
+                currentConsoleTextColor = GetBasicColor(code - 90, bright: true);
+                break;
+            case >= 100 and <= 107:
+                currentConsoleBackgroundColor = GetBasicColor(code - 100, bright: true);
+                break;
+        }
+    }
+
+    private void ResetSgr()
+    {
+        currentConsoleTextColor = Brushes.White;
+        currentConsoleBackgroundColor = Brushes.Transparent;
+        currentUnderlineColor = null;
+        bold = false;
+        faint = false;
+        italic = false;
+        underline = false;
+        doubleUnderline = false;
+        strikethrough = false;
+        overline = false;
+        inverse = false;
+        concealed = false;
+    }
+
+    internal OutputTextStyle GetCurrentTextStyle()
+    {
+        var foreground = currentConsoleTextColor;
+        var background = currentConsoleBackgroundColor;
+
+        if (inverse)
+        {
+            (foreground, background) = background == Brushes.Transparent
+                ? (Brushes.Black, foreground)
+                : (background, foreground);
+        }
+
+        if (faint && foreground is ISolidColorBrush solidForeground)
+        {
+            foreground = new ImmutableSolidColorBrush(solidForeground.Color, 0.55);
+        }
+
+        if (concealed)
+        {
+            foreground = background == Brushes.Transparent ? Brushes.Transparent : background;
+        }
+
+        return new OutputTextStyle(
+            foreground,
+            background,
+            bold,
+            italic,
+            underline,
+            doubleUnderline,
+            strikethrough,
+            overline,
+            currentUnderlineColor);
+    }
+
+    private static int ParseSgrValue(string value, int defaultValue) =>
+        int.TryParse(value, out var parsed) ? parsed : defaultValue;
+
+    private static bool TryParseByte(string value, out byte result) =>
+        byte.TryParse(value, out result);
+
+    private static IBrush GetBasicColor(int index, bool bright) =>
+        ConsoleColors.Get(index, bright);
+
+    private static IBrush GetIndexedColor(byte index)
+    {
+        if (index < 16)
+        {
+            return GetBasicColor(index % 8, index >= 8);
+        }
+
+        if (index < 232)
+        {
+            var value = index - 16;
+            var red = GetColorCubeComponent(value / 36);
+            var green = GetColorCubeComponent(value / 6 % 6);
+            var blue = GetColorCubeComponent(value % 6);
+            return new ImmutableSolidColorBrush(Color.FromRgb(red, green, blue));
+        }
+
+        var gray = (byte)(8 + (index - 232) * 10);
+        return new ImmutableSolidColorBrush(Color.FromRgb(gray, gray, gray));
+    }
+
+    private static byte GetColorCubeComponent(int component) =>
+        component == 0 ? (byte)0 : (byte)(55 + component * 40);
+
     private void AppendToUiOutput(IList<string> s)
     {
         List<OutputElement> _outputElements = _outputElementListPool.Get();
         foreach (var part in s.SelectMany(x=>x.Split("\r\n")).TakeLast(OutputBufferSize))
         {
-            foreach (var token in VtOutputTokenizer.Tokenize(part))
+            var lineCells = new List<TerminalCell>();
+            var cursor = 0;
+            foreach (var token in vtStreamTokenizer.TokenizeChunk(part))
             {
                 if (token.Kind == VtOutputTokenKind.HyperlinkStart)
                 {
@@ -498,199 +799,221 @@ public class RunningJobViewModel : ViewModelBase
                 }
 
                 var subPart = token.Text;
-                if (subPart.EndsWith(";3m"))
-                {
-                    italic = true;
-                    subPart = subPart.Replace(";3m", "m");
-                }
-                
                 if (token.Kind == VtOutputTokenKind.Csi)
                 {
-                    var foreground = subPart switch
+                    if (!ApplyLineControl(subPart, lineCells, ref cursor))
                     {
-                        "\u001b[30m" => Brushes.Black,
-                        "\u001b[31m" => Brushes.DarkRed,
-                        "\u001b[32m" => Brushes.Green,
-                        "\u001b[33m" => Brushes.Yellow,
-                        "\u001b[34m" => Brushes.Blue,
-                        "\u001b[35m" => Brushes.DarkMagenta,
-                        "\u001b[36m" => Brushes.DarkCyan,
-                        "\u001b[37m" => Brushes.White,
-                        "\u001b[90m" => ConsoleColors.BrightBlack,
-                        "\u001b[91m" => ConsoleColors.BrightRed,
-                        "\u001b[92m" => ConsoleColors.BrightGreen,
-                        "\u001b[93m" => ConsoleColors.BrightYellow,
-                        "\u001b[94m" => ConsoleColors.BrightBlue,
-                        "\u001b[95m" =>ConsoleColors.BrightMagenta,
-                        "\u001b[96m" => ConsoleColors.BrightCyan,
-                        "\u001b[97m" => ConsoleColors.BrightWhite,
-                        "\u001b[30;1m" => Brushes.Gray,
-                        "\u001b[31;1m" => Brushes.Red,
-                        "\u001b[32;1m" => Brushes.LightGreen,
-                        "\u001b[33;1m" => Brushes.LightYellow,
-                        "\u001b[34;1m" => Brushes.LightBlue,
-                        "\u001b[35;1m" => Brushes.Magenta,
-                        "\u001b[36;1m" => Brushes.Cyan,
-                        "\u001b[37;1m" => Brushes.White,
-                        "\u001b[0m" => Brushes.White,
-                        _ => null
-                    };
-
-                    if (foreground != null)
-                    {
-                        currentConsoleTextColor = foreground;
+                        ApplyCsiSequence(subPart);
                     }
-
-                    var background = subPart switch
-                    {
-                        "\u001b[40m" => Brushes.Black,
-                        "\u001b[41m" => Brushes.DarkRed,
-                        "\u001b[42m" => Brushes.DarkGreen,
-                        "\u001b[43m" => Brushes.Yellow,
-                        "\u001b[44m" => Brushes.DarkBlue,
-                        "\u001b[45m" => Brushes.DarkMagenta,
-                        "\u001b[46m" => Brushes.DarkCyan,
-                        "\u001b[47m" => Brushes.White,
-                        "\u001b[100m" => ConsoleColors.BrightBlack,
-                        "\u001b[101m" => ConsoleColors.BrightRed,
-                        "\u001b[102m" => ConsoleColors.BrightGreen,
-                        "\u001b[103m" => ConsoleColors.BrightYellow,
-                        "\u001b[104m" => ConsoleColors.BrightBlue,
-                        "\u001b[105m" =>ConsoleColors.BrightMagenta,
-                        "\u001b[106m" => ConsoleColors.BrightCyan,
-                        "\u001b[107m" => ConsoleColors.BrightWhite,
-                        "\u001b[40;1m" => Brushes.Gray,
-                        "\u001b[41;1m" => Brushes.Red,
-                        "\u001b[42;1m" => Brushes.Green,
-                        "\u001b[43;1m" => Brushes.LightYellow,
-                        "\u001b[44;1m" => Brushes.Blue,
-                        "\u001b[45;1m" => Brushes.Magenta,
-                        "\u001b[46;1m" => Brushes.Cyan,
-                        "\u001b[47;1m" => Brushes.White,
-                        "\u001b[0m" => Brushes.Transparent,
-                        _ => null
-                    };
-
-                    if (background != null)
-                    {
-                        currentConsoleBackgroundColor = background;
-                    }
-
-                    if (subPart == "\u001b[7m")
-                    {
-                        if(currentConsoleBackgroundColor == Brushes.Transparent)
-                        {
-                            wasFallbackFromTransparent = true;
-                            (currentConsoleTextColor, currentConsoleBackgroundColor) = (Brushes.Black, currentConsoleTextColor);
-                        }
-                        else
-                        {
-                            if(wasFallbackFromTransparent)
-                            {
-                                wasFallbackFromTransparent = false;
-                                (currentConsoleTextColor, currentConsoleBackgroundColor) = (currentConsoleBackgroundColor, Brushes.Transparent);
-                            }
-                            else (currentConsoleTextColor, currentConsoleBackgroundColor) = (currentConsoleBackgroundColor, currentConsoleTextColor);
-                        }
-                    }
-
-                    if (subPart == "\u001b[1m")
-                    {
-                        bold = true;
-                    }
-                    else if (subPart == "\u001b[22m")
-                    {
-                        bold = false;
-                    }
-                    else if (subPart == "\u001b[3m")
-                    {
-                        italic = true;
-                    }
-                    else if (subPart == "\u001b[23m")
-                    {
-                        italic = false;
-                    }
-                    else if (subPart == "\u001b[4m")
-                    {
-                        underline = true;
-                    }
-                    else if (subPart == "\u001b[24m")
-                    {
-                        underline = false;
-                    }
-                    else if (subPart == "\u001b[9m")
-                    {
-                        strikethrough = true;
-                    }
-                    else if (subPart == "\u001b[29m")
-                    {
-                        strikethrough = false;
-                    }
-                    else if (subPart == "\u001b[0m")
-                    {
-                        bold = false;
-                        underline = false;
-                        italic = false;
-                        strikethrough = false;
-                    }
-
-
                     continue;
                 }
 
-                if (currentHyperlinkTarget is not null)
-                {
-                    _outputElements.Add(new Link(subPart, currentHyperlinkTarget));
-                }
-                else
-                {
-                    AddTextWithLinks(_outputElements, subPart);
-                }
+                WriteTerminalText(
+                    lineCells,
+                    ref cursor,
+                    subPart,
+                    GetCurrentTextStyle(),
+                    currentHyperlinkTarget);
 
             }
 
-            _outputElements.Add(LineEnding.Instance);
+            FlushTerminalLine(_outputElements, lineCells);
+            if (!vtStreamTokenizer.HasPendingSequence)
+            {
+                _outputElements.Add(LineEnding.Instance);
+            }
         }
 
         AppendToUiOutputFinal(_outputElements);
     }
 
-    private void AddTextWithLinks(List<OutputElement> outputElements, string text)
+    internal static void WriteTerminalText(
+        List<TerminalCell> cells,
+        ref int cursor,
+        string text,
+        OutputTextStyle style,
+        string? linkTarget)
+    {
+        foreach (var character in text)
+        {
+            switch (character)
+            {
+                case '\r':
+                    cursor = 0;
+                    continue;
+                case '\b':
+                    cursor = Math.Max(0, cursor - 1);
+                    continue;
+                case '\t':
+                    var spaces = 8 - cursor % 8;
+                    for (var index = 0; index < spaces; index++)
+                    {
+                        WriteTerminalCharacter(cells, ref cursor, ' ', style, linkTarget);
+                    }
+                    continue;
+                case '\0':
+                case '\u0007':
+                    continue;
+                default:
+                    WriteTerminalCharacter(cells, ref cursor, character, style, linkTarget);
+                    break;
+            }
+        }
+    }
+
+    private static void WriteTerminalCharacter(
+        List<TerminalCell> cells,
+        ref int cursor,
+        char character,
+        OutputTextStyle style,
+        string? linkTarget)
+    {
+        while (cells.Count < cursor)
+        {
+            cells.Add(new TerminalCell(' ', style, null));
+        }
+
+        var cell = new TerminalCell(character, style, linkTarget);
+        if (cursor < cells.Count)
+        {
+            cells[cursor] = cell;
+        }
+        else
+        {
+            cells.Add(cell);
+        }
+
+        cursor++;
+    }
+
+    internal bool ApplyLineControl(string sequence, List<TerminalCell> cells, ref int cursor)
+    {
+        if (!TryGetCsiCommand(sequence, out var parameters, out var command) || command == 'm')
+        {
+            return false;
+        }
+
+        var value = ParseSgrValue(parameters.Split(';')[0], command is 'G' or 'C' or 'D' or 'X' ? 1 : 0);
+        switch (command)
+        {
+            case 'G': // Cursor Horizontal Absolute
+                cursor = Math.Max(0, value - 1);
+                return true;
+            case 'C': // Cursor Forward
+                cursor += Math.Max(1, value);
+                return true;
+            case 'D': // Cursor Backward
+                cursor = Math.Max(0, cursor - Math.Max(1, value));
+                return true;
+            case 'K': // Erase in Line
+                EraseInLine(cells, cursor, value);
+                return true;
+            case 'X': // Erase Character
+                var eraseCount = Math.Max(1, value);
+                var eraseStyle = GetCurrentTextStyle();
+                for (var index = cursor; index < Math.Min(cells.Count, cursor + eraseCount); index++)
+                {
+                    cells[index] = new TerminalCell(' ', eraseStyle, null);
+                }
+                return true;
+            default:
+                // Other cursor/screen controls are intentionally consumed.
+                return true;
+        }
+    }
+
+    private void EraseInLine(List<TerminalCell> cells, int cursor, int mode)
+    {
+        var eraseStyle = GetCurrentTextStyle();
+        switch (mode)
+        {
+            case 0:
+                if (cursor < cells.Count)
+                {
+                    cells.RemoveRange(cursor, cells.Count - cursor);
+                }
+                break;
+            case 1:
+                for (var index = 0; index < Math.Min(cells.Count, cursor + 1); index++)
+                {
+                    cells[index] = new TerminalCell(' ', eraseStyle, null);
+                }
+                break;
+            case 2:
+                cells.Clear();
+                break;
+        }
+    }
+
+    private void FlushTerminalLine(List<OutputElement> outputElements, List<TerminalCell> cells)
+    {
+        var start = 0;
+        while (start < cells.Count)
+        {
+            var first = cells[start];
+            var end = start + 1;
+            while (end < cells.Count &&
+                   cells[end].Style == first.Style &&
+                   cells[end].LinkTarget == first.LinkTarget)
+            {
+                end++;
+            }
+
+            var text = new string(cells.Skip(start).Take(end - start).Select(cell => cell.Character).ToArray());
+            if (first.LinkTarget is not null)
+            {
+                outputElements.Add(new Link(
+                    text,
+                    first.LinkTarget,
+                    first.Style,
+                    UseLinkAppearance: false));
+            }
+            else
+            {
+                AddTextWithLinks(outputElements, text, first.Style);
+            }
+
+            start = end;
+        }
+    }
+
+    private void AddTextWithLinks(List<OutputElement> outputElements, string text, OutputTextStyle style)
     {
         var currentOffset = 0;
         foreach (var match in OutputLinkDetector.Detect(text))
         {
             if (match.Start > currentOffset)
             {
-                AddTextSpan(outputElements, text[currentOffset..match.Start]);
+                AddTextSpan(outputElements, text[currentOffset..match.Start], style);
             }
 
-            outputElements.Add(new Link(text.Substring(match.Start, match.Length), match.Target));
+            outputElements.Add(new Link(
+                text.Substring(match.Start, match.Length),
+                match.Target,
+                style));
             currentOffset = match.Start + match.Length;
         }
 
         if (currentOffset < text.Length)
         {
-            AddTextSpan(outputElements, text[currentOffset..]);
+            AddTextSpan(outputElements, text[currentOffset..], style);
         }
     }
 
-    private void AddTextSpan(List<OutputElement> outputElements, string text)
+    private static void AddTextSpan(List<OutputElement> outputElements, string text, OutputTextStyle style)
     {
         if (text.Length == 0)
         {
             return;
         }
 
-        outputElements.Add(new TextSpan(
-            Text: text,
-            IsBold: bold,
-            IsItalic: italic,
-            IsUnderline: underline,
-            IsStrikethrough: strikethrough,
-            Foreground: currentConsoleTextColor,
-            BackGround: currentConsoleBackgroundColor));
+        outputElements.Add(new TextSpan(text, style));
     }
+
+    internal readonly record struct TerminalCell(
+        char Character,
+        OutputTextStyle Style,
+        string? LinkTarget);
     private void AppendToUiOutputFinal(List<OutputElement> s)
     {
         Dispatcher.UIThread.Post(() =>
@@ -714,8 +1037,17 @@ public class RunningJobViewModel : ViewModelBase
                         {
                             StartOffset = startOffset,
                             Length = link.Text.Length,
-                            Foreground = Brushes.LightBlue,
-                            IsUnderline = true,
+                            Foreground = link.UseLinkAppearance
+                                ? Brushes.LightBlue
+                                : link.Style.Foreground,
+                            Background = link.Style.Background,
+                            IsBold = link.Style.IsBold,
+                            IsItalic = link.Style.IsItalic,
+                            IsUnderline = link.UseLinkAppearance || link.Style.IsUnderline,
+                            IsDoubleUnderline = link.Style.IsDoubleUnderline,
+                            IsStrikethrough = link.Style.IsStrikethrough,
+                            IsOverline = link.Style.IsOverline,
+                            UnderlineColor = link.Style.UnderlineColor,
                             IsLink = true,
                             LinkUrl = link.Url ?? link.Text
                         });
@@ -729,12 +1061,15 @@ public class RunningJobViewModel : ViewModelBase
                         if (lastSegment != null && 
                             !lastSegment.IsLink &&
                             lastSegment.StartOffset + lastSegment.Length == startOffset &&
-                            ReferenceEquals(lastSegment.Foreground, textSpan.Foreground) &&
-                            ReferenceEquals(lastSegment.Background, textSpan.BackGround) &&
-                            lastSegment.IsBold == textSpan.IsBold &&
-                            lastSegment.IsItalic == textSpan.IsItalic &&
-                            lastSegment.IsUnderline == textSpan.IsUnderline &&
-                            lastSegment.IsStrikethrough == textSpan.IsStrikethrough)
+                            ReferenceEquals(lastSegment.Foreground, textSpan.Style.Foreground) &&
+                            ReferenceEquals(lastSegment.Background, textSpan.Style.Background) &&
+                            lastSegment.IsBold == textSpan.Style.IsBold &&
+                            lastSegment.IsItalic == textSpan.Style.IsItalic &&
+                            lastSegment.IsUnderline == textSpan.Style.IsUnderline &&
+                            lastSegment.IsDoubleUnderline == textSpan.Style.IsDoubleUnderline &&
+                            lastSegment.IsStrikethrough == textSpan.Style.IsStrikethrough &&
+                            lastSegment.IsOverline == textSpan.Style.IsOverline &&
+                            ReferenceEquals(lastSegment.UnderlineColor, textSpan.Style.UnderlineColor))
                         {
                             // Merge with previous segment by extending its length
                             lastSegment.Length += textSpan.Text.Length;
@@ -746,12 +1081,15 @@ public class RunningJobViewModel : ViewModelBase
                             {
                                 StartOffset = startOffset,
                                 Length = textSpan.Text.Length,
-                                Foreground = textSpan.Foreground,
-                                Background = textSpan.BackGround,
-                                IsBold = textSpan.IsBold,
-                                IsItalic = textSpan.IsItalic,
-                                IsUnderline = textSpan.IsUnderline,
-                                IsStrikethrough = textSpan.IsStrikethrough,
+                                Foreground = textSpan.Style.Foreground,
+                                Background = textSpan.Style.Background,
+                                IsBold = textSpan.Style.IsBold,
+                                IsItalic = textSpan.Style.IsItalic,
+                                IsUnderline = textSpan.Style.IsUnderline,
+                                IsDoubleUnderline = textSpan.Style.IsDoubleUnderline,
+                                IsStrikethrough = textSpan.Style.IsStrikethrough,
+                                IsOverline = textSpan.Style.IsOverline,
+                                UnderlineColor = textSpan.Style.UnderlineColor,
                                 IsLink = false
                             });
                         }
@@ -816,7 +1154,10 @@ public class RunningJobViewModel : ViewModelBase
                     lastExistingSegment.IsBold == segment.IsBold &&
                     lastExistingSegment.IsItalic == segment.IsItalic &&
                     lastExistingSegment.IsUnderline == segment.IsUnderline &&
-                    lastExistingSegment.IsStrikethrough == segment.IsStrikethrough)
+                    lastExistingSegment.IsDoubleUnderline == segment.IsDoubleUnderline &&
+                    lastExistingSegment.IsStrikethrough == segment.IsStrikethrough &&
+                    lastExistingSegment.IsOverline == segment.IsOverline &&
+                    ReferenceEquals(lastExistingSegment.UnderlineColor, segment.UnderlineColor))
                 {
                     // Merge by extending the last segment
                     lastExistingSegment.Length += segment.Length;
@@ -952,7 +1293,10 @@ public class FormattedSegment
     public bool IsBold { get; set; }
     public bool IsItalic { get; set; }
     public bool IsUnderline { get; set; }
+    public bool IsDoubleUnderline { get; set; }
     public bool IsStrikethrough { get; set; }
+    public bool IsOverline { get; set; }
+    public IBrush? UnderlineColor { get; set; }
     public bool IsLink { get; set; }
     public string? LinkUrl { get; set; }
 }

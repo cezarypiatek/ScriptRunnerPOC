@@ -39,7 +39,9 @@ public class FormattedTextEditor : TextEditor
         Background = new SolidColorBrush(Color.FromRgb(30,30,30));
         BorderBrush = new SolidColorBrush(Color.FromRgb(62,62,54));
         BorderThickness = new Thickness(1);
-        FontFamily = new FontFamily("Consolas");
+        FontFamily = new FontFamily(
+            "Cascadia Mono, Cascadia Code, Consolas, Segoe UI Symbol, Segoe UI Emoji, " +
+            "Yu Gothic UI, Malgun Gothic, Noto Sans Mono CJK SC, Noto Sans Mono, Monospace");
         Options.AllowScrollBelowDocument = false;
         Options.RequireControlModifierForHyperlinkClick = false;
         Options.EnableHyperlinks = false;
@@ -220,18 +222,28 @@ public class FormattedTextColorizer : DocumentColorizingTransformer
                 element.TextRunProperties.SetTypeface(newTypeface);
 
                 // Apply text decorations (underline and/or strikethrough)
-                if (segment.IsUnderline || segment.IsStrikethrough)
+                if (segment.IsUnderline || segment.IsStrikethrough || segment.IsOverline)
                 {
                     var decorations = new TextDecorationCollection();
                     
                     if (segment.IsUnderline)
                     {
-                        decorations.Add(new TextDecoration { Location = TextDecorationLocation.Underline });
+                        decorations.Add(new TextDecoration
+                        {
+                            Location = TextDecorationLocation.Underline,
+                            Stroke = segment.UnderlineColor,
+                            StrokeThickness = segment.IsDoubleUnderline ? 2 : 1
+                        });
                     }
                     
                     if (segment.IsStrikethrough)
                     {
                         decorations.Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
+                    }
+
+                    if (segment.IsOverline)
+                    {
+                        decorations.Add(new TextDecoration { Location = TextDecorationLocation.Overline });
                     }
                     
                     element.TextRunProperties.SetTextDecorations(decorations);
@@ -318,11 +330,6 @@ public class OutputLinkText : VisualLineText
 
     public override TextRun CreateTextRun(int startVisualColumn, ITextRunConstructionContext context)
     {
-        // Apply link styling
-        this.TextRunProperties.SetForegroundBrush(context.TextView.LinkTextForegroundBrush);
-        this.TextRunProperties.SetBackgroundBrush(context.TextView.LinkTextBackgroundBrush);
-        if (context.TextView.LinkTextUnderline)
-            this.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
         return base.CreateTextRun(startVisualColumn, context);
     }
 

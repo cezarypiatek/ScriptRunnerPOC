@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cezarypiatek/ScriptRunnerPOC/main/schema/v1/ScriptRunnerSchema.json",
+  "actions": [
+    {
+      "name": "PowerShell VT Feature Showcase",
+      "description": "Demonstrates ScriptRunner's supported VT formatting, colors, OSC 8 links, cursor editing, and control strings.",
+      "command": "pwsh -NoProfile -File ./powershell/VtFeatures.ps1",
+      "workingDirectory": ".",
+      "categories": ["powershell", "terminal", "VT"]
+    },
+    {
+      "name": "PowerShell Color Output Methods",
+      "description": "Compares Write-Host color parameters, Write-Host with explicit SGR, and Console.WriteLine VT colors.",
+      "command": "pwsh -NoProfile -File ./powershell/ColorOutputMethods.ps1",
+      "workingDirectory": ".",
+      "categories": ["powershell", "terminal", "colors"]
+    }
+  ]
+}
