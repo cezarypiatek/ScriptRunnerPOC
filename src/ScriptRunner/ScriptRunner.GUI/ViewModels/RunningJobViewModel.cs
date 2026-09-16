@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -25,6 +24,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using DynamicData;
 using Microsoft.Extensions.ObjectPool;
+using ScriptRunner.GUI.Infrastructure;
 using ScriptRunner.GUI.ScriptConfigs;
 using AvaloniaEdit.Document;
 
@@ -343,8 +343,6 @@ public class RunningJobViewModel : ViewModelBase
         });
     }
 
-    private static readonly Regex ConsoleSpecialCharsPattern = new Regex(@"(\u001b\[[\d;]+\w?)", RegexOptions.Compiled);
-   
     public RunningJobViewModel()
     {
         _logForwarder = new LogForwarder();
@@ -434,7 +432,7 @@ public class RunningJobViewModel : ViewModelBase
             
             if (_troubleshooting.Count > 0)
             {
-                var clean = ConsoleSpecialCharsPattern.Replace(s, "");
+                var clean = VtOutputTokenizer.StripControlSequences(s);
                 foreach (var input in _troubleshooting)
                 {
                     if (troubleShootingPatternCache.TryGetValue(input.WhenMatched, out var pattern) == false)
@@ -469,39 +467,44 @@ public class RunningJobViewModel : ViewModelBase
         }
     }
 
-    private Regex urlPattern = new Regex(@"(https?://[^\s<>\""']+)", RegexOptions.Compiled);
-
     private DefaultObjectPool<List<OutputElement>> _outputElementListPool = new DefaultObjectPool<List<OutputElement>>(new DefaultPooledObjectPolicy<List<OutputElement>>()
     {
 
     });
     private bool wasFallbackFromTransparent = false;
+    private string? currentHyperlinkTarget;
     private void AppendToUiOutput(IList<string> s)
     {
         List<OutputElement> _outputElements = _outputElementListPool.Get();
         foreach (var part in s.SelectMany(x=>x.Split("\r\n")).TakeLast(OutputBufferSize))
         {
-            var subParts = ConsoleSpecialCharsPattern.Split(part);
-            if (part.Contains("http://", StringComparison.OrdinalIgnoreCase) || part.Contains("https://", StringComparison.OrdinalIgnoreCase))
+            foreach (var token in VtOutputTokenizer.Tokenize(part))
             {
-                subParts = subParts.SelectMany(x => urlPattern.Split(x)).ToArray();
-            }
-            foreach (var chunk in subParts.Where(x=> x != string.Empty))
-            {
-                if (chunk.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || chunk.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                if (token.Kind == VtOutputTokenKind.HyperlinkStart)
                 {
-                    _outputElements.Add(new Link(chunk));
+                    currentHyperlinkTarget = token.Target;
                     continue;
                 }
-                
-                var subPart = chunk;
+
+                if (token.Kind == VtOutputTokenKind.HyperlinkEnd)
+                {
+                    currentHyperlinkTarget = null;
+                    continue;
+                }
+
+                if (token.Kind == VtOutputTokenKind.Control)
+                {
+                    continue;
+                }
+
+                var subPart = token.Text;
                 if (subPart.EndsWith(";3m"))
                 {
                     italic = true;
                     subPart = subPart.Replace(";3m", "m");
                 }
                 
-                if (subPart.StartsWith("\u001b[", StringComparison.Ordinal))
+                if (token.Kind == VtOutputTokenKind.Csi)
                 {
                     var foreground = subPart switch
                     {
@@ -635,15 +638,14 @@ public class RunningJobViewModel : ViewModelBase
                     continue;
                 }
 
-                _outputElements.Add(new TextSpan(
-                    Text: subPart,
-                    IsBold: bold,
-                    IsItalic: italic,
-                    IsUnderline: underline,
-                    IsStrikethrough: strikethrough,
-                    Foreground:currentConsoleTextColor,
-                    BackGround: currentConsoleBackgroundColor
-                    ));
+                if (currentHyperlinkTarget is not null)
+                {
+                    _outputElements.Add(new Link(subPart, currentHyperlinkTarget));
+                }
+                else
+                {
+                    AddTextWithLinks(_outputElements, subPart);
+                }
 
             }
 
@@ -651,6 +653,43 @@ public class RunningJobViewModel : ViewModelBase
         }
 
         AppendToUiOutputFinal(_outputElements);
+    }
+
+    private void AddTextWithLinks(List<OutputElement> outputElements, string text)
+    {
+        var currentOffset = 0;
+        foreach (var match in OutputLinkDetector.Detect(text))
+        {
+            if (match.Start > currentOffset)
+            {
+                AddTextSpan(outputElements, text[currentOffset..match.Start]);
+            }
+
+            outputElements.Add(new Link(text.Substring(match.Start, match.Length), match.Target));
+            currentOffset = match.Start + match.Length;
+        }
+
+        if (currentOffset < text.Length)
+        {
+            AddTextSpan(outputElements, text[currentOffset..]);
+        }
+    }
+
+    private void AddTextSpan(List<OutputElement> outputElements, string text)
+    {
+        if (text.Length == 0)
+        {
+            return;
+        }
+
+        outputElements.Add(new TextSpan(
+            Text: text,
+            IsBold: bold,
+            IsItalic: italic,
+            IsUnderline: underline,
+            IsStrikethrough: strikethrough,
+            Foreground: currentConsoleTextColor,
+            BackGround: currentConsoleBackgroundColor));
     }
     private void AppendToUiOutputFinal(List<OutputElement> s)
     {
@@ -799,24 +838,6 @@ public class RunningJobViewModel : ViewModelBase
             s.Clear();
             _outputElementListPool.Return(s);
         });
-    }
-
-    private static void OpenUrl(string url)
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            Process.Start(new ProcessStartInfo(url)
-            {
-                UseShellExecute = true,
-                Verb = "open"
-            });
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            Process.Start("xdg-open", url);
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            Process.Start("open", url);
-        }
     }
 
     public void AcceptCommand()

@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScriptRunner.GUI", "ScriptR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppInstaller", "AppInstaller\AppInstaller.csproj", "{A272ED16-5B61-455F-8222-37584D370FA7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptRunner.GUI.Tests", "ScriptRunner.GUI.Tests\ScriptRunner.GUI.Tests.csproj", "{F35D7742-1A74-4FC8-916C-84EA0B923121}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{C9D349CF-4864-4A8E-A6B4-31AF64A4A04C}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\README.md = ..\..\README.md
@@ -27,6 +29,10 @@ Global
 		{A272ED16-5B61-455F-8222-37584D370FA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A272ED16-5B61-455F-8222-37584D370FA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A272ED16-5B61-455F-8222-37584D370FA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F35D7742-1A74-4FC8-916C-84EA0B923121}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F35D7742-1A74-4FC8-916C-84EA0B923121}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F35D7742-1A74-4FC8-916C-84EA0B923121}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F35D7742-1A74-4FC8-916C-84EA0B923121}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,6 @@
 using System;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -43,9 +42,10 @@ public class FormattedTextEditor : TextEditor
         FontFamily = new FontFamily("Consolas");
         Options.AllowScrollBelowDocument = false;
         Options.RequireControlModifierForHyperlinkClick = false;
+        Options.EnableHyperlinks = false;
         Padding = new Thickness(15);
         TextArea.TextView.LinkTextForegroundBrush = Brushes.LightBlue;
-        TextArea.TextView.ElementGenerators.Add(new FilePathElementGenerator());
+        TextArea.TextView.ElementGenerators.Add(new OutputLinkElementGenerator(() => ViewModel));
         
         // Add context menu
         ContextMenu = CreateContextMenu();
@@ -244,75 +244,56 @@ public class FormattedTextColorizer : DocumentColorizingTransformer
 
 
 /// <summary>
-/// Detects file and directory paths and makes them clickable.
+/// Makes the link ranges detected while parsing output clickable.
 /// </summary>
-public class FilePathElementGenerator : VisualLineElementGenerator
+public class OutputLinkElementGenerator : VisualLineElementGenerator
 {
-    // Windows paths:
-    // - Starts with drive letter (C:\) or UNC path (\\server\)
-    // - Can contain spaces and most characters except: < > : " | ? * [ ] and control chars
-    // - Terminates at: whitespace, quotes, brackets, or line break
-    // - For files: must end with extension (.txt, .cs, etc.)
-    // - For dirs: can end with \ or directory name
-    private static readonly Regex WindowsPathRegex = new Regex(
-        @"(?:[a-zA-Z]:\\|\\\\[^\\]+\\[^\\]+\\)" +  // Drive (C:\) or UNC (\\server\share\)
-        @"(?:[^<>:""|?*\[\]\r\n]+\\)*" +            // Intermediate directories (can have spaces)
-        @"(?:[^<>:""|?*\[\]\r\n\\]+(?:\.[a-zA-Z0-9]+)?|[^<>:""|?*\[\]\r\n\\]+\\)", // Final file with extension or directory
-        RegexOptions.Compiled);
-    
-    // Unix paths:
-    // - Starts with / or ~/
-    // - Can contain spaces in directory/file names
-    // - Terminates at: whitespace, quotes, brackets, or special chars
-    private static readonly Regex UnixPathRegex = new Regex(
-        @"(?:~/|/)" +                               // Root or home
-        @"(?:[^<>:""\\\|?*\[\]\s\n]+/)*" +          // Directories (terminated by /)
-        @"[^<>:""\\\|?*\[\]\s\n]+",                 // Final file or directory name
-        RegexOptions.Compiled);
+    private readonly Func<RunningJobViewModel?> _viewModelAccessor;
     public bool RequireControlModifierForClick { get; set; }
 
-    public FilePathElementGenerator()
+    public OutputLinkElementGenerator(Func<RunningJobViewModel?> viewModelAccessor)
     {
+        _viewModelAccessor = viewModelAccessor;
         RequireControlModifierForClick = false;
     }
 
-    private Match GetMatch(int startOffset, out int matchOffset)
+    private FormattedSegment? GetSegment(int startOffset, out int matchOffset)
     {
         var endOffset = CurrentContext.VisualLine.LastDocumentLine.EndOffset;
-        var relevantText = CurrentContext.GetText(startOffset, endOffset - startOffset);
-        
-        // Try Windows paths first
-        var match = WindowsPathRegex.Match(relevantText.Text, relevantText.Offset, relevantText.Count);
-        
-        // If no Windows path found, try Unix paths
-        if (!match.Success)
+        var segment = _viewModelAccessor()?.FormattingSegments
+            .FirstOrDefault(item => item.IsLink &&
+                                    item.StartOffset + item.Length > startOffset &&
+                                    item.StartOffset < endOffset);
+
+        if (segment is null)
         {
-            match = UnixPathRegex.Match(relevantText.Text, relevantText.Offset, relevantText.Count);
+            matchOffset = -1;
+            return null;
         }
-        
-        matchOffset = match.Success ? match.Index - relevantText.Offset + startOffset : -1;
-        return match;
+
+        matchOffset = Math.Max(segment.StartOffset, startOffset);
+        return segment;
     }
 
     public override int GetFirstInterestedOffset(int startOffset)
     {
-        GetMatch(startOffset, out var matchOffset);
+        GetSegment(startOffset, out var matchOffset);
         return matchOffset;
     }
 
     public override VisualLineElement ConstructElement(int offset)
     {
-        var match = GetMatch(offset, out var matchOffset);
-        if (match.Success && matchOffset == offset)
+        var segment = GetSegment(offset, out var matchOffset);
+        if (segment is not null && matchOffset == offset && !string.IsNullOrEmpty(segment.LinkUrl))
         {
-            var path = match.Value;
-            
-            // Validate that the path exists
-            if (File.Exists(path) || Directory.Exists(path))
+            var segmentEnd = segment.StartOffset + segment.Length;
+            var availableLength = CurrentContext.VisualLine.LastDocumentLine.EndOffset - offset;
+            var length = Math.Min(segmentEnd - offset, availableLength);
+            if (length > 0)
             {
-                return new FilePathLinkText(CurrentContext.VisualLine, match.Length)
+                return new OutputLinkText(CurrentContext.VisualLine, length)
                 {
-                    Path = path,
+                    Target = segment.LinkUrl,
                     RequireControlModifierForClick = RequireControlModifierForClick
                 };
             }
@@ -322,14 +303,14 @@ public class FilePathElementGenerator : VisualLineElementGenerator
 }
 
 /// <summary>
-/// Visual line element representing a clickable file path.
+/// Visual line element representing a clickable URL or local path.
 /// </summary>
-public class FilePathLinkText : VisualLineText
+public class OutputLinkText : VisualLineText
 {
-    public string Path { get; set; }
+    public string Target { get; set; } = string.Empty;
     public bool RequireControlModifierForClick { get; set; }
 
-    public FilePathLinkText(VisualLine parentVisualLine, int length) 
+    public OutputLinkText(VisualLine parentVisualLine, int length) 
         : base(parentVisualLine, length)
     {
         RequireControlModifierForClick = true;
@@ -347,7 +328,7 @@ public class FilePathLinkText : VisualLineText
 
     protected virtual bool LinkIsClickable(KeyModifiers modifiers)
     {
-        if (string.IsNullOrEmpty(Path))
+        if (string.IsNullOrEmpty(Target))
             return false;
         if (RequireControlModifierForClick)
             return modifiers.HasFlag(KeyModifiers.Control);
@@ -370,46 +351,32 @@ public class FilePathLinkText : VisualLineText
     {
         if (!e.Handled && LinkIsClickable(e.KeyModifiers))
         {
-            OpenPath(Path);
+            OpenTarget(Target);
             e.Handled = true;
         }
     }
 
-    private static void OpenPath(string path)
+    private static void OpenTarget(string target)
     {
         try
         {
-            if (File.Exists(path))
+            Process.Start(new ProcessStartInfo
             {
-                // Open file with default application
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = path,
-                    UseShellExecute = true
-                });
-            }
-            else if (Directory.Exists(path))
-            {
-                // Open directory in file explorer
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = path,
-                    UseShellExecute = true
-                });
-            }
+                FileName = target,
+                UseShellExecute = true
+            });
         }
         catch (Exception ex)
         {
-            // Handle errors (log or show notification)
-            System.Diagnostics.Debug.WriteLine($"Failed to open path: {ex.Message}");
+            Debug.WriteLine($"Failed to open link target: {ex.Message}");
         }
     }
 
     protected override VisualLineText CreateInstance(int length)
     {
-        return new FilePathLinkText(ParentVisualLine, length)
+        return new OutputLinkText(ParentVisualLine, length)
         {
-            Path = Path,
+            Target = Target,
             RequireControlModifierForClick = RequireControlModifierForClick
         };
     }
