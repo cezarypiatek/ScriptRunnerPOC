@@ -84,6 +84,8 @@ public partial class TextEditorOverlay : Window
             {
                 clonedEditor.TextArea.TextView.Margin = textEditor.TextArea.TextView.Margin;
             }
+            clonedEditor.TextArea.TextView.LinkTextForegroundBrush =
+                textEditor.TextArea.TextView.LinkTextForegroundBrush;
             
             // Set up TextMate syntax highlighting from the Tag property
             if (textEditor.Tag is string syntax && !string.IsNullOrWhiteSpace(syntax))

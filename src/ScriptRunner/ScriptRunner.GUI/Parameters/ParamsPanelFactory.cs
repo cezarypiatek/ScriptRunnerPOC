@@ -11,7 +11,6 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -134,127 +133,7 @@ public class ParamsPanelFactory
             
             if (param.Prompt is PromptType.Multilinetext or PromptType.FileContent)
             {
-                bool _isResizing = false;
-                Point _lastPointerPosition = default;
-                
-                // Create toolbar for expand button only
-                var toolbar = new StackPanel()
-                {
-                    Orientation = Orientation.Horizontal,
-                    Height = 24,
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Spacing = 5,
-                    ZIndex = 1,
-                    Margin = new Thickness(0,0,10,-35),
-                };
-                
-                // Expand button to open overlay
-                var expandButton = new Button()
-                {
-                    Width = 24,
-                    Height = 24,
-                    Padding = new Thickness(0),
-                    VerticalContentAlignment = VerticalAlignment.Center,
-                    HorizontalContentAlignment = HorizontalAlignment.Center,
-                    Background = Brushes.Transparent,
-                    BorderThickness = new Thickness(0)
-                };
-                
-                var expandIcon = new Icon()
-                {
-                    Value = "fas fa-expand",
-                    FontSize = 12
-                };
-                expandButton.Content = expandIcon;
-                ToolTip.SetTip(expandButton, "Open in larger editor");
-                
-                expandButton.Click += async (sender, e) =>
-                {
-                    var overlay = new Views.TextEditorOverlay();
-                    overlay.SetEditorControl(controlRecord.Control);
-                    
-                    // Find the parent window
-                    var parentWindow = TopLevel.GetTopLevel(controlRecord.Control as Visual) as Window;
-                    if (parentWindow != null)
-                    {
-                        await overlay.ShowDialog(parentWindow);
-                    }
-                    else
-                    {
-                        overlay.Show();
-                    }
-                };
-                
-                toolbar.Children.Add(expandButton);
-
-                // Create a grid to overlay the resize handle on the editor
-                var grid = new Grid();
-                grid.Children.Add(controlRecord.Control);
-                
-                // Resize handle positioned at bottom right of editor
-                var resizeHandle = new Border()
-                {
-                    Background = Brushes.Transparent,
-                    Cursor = new Cursor(StandardCursorType.BottomRightCorner),
-                    VerticalAlignment = VerticalAlignment.Bottom,
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Margin = new Thickness(0,0,5,0),
-                    ZIndex = 10
-                };
-                
-                var resizeIcon = new Icon()
-                {
-                    Value = "fas fa-signal",
-                    FontSize = 12,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                resizeHandle.Child = resizeIcon;
-                ToolTip.SetTip(resizeHandle, "Drag to resize");
-
-                resizeHandle.PointerPressed += (sender, e) =>
-                {
-                    _isResizing = true;
-                    _lastPointerPosition = e.GetPosition(paramsPanel);
-                    e.Handled = true;
-                };
-
-                resizeHandle.PointerMoved += (sender, e) =>
-                {
-                    if (_isResizing)
-                    {
-                        var currentPosition = e.GetPosition(paramsPanel);
-                        var delta = currentPosition - _lastPointerPosition;
-
-                        var textBox = controlRecord.Control;
-                        
-                        // Resize vertically
-                        textBox.Height = Math.Max(textBox.MinHeight, textBox.Height + delta.Y);
-                        
-                        // Resize horizontally
-                        var currentWidth = double.IsNaN(textBox.Width) ? textBox.Bounds.Width : textBox.Width;
-                        textBox.Width = Math.Max(100, currentWidth + delta.X);
-
-                        _lastPointerPosition = currentPosition;
-                    }
-                };
-
-                resizeHandle.PointerReleased += (sender, e) =>
-                {
-                    _isResizing = false;
-                };
-
-                grid.Children.Add(resizeHandle);
-
-                var panel = new StackPanel()
-                {
-                    Orientation = Orientation.Vertical
-                };
-                panel.Children.Add(toolbar);
-                panel.Children.Add(grid);
-                controlForEdit = panel;
-
-
+                controlForEdit = new MultilineEditorHost(controlRecord.Control, paramsPanel);
             }
           
            
@@ -878,6 +757,7 @@ public class ParamsPanelFactory
             CornerRadius = new CornerRadius(3)
         };
         textEditor.TextArea.TextView.Margin = new Thickness(10, 0);
+        textEditor.TextArea.TextView.LinkTextForegroundBrush = new SolidColorBrush(Color.Parse("#4A9EFF"));
         
         // Store syntax as Tag so it can be retrieved later
         textEditor.Tag = syntax;
