@@ -1,30 +1,179 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
+             mc:Ignorable="d"
+             d:DesignWidth="420"
+             d:DesignHeight="38"
+             HorizontalContentAlignment="Stretch"
              x:Class="ScriptRunner.GUI.Views.SearchableComboBox">
-    <Grid ColumnDefinitions="*, Auto">
-        <!-- AutoCompleteBox for search -->
-        <AutoCompleteBox Grid.Column="0"  x:Name="PART_AutoCompleteBox"
-                         FilterMode="ContainsOrdinal"
-                         MinimumPrefixLength="0"
-                         MinWidth="150"
-                         IsTextCompletionEnabled="true"/>
+    <UserControl.Styles>
+        <!-- Closed state: behaves like a normal ComboBox, not an editor. -->
+        <Style Selector="Button.comboSurface">
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="#18181C"/>
+            <Setter Property="BorderBrush" Value="#48484E"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="FocusAdorner" Value="{x:Null}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.comboSurface:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#202025"/>
+            <Setter Property="BorderBrush" Value="#66666D"/>
+        </Style>
+        <Style Selector="Button.comboSurface:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#25252A"/>
+        </Style>
+        <Style Selector="Button.comboSurface:focus-visible /template/ ContentPresenter">
+            <Setter Property="BorderBrush" Value="#4A9EFF"/>
+        </Style>
+        <Style Selector="Button.comboSurface.open /template/ ContentPresenter">
+            <Setter Property="BorderBrush" Value="#4A9EFF"/>
+            <Setter Property="Background" Value="#202025"/>
+        </Style>
 
-        <!-- Button to show all options -->
-        <Button Grid.Column="1" Content="▼"
-                Background="Black"
-                BorderBrush="White"
-                BorderThickness="0,1,1,1"
-                CornerRadius="0,3,3,0"
-                Click="ShowAllOptions_Click"
-                Width="30">
-            <Button.Styles>
-                <Style Selector=":pointerover /template/ ContentPresenter">
-                    <Setter Property="BorderBrush" Value="White"/>
-                </Style>
-            </Button.Styles>
+        <!-- Search belongs to the popup, so the selected value is never shown
+             as editable/highlighted text. The TextBox owns the only border. -->
+        <Style Selector="TextBox.queryInput">
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Background" Value="#18181C"/>
+            <Setter Property="BorderBrush" Value="#48484E"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Button.resultItem">
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Margin" Value="4,1"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        </Style>
+        <Style Selector="Button.resultItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#35353A"/>
+        </Style>
+        <Style Selector="Button.resultItem.current /template/ ContentPresenter">
+            <Setter Property="Background" Value="#263B50"/>
+        </Style>
+        <Style Selector="Button.resultItem.highlighted /template/ ContentPresenter">
+            <Setter Property="Background" Value="#354F68"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid HorizontalAlignment="Stretch">
+        <Button x:Name="PART_SurfaceButton"
+                Classes="comboSurface"
+                HorizontalAlignment="Stretch"
+                Click="SurfaceButton_Click"
+                PointerPressed="SurfaceButton_PointerPressed"
+                KeyDown="SurfaceButton_KeyDown"
+                TextInput="SurfaceButton_TextInput">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock x:Name="PART_SelectedText"
+                           Grid.Column="0"
+                           Margin="12,0,8,0"
+                           Foreground="#E2E2E5"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"/>
+
+                <Border Grid.Column="1"
+                        Width="1"
+                        Height="20"
+                        Margin="0,0,10,0"
+                        Background="#3D3D42"
+                        VerticalAlignment="Center"/>
+
+                <avalonia:Icon x:Name="PART_Chevron"
+                               Grid.Column="2"
+                               Value="fas fa-chevron-down"
+                               Width="11"
+                               Height="11"
+                               Margin="0,0,11,0"
+                               Foreground="#A0A0A0"
+                               VerticalAlignment="Center"
+                               IsHitTestVisible="False"/>
+            </Grid>
         </Button>
+
+        <Popup x:Name="PART_Popup"
+               Placement="BottomEdgeAlignedLeft"
+               VerticalOffset="4"
+               IsLightDismissEnabled="True"
+               OverlayDismissEventPassThrough="True">
+            <Border x:Name="PART_PopupBorder"
+                    MinWidth="240"
+                    Background="#242428"
+                    BorderBrush="#66788A"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    BoxShadow="0 14 36 2 #B0000000, 0 0 18 1 #354A9EFF"
+                    ClipToBounds="True">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <TextBox x:Name="PART_QueryBox"
+                             Grid.Row="0"
+                             Classes="queryInput"
+                             Margin="8,8,8,6"
+                             Watermark="Search options..."
+                             TextChanged="QueryBox_TextChanged"
+                             KeyDown="QueryBox_KeyDown">
+                        <TextBox.InnerLeftContent>
+                            <avalonia:Icon Value="fas fa-search"
+                                           Width="13"
+                                           Height="13"
+                                           Margin="10,0,7,0"
+                                           Foreground="#77777F"
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"/>
+                        </TextBox.InnerLeftContent>
+                    </TextBox>
+
+                    <Grid Grid.Row="1">
+                        <ScrollViewer MaxHeight="300"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="PART_ResultsItems"
+                                          HorizontalAlignment="Stretch"/>
+                        </ScrollViewer>
+
+                        <StackPanel x:Name="PART_EmptyState"
+                                    Margin="20,28"
+                                    Spacing="6"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    IsVisible="False"
+                                    IsHitTestVisible="False">
+                            <avalonia:Icon Value="fas fa-search"
+                                           Width="16"
+                                           Height="16"
+                                           Foreground="#6F6F77"
+                                           HorizontalAlignment="Center"/>
+                            <TextBlock Text="No matching options"
+                                       Foreground="#9999A1"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border x:Name="PART_ResultFooter"
+                            Grid.Row="2"
+                            Background="#1E1E22"
+                            BorderBrush="#3D3D42"
+                            BorderThickness="0,1,0,0"
+                            Padding="10,6"
+                            IsVisible="False">
+                        <TextBlock x:Name="PART_ResultCount"
+                                   FontSize="11"
+                                   Foreground="#7F7F87"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Popup>
     </Grid>
 </UserControl>

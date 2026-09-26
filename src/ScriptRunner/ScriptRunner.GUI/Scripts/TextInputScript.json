@@ -250,6 +250,16 @@
           }
         },
         {
+          "name": "p88",
+          "description": "Dropdown with search",
+          "default": "val3",
+          "prompt": "dropdown",
+          "promptSettings":{
+            "searchable": true,
+            "options":"sol,terra,luna,haiku,sonet,opus,fable,gemini"
+          }
+        },
+        {
           "name": "p9",
           "description": "MultiSelect parameter",
           "default": "val3,val4",
