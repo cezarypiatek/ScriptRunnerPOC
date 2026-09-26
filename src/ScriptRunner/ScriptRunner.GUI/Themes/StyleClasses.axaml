@@ -5,6 +5,24 @@
         xmlns:gui="clr-namespace:ScriptRunner.GUI"
         xmlns:avaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit">
 
+    <!-- Parameter control palette. Neutral states share a cool blue-gray hue;
+         interaction increases lightness, while focus adds saturation. -->
+    <Styles.Resources>
+        <SolidColorBrush x:Key="ParameterSurfaceBrush" Color="#181B20" />
+        <SolidColorBrush x:Key="ParameterSurfaceHoverBrush" Color="#20262E" />
+        <SolidColorBrush x:Key="ParameterSurfacePressedBrush" Color="#29323C" />
+        <SolidColorBrush x:Key="ParameterBorderBrush" Color="#62758A" />
+        <SolidColorBrush x:Key="ParameterBorderHoverBrush" Color="#7C91A8" />
+        <SolidColorBrush x:Key="ParameterAccentBrush" Color="#5AA9FF" />
+        <SolidColorBrush x:Key="ParameterForegroundBrush" Color="#E6EDF3" />
+        <SolidColorBrush x:Key="ParameterMutedForegroundBrush" Color="#A7B0BB" />
+        <SolidColorBrush x:Key="ParameterDividerBrush" Color="#3A4654" />
+        <SolidColorBrush x:Key="ParameterItemHoverBrush" Color="#2B343E" />
+        <SolidColorBrush x:Key="ParameterItemSelectedBrush" Color="#263F59" />
+        <SolidColorBrush x:Key="ParameterItemHighlightedBrush" Color="#31597E" />
+        <SolidColorBrush x:Key="ParameterPopupSurfaceBrush" Color="#20262E" />
+    </Styles.Resources>
+
     <Design.PreviewWith>
         <StackPanel>
             <TextBlock Classes="h1" Text="Heading 1"></TextBlock>
@@ -66,14 +84,18 @@
         </StackPanel>
     </Design.PreviewWith>
     <Style Selector="ComboBox:dropdownopen /template/ Border#PopupBorder">
-        <Setter Property="BorderBrush" Value="#007BFF" />
-        <Setter Property="CornerRadius" Value="0,0,3,3" />
-        <Setter Property="BorderThickness" Value="1,0,1,1" />
+        <Setter Property="Background" Value="{DynamicResource ParameterPopupSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BoxShadow" Value="0 14 36 2 #B0000000, 0 0 18 1 #355AA9FF" />
     </Style>
     <Style Selector="AutoCompleteBox:dropdownopen /template/ Border#PART_SuggestionsContainer">
-        <Setter Property="BorderBrush" Value="#007BFF" />
-        <Setter Property="CornerRadius" Value="0,0,3,3" />
-        <Setter Property="BorderThickness" Value="1,0,1,1" />
+        <Setter Property="Background" Value="{DynamicResource ParameterPopupSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BoxShadow" Value="0 14 36 2 #B0000000, 0 0 18 1 #355AA9FF" />
     </Style>
     <Style Selector="Button.primary">
         <Setter Property="Background" Value="#4A9EFF" />
@@ -327,17 +349,30 @@
 
     <!-- Multiline editor chrome: keep tools outside the editor's scrollable area. -->
     <Style Selector=":is(Border).multilineEditorFrame">
-        <Setter Property="Background" Value="#1E1E1E" />
-        <Setter Property="BorderBrush" Value="#99FFFFFF" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Background" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Padding" Value="1" />
+    </Style>
+
+    <Style Selector="Border.multilineEditorSurface">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
         <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+
+    <Style Selector=":is(Border).multilineEditorFrame:pointerover">
+        <Setter Property="Background" Value="{DynamicResource ParameterBorderHoverBrush}" />
+    </Style>
+
+    <Style Selector=":is(Border).multilineEditorFrame:focus-within">
+        <Setter Property="Background" Value="{DynamicResource ParameterAccentBrush}" />
     </Style>
 
     <Style Selector="Border.multilineEditorToolbar">
         <Setter Property="Height" Value="24" />
-        <Setter Property="Background" Value="#27272B" />
-        <Setter Property="BorderBrush" Value="#505057" />
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterDividerBrush}" />
         <Setter Property="BorderThickness" Value="0,1,0,0" />
     </Style>
 
@@ -349,36 +384,36 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="3" />
-        <Setter Property="Foreground" Value="#D8D8DE" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Style Selector="^:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#3A3A40" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource ParameterItemHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
         </Style>
         <Style Selector="^:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#45454C" />
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfacePressedBrush}" />
         </Style>
     </Style>
 
     <Style Selector="Border.multilineEditorResizeGrip">
         <Setter Property="Width" Value="24" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="#45454B" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterDividerBrush}" />
         <Setter Property="BorderThickness" Value="1,0,0,0" />
     </Style>
 
     <Style Selector="Border.multilineEditorResizeGrip:pointerover">
-        <Setter Property="Background" Value="#3A3A40" />
+        <Setter Property="Background" Value="{DynamicResource ParameterItemHoverBrush}" />
     </Style>
 
     <Style Selector="Border.multilineEditorResizeGrip tanker|Icon">
-        <Setter Property="Foreground" Value="#A8A8B2" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterMutedForegroundBrush}" />
     </Style>
 
     <Style Selector="Border.multilineEditorResizeGrip:pointerover tanker|Icon">
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
     </Style>
 
     <Style Selector="Border.paramDetailsIconHost">
@@ -393,7 +428,7 @@
 
     <Style Selector="Border.paramDetailsIconHost:pointerover">
         <Setter Property="Background" Value="#2E4A9EFF" />
-        <Setter Property="BorderBrush" Value="#4A9EFF" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
     </Style>
 
     <Style Selector="Border.paramDetailsIconHost tanker|Icon.paramDetailsIcon">
@@ -407,42 +442,258 @@
         <Setter Property="Margin" Value="2" />
     </Style>
 
+    <!-- Parameter inputs use the same surface and interaction palette as SearchableComboBox. -->
     <Style Selector="StackPanel.paramRow TextBox">
         <Setter Property="MinWidth" Value="300" />
-        <Setter Property="Background" Value="#1e1e1e" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="5" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow TextBox:pointerover">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow TextBox:focus">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <Style Selector="StackPanel.paramRow ComboBox">
         <Setter Property="MinWidth" Value="300" />
-        <Setter Property="Background" Value="#1e1e1e" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="5" />
     </Style>
 
-    <Style Selector="StackPanel.paramRow ListBox">
+    <Style Selector="StackPanel.paramRow ComboBox:pointerover">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ComboBox:pointerover /template/ Border#Background">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ComboBox:focus-visible">
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ComboBox:focus-visible /template/ Border#HighlightBackground">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ComboBox:dropdownopen">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ComboBox:dropdownopen /template/ Border#Background">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ListBox, StackPanel.paramRow gui|CheckBoxListBox">
         <Setter Property="MinWidth" Value="300" />
-        <Setter Property="Background" Value="#1e1e1e" />
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ListBox:pointerover, StackPanel.paramRow gui|CheckBoxListBox:pointerover">
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ListBox:focus-within, StackPanel.paramRow gui|CheckBoxListBox:focus-within">
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ListBoxItem">
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Margin" Value="0,1" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ParameterItemHoverBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ParameterItemSelectedBrush}" />
     </Style>
     
     <Style Selector="StackPanel.paramRow DatePicker">
-        <Setter Property="Background" Value="#1e1e1e" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="5" />
     </Style>
     
     <Style Selector="StackPanel.paramRow CalendarDatePicker">
-        <Setter Property="Background" Value="#1e1e1e" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="5" />
     </Style>
     
     <Style Selector="StackPanel.paramRow TimePicker">
-        <Setter Property="Background" Value="#1e1e1e" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="5" />
     </Style>
     
     <Style Selector="StackPanel.paramRow NumericUpDown">
-        <Setter Property="Background" Value="#1e1e1e" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="5" />
     </Style>
-    <Style Selector="StackPanel.paramRow views|SearchableComboBox">
-        <Setter Property="Background" Value="#1e1e1e" />
+
+    <Style Selector="StackPanel.paramRow DatePicker:pointerover, StackPanel.paramRow CalendarDatePicker:pointerover, StackPanel.paramRow TimePicker:pointerover, StackPanel.paramRow NumericUpDown:pointerover">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
     </Style>
-    
-    <Style Selector="StackPanel.paramRow gui|CheckBoxListBox">
-        <Setter Property="Background" Value="#1e1e1e" />
+
+    <Style Selector="StackPanel.paramRow DatePicker:focus-within, StackPanel.paramRow CalendarDatePicker:focus-within, StackPanel.paramRow TimePicker:focus-within, StackPanel.paramRow NumericUpDown:focus-within">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow CalendarDatePicker:pointerover /template/ Border#Background">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow CalendarDatePicker:focus-within /template/ Border#Background">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow DatePicker:pointerover /template/ Button#PART_FlyoutButton">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow DatePicker:focus-within /template/ Button#PART_FlyoutButton">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow DatePicker /template/ TextBlock#PART_DayTextBlock, StackPanel.paramRow DatePicker /template/ TextBlock#PART_YearTextBlock">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow DatePicker /template/ TextBlock#PART_MonthTextBlock">
+        <Setter Property="Padding" Value="9,0,0,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- NumericUpDown hosts a TextBox inside a ButtonSpinner. Keep the inner
+         TextBox border transparent and render interaction states on the whole control. -->
+    <Style Selector="StackPanel.paramRow NumericUpDown /template/ TextBox#PART_TextBox /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow NumericUpDown:pointerover /template/ ButtonSpinner#PART_Spinner">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow NumericUpDown:focus-within /template/ ButtonSpinner#PART_Spinner">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow NumericUpDown /template/ RepeatButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ParameterItemHoverBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow NumericUpDown /template/ RepeatButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfacePressedBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow CheckBox">
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow CheckBox:pointerover /template/ Border#NormalRectangle">
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.paramRow CheckBox:focus-visible /template/ Border#NormalRectangle">
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+    </Style>
+
+    <Style Selector="Button.parameterActionButton">
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ParameterMutedForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Style Selector="^:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}" />
+        </Style>
+        <Style Selector="^:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfacePressedBrush}" />
+        </Style>
+        <Style Selector="^:focus-visible /template/ ContentPresenter">
+            <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}" />
+        </Style>
     </Style>
     
 

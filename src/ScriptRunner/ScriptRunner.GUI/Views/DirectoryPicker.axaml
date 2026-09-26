@@ -11,6 +11,6 @@
             <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <TextBox Grid.Column="0" x:Name="DirPathTextBox" IsReadOnly="True" MinWidth="1"></TextBox>
-        <Button avalonia:Attached.Icon="fas fa-folder-open" Margin="5,0" ToolTip.Tip="Choose directory"  Grid.Column="1" Width="50" Click="ChangeDirClick" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Button>
+        <Button Classes="parameterActionButton" avalonia:Attached.Icon="fas fa-folder-open" Margin="5,0" ToolTip.Tip="Choose directory"  Grid.Column="1" Width="50" Click="ChangeDirClick" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Button>
     </Grid>
 </UserControl>

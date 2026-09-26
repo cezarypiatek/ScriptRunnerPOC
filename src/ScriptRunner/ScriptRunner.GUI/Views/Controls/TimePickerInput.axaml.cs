@@ -360,13 +360,13 @@ namespace ScriptRunner.GUI.Views.Controls
             
             if (isHour)
             {
-                _hourBorder.Background = new SolidColorBrush(Color.Parse("#7B1FA2")); // Active purple
-                _minuteBorder.Background = new SolidColorBrush(Color.Parse("#38383B")); // Inactive grey
+                _hourBorder.Background = new SolidColorBrush(Color.Parse("#5AA9FF")); // Active accent
+                _minuteBorder.Background = new SolidColorBrush(Color.Parse("#29323C")); // Inactive surface
             }
             else
             {
-                _hourBorder.Background = new SolidColorBrush(Color.Parse("#38383B"));
-                _minuteBorder.Background = new SolidColorBrush(Color.Parse("#7B1FA2"));
+                _hourBorder.Background = new SolidColorBrush(Color.Parse("#29323C"));
+                _minuteBorder.Background = new SolidColorBrush(Color.Parse("#5AA9FF"));
             }
             
             DrawNumbers();
@@ -378,17 +378,17 @@ namespace ScriptRunner.GUI.Views.Controls
             _isAm = isAm;
             if (isAm)
             {
-                _amBorder.Background = new SolidColorBrush(Color.Parse("#7B1FA2"));
+                _amBorder.Background = new SolidColorBrush(Color.Parse("#5AA9FF"));
                 _amText.Foreground = Brushes.White;
                 _pmBorder.Background = Brushes.Transparent;
-                _pmText.Foreground = new SolidColorBrush(Color.Parse("#A0A0A0"));
+                _pmText.Foreground = new SolidColorBrush(Color.Parse("#A7B0BB"));
             }
             else
             {
-                _pmBorder.Background = new SolidColorBrush(Color.Parse("#7B1FA2"));
+                _pmBorder.Background = new SolidColorBrush(Color.Parse("#5AA9FF"));
                 _pmText.Foreground = Brushes.White;
                 _amBorder.Background = Brushes.Transparent;
-                _amText.Foreground = new SolidColorBrush(Color.Parse("#A0A0A0"));
+                _amText.Foreground = new SolidColorBrush(Color.Parse("#A7B0BB"));
             }
         }
 

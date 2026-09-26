@@ -23,7 +23,11 @@ internal sealed class MultilineEditorHost : Border
         _resizeCoordinateSpace = resizeCoordinateSpace;
 
         Classes.Add("multilineEditorFrame");
-        Child = CreateLayout();
+        Child = new Border
+        {
+            Classes = { "multilineEditorSurface" },
+            Child = CreateLayout()
+        };
     }
 
     private Control CreateLayout()

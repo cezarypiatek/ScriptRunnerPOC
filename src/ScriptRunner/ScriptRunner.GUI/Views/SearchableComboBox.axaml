@@ -13,8 +13,8 @@
         <Style Selector="Button.comboSurface">
             <Setter Property="MinHeight" Value="36"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="Background" Value="#18181C"/>
-            <Setter Property="BorderBrush" Value="#48484E"/>
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -22,30 +22,40 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.comboSurface:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#202025"/>
-            <Setter Property="BorderBrush" Value="#66666D"/>
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}"/>
         </Style>
         <Style Selector="Button.comboSurface:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#25252A"/>
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfacePressedBrush}"/>
         </Style>
         <Style Selector="Button.comboSurface:focus-visible /template/ ContentPresenter">
-            <Setter Property="BorderBrush" Value="#4A9EFF"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}"/>
         </Style>
         <Style Selector="Button.comboSurface.open /template/ ContentPresenter">
-            <Setter Property="BorderBrush" Value="#4A9EFF"/>
-            <Setter Property="Background" Value="#202025"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}"/>
         </Style>
 
         <!-- Search belongs to the popup, so the selected value is never shown
              as editable/highlighted text. The TextBox owns the only border. -->
         <Style Selector="TextBox.queryInput">
             <Setter Property="MinHeight" Value="36"/>
-            <Setter Property="Background" Value="#18181C"/>
-            <Setter Property="BorderBrush" Value="#48484E"/>
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ParameterForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="TextBox.queryInput:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfaceHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ParameterBorderHoverBrush}"/>
+        </Style>
+        <Style Selector="TextBox.queryInput:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{DynamicResource ParameterSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ParameterAccentBrush}"/>
         </Style>
 
         <Style Selector="Button.resultItem">
@@ -59,13 +69,13 @@
             <Setter Property="FocusAdorner" Value="{x:Null}"/>
         </Style>
         <Style Selector="Button.resultItem:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#35353A"/>
+            <Setter Property="Background" Value="{DynamicResource ParameterItemHoverBrush}"/>
         </Style>
         <Style Selector="Button.resultItem.current /template/ ContentPresenter">
-            <Setter Property="Background" Value="#263B50"/>
+            <Setter Property="Background" Value="{DynamicResource ParameterItemSelectedBrush}"/>
         </Style>
         <Style Selector="Button.resultItem.highlighted /template/ ContentPresenter">
-            <Setter Property="Background" Value="#354F68"/>
+            <Setter Property="Background" Value="{DynamicResource ParameterItemHighlightedBrush}"/>
         </Style>
     </UserControl.Styles>
 
@@ -81,7 +91,7 @@
                 <TextBlock x:Name="PART_SelectedText"
                            Grid.Column="0"
                            Margin="12,0,8,0"
-                           Foreground="#E2E2E5"
+                           Foreground="{DynamicResource ParameterForegroundBrush}"
                            TextTrimming="CharacterEllipsis"
                            VerticalAlignment="Center"/>
 
@@ -89,7 +99,7 @@
                         Width="1"
                         Height="20"
                         Margin="0,0,10,0"
-                        Background="#3D3D42"
+                        Background="{DynamicResource ParameterDividerBrush}"
                         VerticalAlignment="Center"/>
 
                 <avalonia:Icon x:Name="PART_Chevron"
@@ -98,7 +108,7 @@
                                Width="11"
                                Height="11"
                                Margin="0,0,11,0"
-                               Foreground="#A0A0A0"
+                               Foreground="{DynamicResource ParameterMutedForegroundBrush}"
                                VerticalAlignment="Center"
                                IsHitTestVisible="False"/>
             </Grid>
@@ -111,11 +121,11 @@
                OverlayDismissEventPassThrough="True">
             <Border x:Name="PART_PopupBorder"
                     MinWidth="240"
-                    Background="#242428"
-                    BorderBrush="#66788A"
+                    Background="{DynamicResource ParameterPopupSurfaceBrush}"
+                    BorderBrush="{DynamicResource ParameterBorderHoverBrush}"
                     BorderThickness="1"
                     CornerRadius="6"
-                    BoxShadow="0 14 36 2 #B0000000, 0 0 18 1 #354A9EFF"
+                    BoxShadow="0 14 36 2 #B0000000, 0 0 18 1 #355AA9FF"
                     ClipToBounds="True">
                 <Grid RowDefinitions="Auto,*,Auto">
                     <TextBox x:Name="PART_QueryBox"
@@ -130,7 +140,7 @@
                                            Width="13"
                                            Height="13"
                                            Margin="10,0,7,0"
-                                           Foreground="#77777F"
+                                           Foreground="{DynamicResource ParameterMutedForegroundBrush}"
                                            VerticalAlignment="Center"
                                            IsHitTestVisible="False"/>
                         </TextBox.InnerLeftContent>
@@ -154,23 +164,23 @@
                             <avalonia:Icon Value="fas fa-search"
                                            Width="16"
                                            Height="16"
-                                           Foreground="#6F6F77"
+                                           Foreground="{DynamicResource ParameterMutedForegroundBrush}"
                                            HorizontalAlignment="Center"/>
                             <TextBlock Text="No matching options"
-                                       Foreground="#9999A1"/>
+                                       Foreground="{DynamicResource ParameterMutedForegroundBrush}"/>
                         </StackPanel>
                     </Grid>
 
                     <Border x:Name="PART_ResultFooter"
                             Grid.Row="2"
-                            Background="#1E1E22"
-                            BorderBrush="#3D3D42"
+                            Background="{DynamicResource ParameterSurfaceBrush}"
+                            BorderBrush="{DynamicResource ParameterDividerBrush}"
                             BorderThickness="0,1,0,0"
                             Padding="10,6"
                             IsVisible="False">
                         <TextBlock x:Name="PART_ResultCount"
                                    FontSize="11"
-                                   Foreground="#7F7F87"/>
+                                   Foreground="{DynamicResource ParameterMutedForegroundBrush}"/>
                     </Border>
                 </Grid>
             </Border>

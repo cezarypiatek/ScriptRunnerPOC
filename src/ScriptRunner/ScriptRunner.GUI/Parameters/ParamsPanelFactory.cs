@@ -97,7 +97,7 @@ public class ParamsPanelFactory
                     Width = 7,
                     Height = 7,
                     CornerRadius = new CornerRadius(4),
-                    Background = new SolidColorBrush(Color.Parse("#4A9EFF")),
+                    Background = new SolidColorBrush(Color.Parse("#5AA9FF")),
                     Margin = new Thickness(3, 0, 0, 0),
                     VerticalAlignment = VerticalAlignment.Center
                 };
@@ -153,6 +153,7 @@ public class ParamsPanelFactory
             {
                 var generateButton = new Button()
                 {
+                    Classes = { "parameterActionButton" },
                     Margin = new(5,0,5,0),
                     Width = 50,
                     VerticalAlignment = VerticalAlignment.Stretch,
@@ -465,6 +466,7 @@ public class ParamsPanelFactory
                 {
                     var generateButton = new Button()
                     {
+                        Classes = { "parameterActionButton" },
                         Margin = new(5,0,5,0),
                         Width = 32,
                         VerticalAlignment = VerticalAlignment.Stretch,
@@ -549,9 +551,6 @@ public class ParamsPanelFactory
                         SelectedItems = new AvaloniaList<DropdownOption>(selectedDropdownOptions),
                         TabIndex = index,
                         IsTabStop = true,
-                        BorderBrush = new SolidColorBrush(Color.Parse("#99ffffff")),
-                        CornerRadius = new CornerRadius(3),
-                        BorderThickness = new Thickness(1),
                         Width = 500
                     },
                     Delimiter = delimiter,
@@ -751,13 +750,13 @@ public class ParamsPanelFactory
             Width = 500,
             ShowLineNumbers = true,
             FontFamily = new FontFamily("Cascadia Code,Consolas,Menlo,Monospace"),
-            Background = new SolidColorBrush(Color.FromRgb(30, 30, 30)),
-            BorderBrush = new SolidColorBrush(Color.FromArgb(153, 255, 255,255)),
+            Background = new SolidColorBrush(Color.Parse("#181B20")),
+            BorderBrush = new SolidColorBrush(Color.Parse("#62758A")),
             BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(3)
+            CornerRadius = new CornerRadius(5)
         };
         textEditor.TextArea.TextView.Margin = new Thickness(10, 0);
-        textEditor.TextArea.TextView.LinkTextForegroundBrush = new SolidColorBrush(Color.Parse("#4A9EFF"));
+        textEditor.TextArea.TextView.LinkTextForegroundBrush = new SolidColorBrush(Color.Parse("#5AA9FF"));
         
         // Store syntax as Tag so it can be retrieved later
         textEditor.Tag = syntax;
