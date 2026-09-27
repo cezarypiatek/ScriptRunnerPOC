@@ -125,10 +125,17 @@ public partial class ActionsList : UserControl
             }
 
             if (DataContext is MainWindowViewModel viewModel)
-            {
-                viewModel.SelectedCategoryFilter = category;
-                // Gray state will be updated by PropertyChanged handler
-            }
+			{
+				if (viewModel.SelectedCategoryFilter != category)
+				{
+					viewModel.SelectedCategoryFilter = category;
+				}
+				else if (category != "All")
+				{
+					viewModel.SelectedCategoryFilter = "All";
+				}
+				// Gray state will be updated by PropertyChanged handler
+			}
         }
     }
 
