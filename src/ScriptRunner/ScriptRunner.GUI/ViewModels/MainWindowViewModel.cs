@@ -756,9 +756,30 @@ public class MainWindowViewModel : ReactiveObject
         
     }
 
-    public void InstallUpdate()
+    private bool _isInstallingUpdate;
+
+    public bool IsInstallingUpdate
     {
-        appUpdater.InstallLatestVersion();
+        get => _isInstallingUpdate;
+        private set => this.RaiseAndSetIfChanged(ref _isInstallingUpdate, value);
+    }
+
+    public async Task InstallUpdate()
+    {
+        if (IsInstallingUpdate)
+        {
+            return;
+        }
+
+        IsInstallingUpdate = true;
+        try
+        {
+            await appUpdater.InstallLatestVersionAsync();
+        }
+        finally
+        {
+            IsInstallingUpdate = false;
+        }
     }
 
     public void DismissNewVersionAvailable()

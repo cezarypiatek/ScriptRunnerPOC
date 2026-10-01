@@ -54,6 +54,7 @@
                     <Button Classes="primary" 
                             Margin="0,0,8,0" 
                             Command="{Binding InstallUpdate}"
+                            IsEnabled="{Binding !IsInstallingUpdate}"
                             ToolTip.Tip="Download and install the update">
                         <StackPanel Orientation="Horizontal">
                             <icons:Icon Value="fas fa-rocket" FontSize="12" Margin="0,0,5,0"/>

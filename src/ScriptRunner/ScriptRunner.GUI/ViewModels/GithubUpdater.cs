@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScriptRunner.GUI.ViewModels;
@@ -78,29 +79,40 @@ public class GithubUpdater
         });
     }
 
-    public void InstallLatestVersion()
+    public async Task InstallLatestVersionAsync(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(LatestVersionDownloadLink) == false)
         {
             var installerPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ScriptRunnerUpdater");
-            if (Directory.Exists(installerPath))
+            await Task.Run(() =>
             {
-                Directory.Delete(installerPath, true);
-            }
-            Directory.CreateDirectory(installerPath);
-            ExtractArchiveFile(this.GetType().Assembly, "AppInstaller.zip", installerPath);
+                if (Directory.Exists(installerPath))
+                {
+                    Directory.Delete(installerPath, true);
+                }
+
+                Directory.CreateDirectory(installerPath);
+                ExtractArchiveFile(this.GetType().Assembly, "AppInstaller.zip", installerPath);
+            }, cancellationToken).ConfigureAwait(false);
             
-            var currentProcess = Process.GetCurrentProcess();
-            if (currentProcess.ProcessName == "scriptrunnergui")
+            using var currentProcess = Process.GetCurrentProcess();
+            if (string.Equals(currentProcess.ProcessName, "scriptrunnergui", StringComparison.OrdinalIgnoreCase))
             {
-                Process.Start(new ProcessStartInfo("dotnet")
+                var startInfo = new ProcessStartInfo("dotnet")
                 {
                     WorkingDirectory = Path.Combine(installerPath, "AppInstaller"),
                     UseShellExecute = true,
                     CreateNoWindow = false,
-                    WindowStyle = ProcessWindowStyle.Normal,
-                    Arguments = "AppInstaller.dll dotnet-tool --packageName scriptrunnergui"
-                });
+                    WindowStyle = ProcessWindowStyle.Normal
+                };
+                startInfo.ArgumentList.Add("AppInstaller.dll");
+                startInfo.ArgumentList.Add("dotnet-tool");
+                startInfo.ArgumentList.Add("--packageName");
+                startInfo.ArgumentList.Add("scriptrunnergui");
+                startInfo.ArgumentList.Add("--processId");
+                startInfo.ArgumentList.Add(currentProcess.Id.ToString());
+
+                Process.Start(startInfo);
                 currentProcess.Kill();
             }
             else

@@ -5,6 +5,8 @@ using System.IO.Compression;
 
 internal class Program
 {
+    private static readonly TimeSpan ParentProcessExitTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan ToolUpdateTimeout = TimeSpan.FromMinutes(5);
 
     public static async Task Main(string[] args)
     {
@@ -39,14 +41,30 @@ internal class Program
         updateDotnetToolCommand.AddOption(packageNameOption);
         var versionOption = new Option<string>("--version") {IsRequired = false};
         updateDotnetToolCommand.AddOption(versionOption);
-        updateDotnetToolCommand.SetHandler((packageName, version) =>
+        var processIdOption = new Option<int>("--processId") {IsRequired = true};
+        updateDotnetToolCommand.AddOption(processIdOption);
+        updateDotnetToolCommand.SetHandler(async (packageName, version, processId) =>
         {
+            if (await WaitForProcessExitAsync(processId, ParentProcessExitTimeout) == false)
+            {
+                Console.Error.WriteLine($"Application process {processId} did not exit within {ParentProcessExitTimeout.TotalSeconds:N0} seconds. Update cancelled.");
+                return;
+            }
+
             Console.WriteLine($"Updating dotnet tool {packageName}");
             var command = string.IsNullOrWhiteSpace(version) == false 
                 ? $"tool update {packageName} --global --no-cache --ignore-failed-sources --version {version} --verbosity diag --configfile nuget.config"
                 : $"tool update {packageName} --global --no-cache --ignore-failed-sources --verbosity diag --configfile nuget.config";
-            var process = Process.Start("dotnet", command);
-            process.WaitForExit();
+            using var process = Process.Start("dotnet", command)
+                ?? throw new InvalidOperationException("Failed to start the dotnet tool updater.");
+
+            if (await WaitForProcessExitAsync(process, ToolUpdateTimeout) == false)
+            {
+                Console.Error.WriteLine($"The dotnet tool update did not finish within {ToolUpdateTimeout.TotalMinutes:N0} minutes. Update cancelled.");
+                TryKillProcessTree(process);
+                return;
+            }
+
             if (process.ExitCode != 0)
             {
                 Console.WriteLine("Press key to continue...");
@@ -54,8 +72,51 @@ internal class Program
             }
             
             Process.Start(packageName);
-        }, packageNameOption, versionOption);
+        }, packageNameOption, versionOption, processIdOption);
         return updateDotnetToolCommand;
+    }
+
+    private static async Task<bool> WaitForProcessExitAsync(int processId, TimeSpan timeout)
+    {
+        try
+        {
+            using var process = Process.GetProcessById(processId);
+            return await WaitForProcessExitAsync(process, timeout);
+        }
+        catch (ArgumentException)
+        {
+            // The application exited before the installer obtained its process handle.
+            return true;
+        }
+    }
+
+    private static async Task<bool> WaitForProcessExitAsync(Process process, TimeSpan timeout)
+    {
+        using var timeoutSource = new CancellationTokenSource(timeout);
+        try
+        {
+            await process.WaitForExitAsync(timeoutSource.Token);
+            return true;
+        }
+        catch (OperationCanceledException) when (timeoutSource.IsCancellationRequested)
+        {
+            return false;
+        }
+    }
+
+    private static void TryKillProcessTree(Process process)
+    {
+        try
+        {
+            if (process.HasExited == false)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // The process exited between checking HasExited and killing it.
+        }
     }
     
     private static Command CreateDownloadZipCommand()
