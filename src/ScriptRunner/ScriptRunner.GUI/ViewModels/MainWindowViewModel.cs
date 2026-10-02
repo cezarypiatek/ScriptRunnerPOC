@@ -170,7 +170,16 @@ public class MainWindowViewModel : ReactiveObject
     public string SelectedCategoryFilter
     {
         get => _selectedCategoryFilter;
-        set => this.RaiseAndSetIfChanged(ref _selectedCategoryFilter, value);
+        set
+        {
+            if (_selectedCategoryFilter == value)
+            {
+                return;
+            }
+
+            this.RaiseAndSetIfChanged(ref _selectedCategoryFilter, value);
+            UpdateCategoryFilterStates();
+        }
     }
 
     private string _selectedCategoryFilter = AllCategoryFilter;
@@ -326,6 +335,19 @@ public class MainWindowViewModel : ReactiveObject
             return installInfo.IsInstalled;
         }
         return false;
+    }
+
+    private void UpdateCategoryFilterStates()
+    {
+        if (_availableCategories?.Value == null)
+        {
+            return;
+        }
+
+        foreach (var category in _availableCategories.Value)
+        {
+            category.UpdateState(SelectedCategoryFilter);
+        }
     }
 
     public bool ShowNewVersionAvailable
@@ -488,6 +510,12 @@ public class MainWindowViewModel : ReactiveObject
                 {
                     categories.Add(new CategoryFilterOption("(No Category)", "(No Category)", false));
                 }
+
+                foreach (var category in categories)
+                {
+                    category.UpdateState(SelectedCategoryFilter);
+                }
+
                 return categories.AsEnumerable();
             })
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -1895,7 +1923,39 @@ public record RecentAction(ActionId ActionId, DateTime Timestamp);
 
 public record ActionId(string SourceName, string ActionName, string ParameterSet);
 
-public record CategoryFilterOption(string Key, string DisplayName, bool IsFavorite);
+public class CategoryFilterOption : ReactiveObject
+{
+    public CategoryFilterOption(string key, string displayName, bool isFavorite)
+    {
+        Key = key;
+        DisplayName = displayName;
+        IsFavorite = isFavorite;
+    }
+
+    public string Key { get; }
+    public string DisplayName { get; }
+    public bool IsFavorite { get; }
+
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        private set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+    }
+
+    private bool _isDimmed;
+    public bool IsDimmed
+    {
+        get => _isDimmed;
+        private set => this.RaiseAndSetIfChanged(ref _isDimmed, value);
+    }
+
+    public void UpdateState(string selectedFilter)
+    {
+        IsSelected = Key == selectedFilter;
+        IsDimmed = selectedFilter != MainWindowViewModel.AllCategoryFilter && !IsSelected;
+    }
+}
 
 public class ScriptConfigGroupWrapper
 {

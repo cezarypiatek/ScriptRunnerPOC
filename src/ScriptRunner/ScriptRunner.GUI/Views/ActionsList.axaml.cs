@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.VisualTree;
 using ScriptRunner.GUI.ViewModels;
 
 namespace ScriptRunner.GUI.Views;
@@ -13,27 +10,16 @@ public partial class ActionsList : UserControl
 {
     private Border? _previouslySelectedBorder;
     private bool _isInternalSelection;
-    private readonly List<Border> _categoryBadges = new();
 
     public ActionsList()
     {
         InitializeComponent();
         this.DataContextChanged += OnDataContextChanged;
-        this.Loaded += OnLoaded;
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
-    }
-
-    private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        // Give the UI time to render, then find all category badges
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-        {
-            FindAndTrackAllCategoryBadges();
-        }, Avalonia.Threading.DispatcherPriority.Loaded);
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
@@ -53,21 +39,6 @@ public partial class ActionsList : UserControl
                             _previouslySelectedBorder = null;
                         }
                     }
-                }
-                else if (args.PropertyName == nameof(MainWindowViewModel.SelectedCategoryFilter))
-                {
-                    // Update grayed state of all category badges when selection changes
-                    UpdateCategoryBadgesGrayedState();
-                }
-                else if (args.PropertyName == nameof(MainWindowViewModel.AvailableCategories))
-                {
-                    // When categories change, re-scan for badges
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                    {
-                        _categoryBadges.Clear();
-                        FindAndTrackAllCategoryBadges();
-                        UpdateCategoryBadgesGrayedState();
-                    }, Avalonia.Threading.DispatcherPriority.Loaded);
                 }
             };
         }
@@ -119,12 +90,6 @@ public partial class ActionsList : UserControl
         if (sender is Border border && border.DataContext is CategoryFilterOption filter)
         {
             var category = filter.Key;
-            // Track this badge if not already tracked
-            if (!_categoryBadges.Contains(border))
-            {
-                _categoryBadges.Add(border);
-            }
-
             if (DataContext is MainWindowViewModel viewModel)
 			{
 				if (viewModel.SelectedCategoryFilter != category)
@@ -135,51 +100,7 @@ public partial class ActionsList : UserControl
 				{
 					viewModel.SelectedCategoryFilter = MainWindowViewModel.AllCategoryFilter;
 				}
-				// Gray state will be updated by PropertyChanged handler
 			}
-        }
-    }
-
-    private void UpdateCategoryBadgesGrayedState()
-    {
-        if (DataContext is not MainWindowViewModel viewModel)
-            return;
-
-        var selectedCategory = viewModel.SelectedCategoryFilter;
-        var shouldGrayOut = !string.IsNullOrEmpty(selectedCategory) && selectedCategory != MainWindowViewModel.AllCategoryFilter;
-
-        // Update all tracked badges
-        foreach (var badge in _categoryBadges.ToList())
-        {
-            if (badge.DataContext is CategoryFilterOption filter)
-            {
-                var category = filter.Key;
-                if (shouldGrayOut && category != selectedCategory)
-                {
-                    badge.Classes.Add("grayed");
-                }
-                else
-                {
-                    badge.Classes.Remove("grayed");
-                }
-            }
-        }
-    }
-
-    private void FindAndTrackAllCategoryBadges()
-    {
-        // Find all Border elements with the categoryBadge class
-        var allBadges = this.GetVisualDescendants()
-            .OfType<Border>()
-            .Where(b => b.Classes.Contains("categoryBadge"))
-            .ToList();
-
-        foreach (var badge in allBadges)
-        {
-            if (!_categoryBadges.Contains(badge))
-            {
-                _categoryBadges.Add(badge);
-            }
         }
     }
 }

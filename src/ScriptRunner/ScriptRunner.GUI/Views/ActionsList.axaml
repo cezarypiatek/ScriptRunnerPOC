@@ -86,7 +86,8 @@
                                 Margin="0,0,4,4"
                                 Cursor="Hand"
                                 Classes="categoryBadge"
-                                Classes.selected="{Binding $parent[UserControl].((viewModels:MainWindowViewModel)DataContext).SelectedCategoryFilter, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={Binding Key}}"
+                                Classes.selected="{Binding IsSelected}"
+                                Classes.grayed="{Binding IsDimmed}"
                                 Tapped="CategoryBadge_OnTapped"
                                 Name="CategoryBadgeBorder">
                             <Border.Styles>
@@ -100,8 +101,6 @@
                                     <Setter Property="Opacity" Value="0.8"/>
                                 </Style>
                                 <Style Selector="Border.categoryBadge.selected">
-                                    <Setter Property="BorderBrush" Value="White"/>
-                                    <Setter Property="BorderThickness" Value="2"/>
                                     <Setter Property="Opacity" Value="1"/>
                                 </Style>
                                 <Style Selector="Border.categoryBadge.selected:pointerover">
