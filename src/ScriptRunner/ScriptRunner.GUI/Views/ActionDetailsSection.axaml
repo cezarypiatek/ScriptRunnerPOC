@@ -69,6 +69,24 @@
 
                 <!-- Actions Column -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top" Spacing="4">
+                  <Button
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="8"
+                    Cursor="Hand"
+                    ToolTip.Tip="{Binding SelectedActionFavoriteToolTip}"
+                    Command="{Binding ToggleFavoriteCommand}">
+                    <Button.Styles>
+                      <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#303035"/>
+                      </Style>
+                      <Style Selector="Button:pressed /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#151518"/>
+                      </Style>
+                    </Button.Styles>
+                    <avalonia:Icon Value="{Binding SelectedActionFavoriteIcon}" Width="17" Height="17" Foreground="{Binding SelectedActionFavoriteColor}" />
+                  </Button>
+
                   <!-- Compact details toggle shares the header action area to avoid a full-width footer row. -->
                   <Button
                     Background="Transparent"

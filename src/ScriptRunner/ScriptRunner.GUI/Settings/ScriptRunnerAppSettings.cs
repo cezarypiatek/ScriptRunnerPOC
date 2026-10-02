@@ -8,6 +8,7 @@ public class ScriptRunnerAppSettings
 {
     public LayoutSettings? Layout { get; set; }
     public Dictionary<string, CommandInstallationStatus> InstalledActions { get; set; }
+    public List<string> FavoriteActions { get; set; } = new();
     public List<ConfigScriptEntry>? ConfigScripts { get; set; }
     public List<VaultBinding> VaultBindings { get; set; }
     public List<ActionDefaultOverrides> DefaultOverrides { get; set; }

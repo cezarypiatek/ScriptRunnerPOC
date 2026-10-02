@@ -35,6 +35,10 @@ namespace ScriptRunner.GUI.ViewModels;
 public class MainWindowViewModel : ReactiveObject
 {
     private static readonly SolidColorBrush ParameterBrush = new SolidColorBrush(new Color(255, 52, 215, 153));
+    public const string AllCategoryFilter = "All";
+    public const string FavoritesCategoryFilter = "__favorites__";
+
+    private readonly HashSet<string> _favoriteActionKeys;
 
     public bool IsScriptListVisible
     {
@@ -130,6 +134,7 @@ public class MainWindowViewModel : ReactiveObject
     public IReactiveCommand SaveAsPredefinedCommand { get; set; }
 
     public ReactiveCommand<TaggedScriptConfig, Unit> SelectActionCommand { get; set; }
+    public ReactiveCommand<Unit, Unit> ToggleFavoriteCommand { get; set; }
 
     private readonly ParamsPanelFactory _paramsPanelFactory;
     private readonly VaultProvider _vaultProvider;
@@ -168,10 +173,17 @@ public class MainWindowViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _selectedCategoryFilter, value);
     }
 
-    private string _selectedCategoryFilter = "All";
+    private string _selectedCategoryFilter = AllCategoryFilter;
 
-    private readonly ObservableAsPropertyHelper<IEnumerable<string>> _availableCategories;
-    public IEnumerable<string> AvailableCategories => _availableCategories.Value;
+    private readonly ObservableAsPropertyHelper<IEnumerable<CategoryFilterOption>> _availableCategories;
+    public IEnumerable<CategoryFilterOption> AvailableCategories => _availableCategories.Value;
+
+    private int _favoriteActionsRevision;
+    public int FavoriteActionsRevision
+    {
+        get => _favoriteActionsRevision;
+        private set => this.RaiseAndSetIfChanged(ref _favoriteActionsRevision, value);
+    }
 
     private readonly ObservableAsPropertyHelper<IEnumerable<TaggedScriptConfig>> _filteredActionList;
     public IEnumerable<TaggedScriptConfig> FilteredActionList => _filteredActionList.Value;
@@ -270,8 +282,28 @@ public class MainWindowViewModel : ReactiveObject
             SelectedActionInstalled = InstallAvailable == false || IsActionInstalled(value.Name);
             IsActionSelected = true;
             HasParams = value.Params.Any();
+            IsSelectedActionFavorite = _favoriteActionKeys.Contains(value.FullName);
         }
     }
+
+    private bool _isSelectedActionFavorite;
+    public bool IsSelectedActionFavorite
+    {
+        get => _isSelectedActionFavorite;
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _isSelectedActionFavorite, value);
+            this.RaisePropertyChanged(nameof(SelectedActionFavoriteIcon));
+            this.RaisePropertyChanged(nameof(SelectedActionFavoriteColor));
+            this.RaisePropertyChanged(nameof(SelectedActionFavoriteToolTip));
+        }
+    }
+
+    public string SelectedActionFavoriteIcon => IsSelectedActionFavorite ? "fas fa-star" : "far fa-star";
+    public string SelectedActionFavoriteColor => IsSelectedActionFavorite ? "#FFD166" : "#A0A0A0";
+    public string SelectedActionFavoriteToolTip => IsSelectedActionFavorite
+        ? "Remove from favorites"
+        : "Add to favorites";
     
     public KeyGesture SearchBoxHotKey
     {
@@ -318,6 +350,9 @@ public class MainWindowViewModel : ReactiveObject
     {
         CompactedHistoryForCurrent = true;
         _notificationService = notificationService;
+        _favoriteActionKeys = new HashSet<string>(
+            AppSettingsService.Load().FavoriteActions ?? Enumerable.Empty<string>(),
+            StringComparer.Ordinal);
         this._configRepositoryUpdater = new ConfigRepositoryUpdater(new CliRepositoryClient(command =>
         {
             var tcs = new TaskCompletionSource<CliCommandOutputs>();
@@ -350,6 +385,27 @@ public class MainWindowViewModel : ReactiveObject
             }
 
             return Unit.Default;
+        });
+        ToggleFavoriteCommand = ReactiveCommand.Create(() =>
+        {
+            if (SelectedAction is not { } selectedAction)
+            {
+                return;
+            }
+
+            var isFavorite = !_favoriteActionKeys.Contains(selectedAction.FullName);
+            if (isFavorite)
+            {
+                _favoriteActionKeys.Add(selectedAction.FullName);
+            }
+            else
+            {
+                _favoriteActionKeys.Remove(selectedAction.FullName);
+            }
+
+            AppSettingsService.SetActionFavorite(selectedAction.FullName, isFavorite);
+            IsSelectedActionFavorite = isFavorite;
+            FavoriteActionsRevision++;
         });
         _paramsPanelFactory = paramsPanelFactory;
         _vaultProvider = vaultProvider;
@@ -416,32 +472,41 @@ public class MainWindowViewModel : ReactiveObject
         this.WhenAnyValue(x => x.Actions)
             .Select(actions =>
             {
-                var categories = new List<string> { "All" };
+                var categories = new List<CategoryFilterOption>
+                {
+                    new(FavoritesCategoryFilter, string.Empty, true),
+                    new(AllCategoryFilter, AllCategoryFilter, false)
+                };
                 var allCategories = actions
                     .SelectMany(a => a.Categories ?? Enumerable.Empty<string>())
                     .Where(c => !string.IsNullOrWhiteSpace(c))
                     .Distinct()
                     .OrderBy(c => c);
-                categories.AddRange(allCategories);
+                categories.AddRange(allCategories.Select(category =>
+                    new CategoryFilterOption(category, category, false)));
                 if (actions.Any(a => a.Categories == null || a.Categories.Count == 0))
                 {
-                    categories.Add("(No Category)");
+                    categories.Add(new CategoryFilterOption("(No Category)", "(No Category)", false));
                 }
                 return categories.AsEnumerable();
             })
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.AvailableCategories, out _availableCategories);
         
-        this.WhenAnyValue(x => x.ActionFilter, x => x.SelectedCategoryFilter, x => x.Actions)
+        this.WhenAnyValue(x => x.ActionFilter, x => x.SelectedCategoryFilter, x => x.Actions, x => x.FavoriteActionsRevision)
             .Throttle(TimeSpan.FromMilliseconds(200))
             .DistinctUntilChanged()
             .Select((tuple, cancellationToken) =>
             {
-                var (textFilter, categoryFilter, actions) = tuple;
+                var (textFilter, categoryFilter, actions, _) = tuple;
                 
                 // Apply category filter first
                 IEnumerable<ScriptConfig> configs = actions;
-                if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != "All")
+                if (categoryFilter == FavoritesCategoryFilter)
+                {
+                    configs = configs.Where(action => _favoriteActionKeys.Contains(action.FullName));
+                }
+                else if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != AllCategoryFilter)
                 {
                     if (categoryFilter == "(No Category)")
                     {
@@ -459,7 +524,7 @@ public class MainWindowViewModel : ReactiveObject
                 {
                     // Determine the tag for this action
                     string tag;
-                    if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != "All")
+                    if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != AllCategoryFilter && categoryFilter != FavoritesCategoryFilter)
                     {
                         tag = categoryFilter;
                     }
@@ -477,7 +542,8 @@ public class MainWindowViewModel : ReactiveObject
                         tag,
                         p.Description == "<default>" ? c.Name : $"{c.Name} - {p.Description}",
                         c,
-                        p
+                        p,
+                        _favoriteActionKeys.Contains(c.FullName)
                     ));
                 });
                 
@@ -1829,13 +1895,20 @@ public record RecentAction(ActionId ActionId, DateTime Timestamp);
 
 public record ActionId(string SourceName, string ActionName, string ParameterSet);
 
+public record CategoryFilterOption(string Key, string DisplayName, bool IsFavorite);
+
 public class ScriptConfigGroupWrapper
 {
     public string Name { get; set; }
     public IEnumerable<TaggedScriptConfig> Children { get; set; }
 }
 
-public record TaggedScriptConfig(string Tag, string Name, ScriptConfig Config, ArgumentSet ArgumentSet = null)
+public record TaggedScriptConfig(
+    string Tag,
+    string Name,
+    ScriptConfig Config,
+    ArgumentSet ArgumentSet = null,
+    bool IsFavorite = false)
 {
     public string IconName => ArgumentSet?.Description == "<default>" ?"fa-scroll":"fa-list-ul";
     public string IconColor => ArgumentSet?.Description == "<default>" ? "#3baced" : "#ff8c00";

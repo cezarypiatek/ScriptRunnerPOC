@@ -79,14 +79,14 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="{Binding Converter={StaticResource CategoryToColorConverter}}" 
+                    <DataTemplate x:DataType="viewModels:CategoryFilterOption">
+                        <Border Background="{Binding Key, Converter={StaticResource CategoryToColorConverter}}"
                                 CornerRadius="3" 
                                 Padding="8,4" 
                                 Margin="0,0,4,4"
                                 Cursor="Hand"
                                 Classes="categoryBadge"
-                                Classes.selected="{Binding $parent[UserControl].((viewModels:MainWindowViewModel)DataContext).SelectedCategoryFilter, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={Binding}}"
+                                Classes.selected="{Binding $parent[UserControl].((viewModels:MainWindowViewModel)DataContext).SelectedCategoryFilter, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={Binding Key}}"
                                 Tapped="CategoryBadge_OnTapped"
                                 Name="CategoryBadgeBorder">
                             <Border.Styles>
@@ -108,10 +108,19 @@
                                     <Setter Property="Opacity" Value="1"/>
                                 </Style>
                             </Border.Styles>
-                            <TextBlock Text="{Binding}" 
-                                       FontSize="11" 
-                                       FontWeight="SemiBold"
-                                       Foreground="White"/>
+                            <Panel>
+                                <TextBlock Text="{Binding DisplayName}"
+                                           IsVisible="{Binding !IsFavorite}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="White"/>
+                                <avalonia:Icon Value="fas fa-star"
+                                               IsVisible="{Binding IsFavorite}"
+                                               Width="12"
+                                               Height="12"
+                                               Foreground="White"
+                                               ToolTip.Tip="Favorites"/>
+                            </Panel>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -134,13 +143,22 @@
                                     Tapped="ActionTile_OnTapped">
                                 <Grid RowDefinitions="Auto,Auto,Auto">
                                     <!-- Action Name with Icon -->
-                                    <Grid ColumnDefinitions="Auto,*" Grid.Row="0">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" Grid.Row="0">
                                         <avalonia:Icon Grid.Column="0" Value="{Binding IconName}" FontSize="20" Foreground="{Binding IconColor}" VerticalAlignment="Top" Margin="0,2,10,0"/>
                                         <TextBlock Grid.Column="1" Text="{Binding Name}" 
                                                    FontSize="15"
                                                    FontWeight="SemiBold"
                                                    TextWrapping="Wrap"
                                                    VerticalAlignment="Center"/>
+                                        <avalonia:Icon Grid.Column="2"
+                                                       Value="fas fa-star"
+                                                       Width="13"
+                                                       Height="13"
+                                                       Margin="8,2,0,0"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="#FFD166"
+                                                       IsVisible="{Binding IsFavorite}"
+                                                       ToolTip.Tip="Favorite action"/>
                                     </Grid>
                                     
                                     <!-- Description -->

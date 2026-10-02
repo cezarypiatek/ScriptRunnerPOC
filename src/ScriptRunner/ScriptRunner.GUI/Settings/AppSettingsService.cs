@@ -71,6 +71,22 @@ public class AppSettingsService
         Save(allSettings);
     }
 
+    public static void SetActionFavorite(string actionKey, bool isFavorite)
+    {
+        var allSettings = Load();
+        allSettings.FavoriteActions ??= new List<string>();
+
+        allSettings.FavoriteActions.RemoveAll(key =>
+            string.Equals(key, actionKey, StringComparison.Ordinal));
+
+        if (isFavorite)
+        {
+            allSettings.FavoriteActions.Add(actionKey);
+        }
+
+        Save(allSettings);
+    }
+
   
 
     public static void UpdateLayoutSettings(Action<LayoutSettings> updateSettings)

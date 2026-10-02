@@ -116,8 +116,9 @@ public partial class ActionsList : UserControl
 
     private void CategoryBadge_OnTapped(object? sender, RoutedEventArgs e)
     {
-        if (sender is Border border && border.DataContext is string category)
+        if (sender is Border border && border.DataContext is CategoryFilterOption filter)
         {
+            var category = filter.Key;
             // Track this badge if not already tracked
             if (!_categoryBadges.Contains(border))
             {
@@ -130,9 +131,9 @@ public partial class ActionsList : UserControl
 				{
 					viewModel.SelectedCategoryFilter = category;
 				}
-				else if (category != "All")
+				else if (category != MainWindowViewModel.AllCategoryFilter)
 				{
-					viewModel.SelectedCategoryFilter = "All";
+					viewModel.SelectedCategoryFilter = MainWindowViewModel.AllCategoryFilter;
 				}
 				// Gray state will be updated by PropertyChanged handler
 			}
@@ -145,13 +146,14 @@ public partial class ActionsList : UserControl
             return;
 
         var selectedCategory = viewModel.SelectedCategoryFilter;
-        var shouldGrayOut = !string.IsNullOrEmpty(selectedCategory) && selectedCategory != "All";
+        var shouldGrayOut = !string.IsNullOrEmpty(selectedCategory) && selectedCategory != MainWindowViewModel.AllCategoryFilter;
 
         // Update all tracked badges
         foreach (var badge in _categoryBadges.ToList())
         {
-            if (badge.DataContext is string category)
+            if (badge.DataContext is CategoryFilterOption filter)
             {
+                var category = filter.Key;
                 if (shouldGrayOut && category != selectedCategory)
                 {
                     badge.Classes.Add("grayed");

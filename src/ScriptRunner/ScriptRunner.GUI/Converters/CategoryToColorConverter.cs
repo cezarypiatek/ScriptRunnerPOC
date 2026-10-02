@@ -10,6 +10,8 @@ namespace ScriptRunner.GUI.Converters;
 
 public class CategoryToColorConverter : IValueConverter
 {
+    private const string FavoritesCategory = "__favorites__";
+
     private static readonly Color[] PredefinedColors = new[]
     {
         // Blues & Cyans (8 colors)
@@ -82,6 +84,11 @@ public class CategoryToColorConverter : IValueConverter
     {
         if (value is string category)
         {
+            if (category == FavoritesCategory)
+            {
+                return new SolidColorBrush(Color.FromRgb(180, 125, 0));
+            }
+
             // Check cache first
             if (!CategoryColorCache.TryGetValue(category, out int colorIndex))
             {
