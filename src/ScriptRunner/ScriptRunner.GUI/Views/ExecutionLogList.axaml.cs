@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ScriptRunner.GUI.ViewModels;
 
@@ -14,6 +15,8 @@ namespace ScriptRunner.GUI.Views;
 
 public partial class ExecutionLogList : UserControl
 {
+    public event EventHandler<ExecutionLogActionInvokedEventArgs>? ItemInvoked;
+
     public static readonly StyledProperty<IEnumerable<ExecutionLogAction>?> ItemsProperty =
         AvaloniaProperty.Register<ExecutionLogList, IEnumerable<ExecutionLogAction>?>(nameof(Items));
 
@@ -180,6 +183,86 @@ public partial class ExecutionLogList : UserControl
         RebuildAvailableDates();
     }
 
+    private void OnExecutionLogPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.Source is Visual source &&
+            (source is Border { Name: "ActionBorder" } ||
+             source.GetVisualAncestors().OfType<Border>().Any(border => border.Name == "ActionBorder")))
+        {
+            InvokeSelectedItem();
+        }
+    }
+
+    private void OnExecutionLogKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            InvokeSelectedItem();
+            e.Handled = true;
+        }
+    }
+
+    public void InvokeSelectedItem()
+    {
+        if (SelectedLogItem is ExecutionLogItemAction actionItem)
+        {
+            ItemInvoked?.Invoke(this, new ExecutionLogActionInvokedEventArgs(actionItem.Action));
+        }
+    }
+
+    public void MoveSelection(int offset)
+    {
+        var actions = GroupedItems?.OfType<ExecutionLogItemAction>().ToList();
+        if (actions is not { Count: > 0 })
+        {
+            return;
+        }
+
+        var currentIndex = SelectedLogItem is ExecutionLogItemAction selected
+            ? actions.IndexOf(selected)
+            : -1;
+        var targetIndex = currentIndex < 0
+            ? (offset < 0 ? actions.Count - 1 : 0)
+            : Math.Clamp(currentIndex + offset, 0, actions.Count - 1);
+        var target = actions[targetIndex];
+        SelectedLogItem = target;
+        this.FindControl<ListBox>("ExecutionLogListBox")?.ScrollIntoView(target);
+    }
+
+    public void FocusList(NavigationMethod navigationMethod)
+    {
+        var listBox = this.FindControl<ListBox>("ExecutionLogListBox");
+        if (listBox == null)
+        {
+            return;
+        }
+
+        if (SelectedLogItem is not ExecutionLogItemAction)
+        {
+            MoveSelection(1);
+        }
+
+        if (SelectedLogItem != null &&
+            listBox.ContainerFromItem(SelectedLogItem) is Control container)
+        {
+            container.Focus(navigationMethod);
+            return;
+        }
+
+        if (SelectedLogItem != null)
+        {
+            var selectedItem = SelectedLogItem;
+            listBox.ScrollIntoView(selectedItem);
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (listBox.ContainerFromItem(selectedItem) is Control realizedContainer)
+                {
+                    realizedContainer.Focus(navigationMethod);
+                }
+            });
+        }
+    }
+
     public void OnDateHeaderClicked(object? sender, PointerPressedEventArgs e)
     {
         // Show the date picker overlay when a date header is clicked (if enabled)
@@ -237,4 +320,14 @@ public partial class ExecutionLogList : UserControl
             }
         }
     }
+}
+
+public sealed class ExecutionLogActionInvokedEventArgs : EventArgs
+{
+    public ExecutionLogActionInvokedEventArgs(ExecutionLogAction action)
+    {
+        Action = action;
+    }
+
+    public ExecutionLogAction Action { get; }
 }

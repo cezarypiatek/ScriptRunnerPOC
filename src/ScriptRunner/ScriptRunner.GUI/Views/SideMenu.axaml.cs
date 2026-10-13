@@ -35,8 +35,13 @@ public partial class SideMenu : UserControl
         if (DataContext is MainWindowViewModel viewModel)
         {
             openSearchBoxEventHandler?.Dispose();
-            var recent = AppSettingsService.Load().Recent?.Values.OrderByDescending(x => x.Timestamp).Take(5).ToArray() ?? Array.Empty<RecentAction>();
-            var popupContent = new SearchBox(viewModel?.Actions ?? new List<ScriptConfig>(), recent);
+            var settings = AppSettingsService.Load();
+            var recent = settings.Recent?.Values.OrderByDescending(x => x.Timestamp).ToArray() ?? Array.Empty<RecentAction>();
+            var popupContent = new SearchBox(
+                viewModel.Actions ?? new List<ScriptConfig>(),
+                recent,
+                settings.FavoriteActions,
+                viewModel.ExecutionLog);
 
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime {MainWindow: {} mainWindow})
             {
@@ -81,10 +86,25 @@ public partial class SideMenu : UserControl
                     overlay.IsVisible = false;
                     container.Children.Clear();
 
-                    if (pattern.EventArgs is SearchBox.ResultSelectedEventArgs {Result: { } selectedCommand, AutoLaunch: var autoLaunch})
+                    if (pattern.EventArgs is not SearchBox.ResultSelectedEventArgs selection)
                     {
-                        // Set SelectedAction directly (same pattern as ExecutionLog selection)
-                        // This works regardless of any active category filter
+                        return;
+                    }
+
+                    if (selection.RecentExecution is { } recentExecution)
+                    {
+                        viewModel.IsRecentListVisible = false;
+                        viewModel.IsStatisticsVisible = false;
+                        viewModel.IsScriptListVisible = true;
+                        viewModel.OpenRecentExecution(recentExecution);
+                    }
+                    else if (selection is {Result: { } selectedCommand, AutoLaunch: var autoLaunch})
+                    {
+                        // A palette result belongs to the Actions view, so keep the side-menu
+                        // state and the visible content in sync with the selected action.
+                        viewModel.IsRecentListVisible = false;
+                        viewModel.IsStatisticsVisible = false;
+                        viewModel.IsScriptListVisible = true;
                         viewModel.SelectedAction = selectedCommand.Config;
                         viewModel.SelectedArgumentSet = selectedCommand.ArgumentSet;
                         if (autoLaunch)

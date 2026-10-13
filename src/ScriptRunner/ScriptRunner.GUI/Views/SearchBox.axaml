@@ -4,45 +4,399 @@
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:reactiveUi="http://reactiveui.net"
                            xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
+                           xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
+                           xmlns:documents="clr-namespace:Avalonia.Controls.Documents;assembly=Avalonia.Controls"
                            xmlns:avalonia="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+                           xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
                            mc:Ignorable="d" 
                            BorderThickness="0"
                           
                            x:Class="ScriptRunner.GUI.Views.SearchBox"
                            x:DataType="viewModels:SearchBoxViewModel">
-    <StackPanel Width="600">
+    <UserControl.Resources>
+        <converters:CategoryToColorConverter x:Key="CategoryToColorConverter"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="ToggleButton.quickFilter">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="BorderBrush" Value="#3f3f46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="9,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="FocusAdorner" Value="{x:Null}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="ToggleButton.quickFilter:focus /template/ ContentPresenter">
+            <Setter Property="BorderBrush" Value="#4A9EFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style Selector="ToggleButton.quickFilter:checked">
+            <Setter Property="Background" Value="#234A73"/>
+            <Setter Property="BorderBrush" Value="#4A9EFF"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style Selector="Button.filterButton">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="BorderBrush" Value="#3f3f46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="9,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="FocusAdorner" Value="{x:Null}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.filterButton:focus /template/ ContentPresenter">
+            <Setter Property="BorderBrush" Value="#4A9EFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style Selector="Button.filterButton.active">
+            <Setter Property="Background" Value="#234A73"/>
+            <Setter Property="BorderBrush" Value="#4A9EFF"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Width="650">
       <Border BorderThickness="1" BorderBrush="#454545" Background="#1e1e1e" CornerRadius="12" BoxShadow="0 10 40 0 #99000000">
           <StackPanel Orientation="Vertical" Margin="0">
               
               <!-- Header / Search Area -->
               <Border Padding="16" Background="#252525" CornerRadius="12 12 0 0">
-                  <TextBox TabIndex="1" Name="SearchBoxInput" Text="{Binding SearchFilter}" Watermark="Type to search..." CornerRadius="8" BorderThickness="0" Background="#333333">
+                  <TextBox TabIndex="0" Name="SearchBoxInput" Text="{Binding SearchFilter}" Watermark="Type to search..." CornerRadius="8" BorderThickness="0" Background="#333333">
                       <TextBox.InnerLeftContent>
                           <avalonia:Icon Value="fas fa-search" Margin="12,0,4,0" Foreground="#888888" />
                       </TextBox.InnerLeftContent>
                   </TextBox>
               </Border>
 
-              <ListBox Margin="0" Background="Transparent" ItemsSource="{Binding FilteredActionList}" Name="FilteredItems" MaxHeight="450" PointerReleased="ClickOnItem" Padding="8">
+              <Border Background="#1e1e1e"
+                      Padding="8,4"
+                      BorderBrush="#3f3f46"
+                      BorderThickness="0,0,0,1">
+                  <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
+                      <ToggleButton Grid.Column="0"
+                                    x:Name="AllFilterButton"
+                                    TabIndex="1"
+                                    Classes="quickFilter"
+                                    IsChecked="{Binding IsAllFilterSelected, Mode=OneWay}"
+                                    Click="AllFilter_Click"
+                                    ToolTip.Tip="Show all actions">
+                          <StackPanel Orientation="Horizontal" Spacing="9">
+                              <avalonia:Icon Value="fas fa-list"
+                                             Width="14"
+                                             Height="14"
+                                             FontSize="12"
+                                             VerticalAlignment="Center"/>
+                              <TextBlock Text="All" VerticalAlignment="Center"/>
+                          </StackPanel>
+                      </ToggleButton>
+
+                      <ToggleButton Grid.Column="1"
+                                    x:Name="FavoritesFilterButton"
+                                    TabIndex="2"
+                                    Classes="quickFilter"
+                                    IsChecked="{Binding IsFavoritesFilterSelected, Mode=OneWay}"
+                                    Click="FavoritesFilter_Click"
+                                    ToolTip.Tip="Show favorite actions">
+                          <StackPanel Orientation="Horizontal" Spacing="9">
+                              <avalonia:Icon Value="fas fa-star"
+                                             Width="14"
+                                             Height="14"
+                                             FontSize="12"
+                                             VerticalAlignment="Center"
+                                             Foreground="#FFD166"/>
+                              <TextBlock Text="Favorites" VerticalAlignment="Center"/>
+                          </StackPanel>
+                      </ToggleButton>
+
+                      <ToggleButton Grid.Column="2"
+                                    x:Name="RecentFilterButton"
+                                    TabIndex="3"
+                                    Classes="quickFilter"
+                                    IsChecked="{Binding IsRecentFilterSelected, Mode=OneWay}"
+                                    Click="RecentFilter_Click"
+                                    ToolTip.Tip="Show recently executed actions">
+                          <StackPanel Orientation="Horizontal" Spacing="9">
+                              <avalonia:Icon Value="fas fa-clock"
+                                             Width="14"
+                                             Height="14"
+                                             FontSize="12"
+                                             VerticalAlignment="Center"/>
+                              <TextBlock Text="Recent" VerticalAlignment="Center"/>
+                          </StackPanel>
+                      </ToggleButton>
+
+                      <Button Grid.Column="3"
+                              x:Name="FiltersButton"
+                              TabIndex="4"
+                              Classes="filterButton"
+                              Classes.active="{Binding IsCategoryFilterSelected}"
+                              ToolTip.Tip="Filter actions by category">
+                          <StackPanel Orientation="Horizontal" Spacing="9">
+                              <avalonia:Icon Value="fas fa-filter"
+                                             Width="14"
+                                             Height="14"
+                                             FontSize="12"
+                                             VerticalAlignment="Center"/>
+                              <TextBlock Text="{Binding CategoryFilterButtonText}"
+                                         VerticalAlignment="Center"
+                                         MaxWidth="125"
+                                         TextTrimming="CharacterEllipsis"/>
+                              <avalonia:Icon Value="fas fa-chevron-down"
+                                             Width="12"
+                                             Height="12"
+                                             FontSize="9"
+                                             VerticalAlignment="Center"
+                                             Opacity="0.7"/>
+                              <Border Width="20"
+                                      Height="20"
+                                      Margin="2,0,0,0"
+                                      CornerRadius="3"
+                                      Background="Transparent"
+                                      Cursor="Hand"
+                                      IsVisible="{Binding IsCategoryFilterSelected}"
+                                      PointerPressed="ClearCategoryFilter_OnPointerPressed"
+                                      ToolTip.Tip="Clear category filter">
+                                  <Border.Styles>
+                                      <Style Selector="Border:pointerover">
+                                          <Setter Property="Background" Value="#30FFFFFF"/>
+                                      </Style>
+                                  </Border.Styles>
+                                  <avalonia:Icon Value="fas fa-times"
+                                                 Width="10"
+                                                 Height="10"
+                                                 FontSize="10"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center"/>
+                              </Border>
+                          </StackPanel>
+                          <Button.Flyout>
+                              <Flyout Placement="BottomEdgeAlignedLeft">
+                                  <Border Background="#252526"
+                                          BorderBrush="#48484E"
+                                          BorderThickness="1"
+                                          CornerRadius="6"
+                                          Padding="6"
+                                          MinWidth="220"
+                                          MaxWidth="300">
+                                      <Grid RowDefinitions="Auto,*">
+                                          <TextBlock Text="Categories"
+                                                     Margin="8,5,8,8"
+                                                     FontSize="12"
+                                                     FontWeight="SemiBold"
+                                                     Foreground="#A0A0A0"/>
+                                          <ScrollViewer Grid.Row="1"
+                                                        MaxHeight="340"
+                                                        VerticalScrollBarVisibility="Auto">
+                                              <ItemsControl ItemsSource="{Binding AvailableCategories}">
+                                                  <ItemsControl.ItemTemplate>
+                                                      <DataTemplate x:DataType="viewModels:CategoryFilterOption">
+                                                          <Border Padding="8,7"
+                                                                  Margin="0,1"
+                                                                  CornerRadius="4"
+                                                                  Cursor="Hand"
+                                                                  Classes="categoryFilterOption"
+                                                                  Classes.selected="{Binding IsSelected}"
+                                                                  Tapped="CategoryFilter_OnTapped">
+                                                              <Border.Styles>
+                                                                  <Style Selector="Border.categoryFilterOption">
+                                                                      <Setter Property="Background" Value="Transparent"/>
+                                                                  </Style>
+                                                                  <Style Selector="Border.categoryFilterOption:pointerover">
+                                                                      <Setter Property="Background" Value="#303035"/>
+                                                                  </Style>
+                                                                  <Style Selector="Border.categoryFilterOption.selected">
+                                                                      <Setter Property="Background" Value="#234A73"/>
+                                                                  </Style>
+                                                              </Border.Styles>
+                                                              <Grid ColumnDefinitions="Auto,*,Auto">
+                                                                  <Border Width="9"
+                                                                          Height="9"
+                                                                          CornerRadius="5"
+                                                                          Margin="0,0,9,0"
+                                                                          VerticalAlignment="Center"
+                                                                          Background="{Binding Key, Converter={StaticResource CategoryToColorConverter}}"/>
+                                                                  <TextBlock Grid.Column="1"
+                                                                             Text="{Binding DisplayName}"
+                                                                             FontSize="12"
+                                                                             VerticalAlignment="Center"/>
+                                                                  <avalonia:Icon Grid.Column="2"
+                                                                                 Value="fas fa-check"
+                                                                                 Width="10"
+                                                                                 Height="10"
+                                                                                 Margin="12,0,0,0"
+                                                                                 Foreground="#4A9EFF"
+                                                                                 IsVisible="{Binding IsSelected}"/>
+                                                              </Grid>
+                                                          </Border>
+                                                      </DataTemplate>
+                                                  </ItemsControl.ItemTemplate>
+                                              </ItemsControl>
+                                          </ScrollViewer>
+                                      </Grid>
+                                  </Border>
+                              </Flyout>
+                          </Button.Flyout>
+                      </Button>
+                  </Grid>
+              </Border>
+
+              <ListBox Margin="0"
+                       Background="Transparent"
+                       ItemsSource="{Binding FilteredActionList}"
+                       Name="FilteredItems"
+                       IsVisible="{Binding !IsRecentFilterSelected}"
+                       TabIndex="5"
+                       MaxHeight="450"
+                       PointerReleased="ClickOnItem"
+                       Padding="8">
                   <ListBox.Styles>
+                      <Style Selector="ListBox">
+                          <Setter Property="FocusAdorner" Value="{x:Null}" />
+                      </Style>
                       <Style Selector="ListBoxItem">
                           <Setter Property="CornerRadius" Value="6" />
                           <Setter Property="Padding" Value="12,8" />
                           <Setter Property="Margin" Value="0,2" />
+                          <Setter Property="BorderBrush" Value="#303030" />
+                          <Setter Property="BorderThickness" Value="0,0,0,1" />
+                          <Setter Property="FocusAdorner" Value="{x:Null}" />
+                      </Style>
+                      <Style Selector="ListBoxItem:focus /template/ ContentPresenter">
+                          <Setter Property="BorderBrush" Value="#4A9EFF" />
+                          <Setter Property="BorderThickness" Value="1" />
+                          <Setter Property="CornerRadius" Value="6" />
                       </Style>
                   </ListBox.Styles>
                   <ListBox.ItemTemplate>
-                      <DataTemplate>
-                           <Grid RowDefinitions="Auto,Auto">
-                               <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
-                                   <avalonia:Icon Grid.Column="0" Value="fas fa-scroll" FontSize="14" VerticalAlignment="Center" Opacity="0.7" Foreground="{Binding IconColor}" Margin="0,0,10,0" />
-                                   <TextBlock Grid.Column="1" Text="{Binding ActionName}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" TextWrapping="Wrap" />
-                               </Grid>
-                                 <TextBlock Grid.Row="1" Text="{Binding SourceName}" FontSize="12" Foreground="#888888" Margin="24,2,0,0" TextTrimming="CharacterEllipsis" />
-                           </Grid>
+                      <DataTemplate x:DataType="viewModels:ScriptConfigWithArgumentSet">
+                          <Grid RowDefinitions="Auto,Auto,Auto">
+                              <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                  <TextBlock Grid.Column="0"
+                                             FontSize="15"
+                                             FontWeight="SemiBold"
+                                             TextWrapping="Wrap">
+                                      <TextBlock.Inlines>
+                                          <documents:InlineUIContainer BaselineAlignment="Center">
+                                              <avalonia:Icon Value="{Binding IconName}"
+                                                             Width="15"
+                                                             Height="15"
+                                                             FontSize="15"
+                                                             Margin="0,0,8,0"
+                                                             Foreground="{Binding IconColor}"/>
+                                          </documents:InlineUIContainer>
+                                          <Run Text="{Binding ActionName}"/>
+                                      </TextBlock.Inlines>
+                                  </TextBlock>
+                                  <avalonia:Icon Grid.Column="1"
+                                                 Value="fas fa-star"
+                                                 Width="13"
+                                                 Height="13"
+                                                 Margin="8,2,0,0"
+                                                 VerticalAlignment="Top"
+                                                 Foreground="#FFD166"
+                                                 IsVisible="{Binding IsFavorite}"
+                                                 ToolTip.Tip="Favorite action"/>
+                              </Grid>
+
+                              <TextBlock Grid.Row="1"
+                                         Text="{Binding Config.Description}"
+                                         Foreground="#888888"
+                                         FontSize="12"
+                                         TextWrapping="Wrap"
+                                         Margin="0,6,0,0"
+                                         MaxHeight="40"
+                                         TextTrimming="CharacterEllipsis"
+                                         IsVisible="{Binding Config.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                              <ItemsControl Grid.Row="2"
+                                            ItemsSource="{Binding Config.Categories}"
+                                            Margin="0,6,0,0"
+                                            IsVisible="{Binding HasCategories}">
+                                  <ItemsControl.ItemsPanel>
+                                      <ItemsPanelTemplate>
+                                          <WrapPanel Orientation="Horizontal"/>
+                                      </ItemsPanelTemplate>
+                                  </ItemsControl.ItemsPanel>
+                                  <ItemsControl.ItemTemplate>
+                                      <DataTemplate>
+                                          <Border Background="{Binding Converter={StaticResource CategoryToColorConverter}}"
+                                                  Height="19"
+                                                  CornerRadius="3"
+                                                  Padding="6,0,6,2"
+                                                  Margin="0,0,4,4"
+                                                  Opacity="0.78"
+                                                  VerticalAlignment="Center">
+                                              <TextBlock Text="{Binding}"
+                                                         FontSize="9"
+                                                         FontWeight="SemiBold"
+                                                         Foreground="White"
+                                                         VerticalAlignment="Center"
+                                                         LineHeight="12"/>
+                                          </Border>
+                                      </DataTemplate>
+                                  </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                          </Grid>
                       </DataTemplate>
                   </ListBox.ItemTemplate>
               </ListBox>
+
+              <views:ExecutionLogList x:Name="RecentExecutionLogList"
+                                      Items="{Binding FilteredExecutionLog}"
+                                      IsVisible="{Binding IsRecentFilterSelected}"
+                                      ShowDatePicker="True"
+                                      TabIndex="5"
+                                      MaxHeight="450"/>
+
+              <!-- Filtered result summary -->
+              <Border Background="#252526"
+                      BorderBrush="#3f3f46"
+                      BorderThickness="0,1,0,0"
+                      Padding="12,6">
+                  <Grid ColumnDefinitions="160,200">
+                      <StackPanel Grid.Column="0"
+                                  Orientation="Horizontal"
+                                  Spacing="8"
+                                  VerticalAlignment="Center">
+                          <avalonia:Icon Value="fa-scroll"
+                                         FontSize="12"
+                                         Foreground="#3baced"
+                                         Opacity="0.9"/>
+                          <TextBlock Text="{Binding ActionCountText}"
+                                     Foreground="#cccccc"
+                                     FontSize="12"
+                                     VerticalAlignment="Center"/>
+                      </StackPanel>
+
+                      <StackPanel Grid.Column="1"
+                                  Orientation="Horizontal"
+                                  Spacing="8"
+                                  VerticalAlignment="Center">
+                          <avalonia:Icon Value="fa-list-ul"
+                                         FontSize="12"
+                                         Foreground="#3baced"
+                                         Opacity="0.9"/>
+                          <TextBlock Text="{Binding PresetCountText}"
+                                     Foreground="#cccccc"
+                                     FontSize="12"
+                                     VerticalAlignment="Center"/>
+                      </StackPanel>
+                  </Grid>
+              </Border>
               
               <!-- Keyboard Shortcuts Footer -->
               <Border Padding="12,8" Background="#252525" CornerRadius="0 0 12 12" BorderThickness="0,1,0,0" BorderBrush="#333333">

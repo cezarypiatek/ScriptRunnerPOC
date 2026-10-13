@@ -467,22 +467,6 @@ public class MainWindowViewModel : ReactiveObject
                 }
             });
 
-        ExecutionLogAction? lastSelected = null;
-        
-        this.WhenAnyValue(x=>x.SelectedRecentExecution)
-            .Where(x=>x is not null && x != lastSelected)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(b =>
-            {
-                lastSelected = b;
-                if (Actions.FirstOrDefault(x => x.Name == b.Name && x.SourceName == b.Source) is { } selected)
-                {
-                    
-                    SelectedAction = selected;
-                    RenderParameterForm(selected, b.Parameters);
-                }
-            });
-        
         this.WhenAnyValue(x => x.IsScriptListVisible, x => x.IsRecentListVisible, x => x.IsStatisticsVisible)
             .Select(t => (t.Item1 || t.Item2 || t.Item3))
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -716,11 +700,11 @@ public class MainWindowViewModel : ReactiveObject
                 
                 if (isFiltering)
                 {
-                    return $"Argument sets: {filteredCount}/{totalCount}";
+                    return $"Presets: {filteredCount}/{totalCount}";
                 }
                 else
                 {
-                    return $"Argument sets: {totalCount}";
+                    return $"Presets: {totalCount}";
                 }
             })
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -1811,10 +1795,27 @@ public class MainWindowViewModel : ReactiveObject
     public ExecutionLogAction SelectedRecentExecution
     {
         get => _selectedRecentExecution;
-        set=> this.RaiseAndSetIfChanged(ref _selectedRecentExecution, value);
+        set
+        {
+            if (value is not null)
+            {
+                OpenRecentExecution(value);
+            }
+        }
     }
 
     private ExecutionLogAction _selectedRecentExecution;
+
+    public void OpenRecentExecution(ExecutionLogAction execution)
+    {
+        this.RaiseAndSetIfChanged(ref _selectedRecentExecution, execution, nameof(SelectedRecentExecution));
+        if (Actions.FirstOrDefault(action =>
+                action.Name == execution.Name && action.SourceName == execution.Source) is { } selected)
+        {
+            SelectedAction = selected;
+            RenderParameterForm(selected, execution.Parameters);
+        }
+    }
     
     public ExecutionLogItemBase? SelectedExecutionLogItem
     {

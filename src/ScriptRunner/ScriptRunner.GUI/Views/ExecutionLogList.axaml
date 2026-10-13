@@ -15,7 +15,9 @@
         <ListBox Name="ExecutionLogListBox"
                  Background="#1e1e1e"
                  ItemsSource="{Binding #Root.GroupedItems}" 
-                 SelectedItem="{Binding #Root.SelectedLogItem, Mode=TwoWay}">
+                 SelectedItem="{Binding #Root.SelectedLogItem, Mode=TwoWay}"
+                 PointerReleased="OnExecutionLogPointerReleased"
+                 KeyUp="OnExecutionLogKeyUp">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="Padding" Value="0"/>
