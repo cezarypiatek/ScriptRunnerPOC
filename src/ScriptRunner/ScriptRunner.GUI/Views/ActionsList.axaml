@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:ScriptRunner.GUI.ViewModels"
+             xmlns:views="clr-namespace:ScriptRunner.GUI.Views"
              xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
              xmlns:documents="clr-namespace:Avalonia.Controls.Documents;assembly=Avalonia.Controls"
              xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
@@ -239,7 +240,8 @@
         <Panel Grid.Row="2">
             <!-- List View with Tiles -->
             <ScrollViewer Background="#1e1e1e"
-                          VerticalScrollBarVisibility="Auto">
+                          VerticalScrollBarVisibility="Auto"
+                          IsVisible="{Binding !IsRecentFilterSelected}">
                 <ItemsControl ItemsSource="{Binding FilteredActionList}" Margin="4">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="viewModels:TaggedScriptConfig">
@@ -325,6 +327,12 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
+
+            <views:ExecutionLogList Name="ExecutionLogListControl"
+                                    Items="{Binding ExecutionLog}"
+                                    SelectedItem="{Binding SelectedRecentExecution, Mode=TwoWay}"
+                                    ShowDatePicker="True"
+                                    IsVisible="{Binding IsRecentFilterSelected}"/>
         </Panel>
         
         <!-- Footer -->

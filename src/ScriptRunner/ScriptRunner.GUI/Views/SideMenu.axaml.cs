@@ -93,7 +93,6 @@ public partial class SideMenu : UserControl
 
                     if (selection.RecentExecution is { } recentExecution)
                     {
-                        viewModel.IsRecentListVisible = false;
                         viewModel.IsStatisticsVisible = false;
                         viewModel.IsScriptListVisible = true;
                         viewModel.OpenRecentExecution(recentExecution);
@@ -102,7 +101,6 @@ public partial class SideMenu : UserControl
                     {
                         // A palette result belongs to the Actions view, so keep the side-menu
                         // state and the visible content in sync with the selected action.
-                        viewModel.IsRecentListVisible = false;
                         viewModel.IsStatisticsVisible = false;
                         viewModel.IsScriptListVisible = true;
                         viewModel.SelectedAction = selectedCommand.Config;

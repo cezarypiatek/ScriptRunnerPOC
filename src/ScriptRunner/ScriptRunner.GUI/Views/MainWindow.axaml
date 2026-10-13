@@ -56,22 +56,14 @@
               <views:Statistics DataContext="{Binding Statistics}"/>
           </Panel>
           
-          <!-- ContentWithSidebar for Scripts and Recent executions -->
+          <!-- ContentWithSidebar for actions and their integrated execution history -->
           <views:ContentWithSidebar Grid.Column="1" 
                                     IsSidebarOpen="{Binding IsSideBoxVisible}" 
                                     SidebarPosition="Left" 
                                     SidebarWidth="300"
                                     IsVisible="{Binding !IsStatisticsVisible}">
               <views:ContentWithSidebar.Sidebar>
-                  <Panel>
-                      <views:ActionsList Name="ActionsList"  IsVisible="{Binding IsScriptListVisible}" ></views:ActionsList>
-                      <Panel IsVisible="{Binding IsRecentListVisible}">
-                          <views:ExecutionLogList Name="ExecutionLogListControl"
-                                                  Items="{Binding ExecutionLog}"
-                                                  SelectedItem="{Binding SelectedRecentExecution, Mode=TwoWay}"
-                                                  ShowDatePicker="True"/>
-                      </Panel>
-                  </Panel>
+                  <views:ActionsList Name="ActionsList" IsVisible="{Binding IsScriptListVisible}"/>
               </views:ContentWithSidebar.Sidebar>
               <views:ContentWithSidebar.Main>
                   <Panel>

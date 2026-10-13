@@ -101,11 +101,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     
     private async void ScrollToDate(DateTime date)
     {
-        // Find the ExecutionLogList control
-        var executionLogList = this.FindControl<ExecutionLogList>("ExecutionLogListControl");
-        if (executionLogList != null)
+        var actionsList = this.FindControl<ActionsList>("ActionsList");
+        if (actionsList != null)
         {
-            await executionLogList.ScrollToDate(date);
+            await actionsList.ScrollToDate(date);
         }
     }
 }

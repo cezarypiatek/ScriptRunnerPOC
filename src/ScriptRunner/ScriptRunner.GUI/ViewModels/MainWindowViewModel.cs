@@ -50,14 +50,6 @@ public class MainWindowViewModel : ReactiveObject
     private bool _isScriptListVisible;
 
 
-    public bool IsRecentListVisible
-    {
-        get => _isRecentListVisible;
-        set => this.RaiseAndSetIfChanged(ref _isRecentListVisible, value);
-    }
-
-    private bool _isRecentListVisible;
-
     public bool IsStatisticsVisible
     {
         get => _isStatisticsVisible;
@@ -467,8 +459,8 @@ public class MainWindowViewModel : ReactiveObject
                 }
             });
 
-        this.WhenAnyValue(x => x.IsScriptListVisible, x => x.IsRecentListVisible, x => x.IsStatisticsVisible)
-            .Select(t => (t.Item1 || t.Item2 || t.Item3))
+        this.WhenAnyValue(x => x.IsScriptListVisible, x => x.IsStatisticsVisible)
+            .Select(state => state.Item1 || state.Item2)
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.IsSideBoxVisible, out _isSideBoxVisible);
 
@@ -477,12 +469,7 @@ public class MainWindowViewModel : ReactiveObject
         this.WhenAnyValue(x => x.IsScriptListVisible)
             .Where(x => x)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(b => { IsRecentListVisible = false; IsStatisticsVisible = false; });
-        
-        this.WhenAnyValue(x => x.IsRecentListVisible)
-            .Where(x => x)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(b => { IsScriptListVisible = false; IsStatisticsVisible = false; });
+            .Subscribe(b => IsStatisticsVisible = false);
         
         this.WhenAnyValue(x => x.IsStatisticsVisible)
             .Where(x => x)
@@ -490,7 +477,6 @@ public class MainWindowViewModel : ReactiveObject
             .Subscribe(b => 
             { 
                 IsScriptListVisible = false; 
-                IsRecentListVisible = false;
                 Statistics.RefreshStatistics();
             });
         

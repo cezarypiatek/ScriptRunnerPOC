@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
+using System.Threading.Tasks;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using ScriptRunner.GUI.ViewModels;
@@ -127,4 +128,7 @@ public partial class ActionsList : UserControl
             ? MainWindowViewModel.AllCategoryFilter
             : filter;
     }
+
+    public Task ScrollToDate(DateTime date) =>
+        this.FindControl<ExecutionLogList>("ExecutionLogListControl")?.ScrollToDate(date) ?? Task.CompletedTask;
 }
