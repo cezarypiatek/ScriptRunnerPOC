@@ -9,7 +9,7 @@
         Width="900" Height="750"
         x:Class="ScriptRunner.GUI.Views.SettingsWindow"
         Title="Action config sources"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/ScriptRunner-Rocket.ico"
         FontFamily="Segoe UI Variable"
         xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
         xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"

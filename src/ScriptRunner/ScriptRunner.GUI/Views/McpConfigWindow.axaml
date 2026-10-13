@@ -8,7 +8,7 @@
         x:Class="ScriptRunner.GUI.Views.McpConfigWindow"
         x:Name="Root"
         Title="MCP Server Configuration"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/ScriptRunner-Rocket.ico"
         FontFamily="Segoe UI Variable"
         WindowStartupLocation="CenterOwner"
         Background="#212222">

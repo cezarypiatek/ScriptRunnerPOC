@@ -11,8 +11,8 @@
     <StackPanel Orientation="Vertical"  >
         <StackPanel.Styles>
             <Style Selector=":is(Button)">
-                <Setter Property="Margin" Value="5"></Setter>
-                <Setter Property="Width" Value="50"></Setter>
+                <Setter Property="Margin" Value="4"></Setter>
+                <Setter Property="Width" Value="44"></Setter>
                 <Setter Property="Height" Value="35"></Setter>
                 <Setter Property="FontSize" Value="18"></Setter>
                 <Setter Property="Background" Value="Transparent"></Setter>
@@ -26,7 +26,7 @@
         <ToggleButton i:Attached.Icon="fas fa-clock" IsChecked="{Binding IsRecentListVisible}"  ToolTip.Tip="Recently executed"/>
         <ToggleButton i:Attached.Icon="fas fa-chart-bar" IsChecked="{Binding IsStatisticsVisible}"  ToolTip.Tip="Statistics"/>
         <Button i:Attached.Icon="fas fa-cog" Command="{Binding OpenSettingsWindow}"   ToolTip.Tip="Configure actions sources"/>
-        <Button Command="{Binding OpenMcpConfigWindow}" ToolTip.Tip="MCP Server" Margin="5" Width="50" Height="35">
+        <Button Command="{Binding OpenMcpConfigWindow}" ToolTip.Tip="MCP Server">
             <Grid>
                 <Viewbox Width="20" Height="20" Stretch="Uniform">
                     <Canvas Width="24" Height="24">
@@ -40,7 +40,7 @@
                 <Ellipse Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-2,-2" Fill="Red" IsVisible="{Binding !IsMcpRunning}"/>
             </Grid>
         </Button>
-        <Button Command="{Binding ForceRefresh}" ToolTip.Tip="Refresh actions" Margin="5" Width="50" Height="35">
+        <Button Command="{Binding ForceRefresh}" ToolTip.Tip="Refresh actions">
             <Grid>
                 <i:Icon Value="fas fa-sync" FontSize="18"/>
                 <ProgressBar IsIndeterminate="True" 

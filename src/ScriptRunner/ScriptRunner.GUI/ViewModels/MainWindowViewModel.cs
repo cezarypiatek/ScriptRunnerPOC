@@ -37,6 +37,7 @@ public class MainWindowViewModel : ReactiveObject
     private static readonly SolidColorBrush ParameterBrush = new SolidColorBrush(new Color(255, 52, 215, 153));
     public const string AllCategoryFilter = "All";
     public const string FavoritesCategoryFilter = "__favorites__";
+    public const string RecentCategoryFilter = "__recent__";
 
     private readonly HashSet<string> _favoriteActionKeys;
 
@@ -179,10 +180,22 @@ public class MainWindowViewModel : ReactiveObject
 
             this.RaiseAndSetIfChanged(ref _selectedCategoryFilter, value);
             UpdateCategoryFilterStates();
+            this.RaisePropertyChanged(nameof(IsFavoritesFilterSelected));
+            this.RaisePropertyChanged(nameof(IsRecentFilterSelected));
+            this.RaisePropertyChanged(nameof(IsCategoryFilterSelected));
+            this.RaisePropertyChanged(nameof(CategoryFilterButtonText));
         }
     }
 
     private string _selectedCategoryFilter = AllCategoryFilter;
+
+    public bool IsFavoritesFilterSelected => SelectedCategoryFilter == FavoritesCategoryFilter;
+    public bool IsRecentFilterSelected => SelectedCategoryFilter == RecentCategoryFilter;
+    public bool IsCategoryFilterSelected =>
+        SelectedCategoryFilter != AllCategoryFilter &&
+        SelectedCategoryFilter != FavoritesCategoryFilter &&
+        SelectedCategoryFilter != RecentCategoryFilter;
+    public string CategoryFilterButtonText => IsCategoryFilterSelected ? SelectedCategoryFilter : "Filters";
 
     private readonly ObservableAsPropertyHelper<IEnumerable<CategoryFilterOption>> _availableCategories;
     public IEnumerable<CategoryFilterOption> AvailableCategories => _availableCategories.Value;
@@ -192,6 +205,13 @@ public class MainWindowViewModel : ReactiveObject
     {
         get => _favoriteActionsRevision;
         private set => this.RaiseAndSetIfChanged(ref _favoriteActionsRevision, value);
+    }
+
+    private int _recentActionsRevision;
+    public int RecentActionsRevision
+    {
+        get => _recentActionsRevision;
+        private set => this.RaiseAndSetIfChanged(ref _recentActionsRevision, value);
     }
 
     private readonly ObservableAsPropertyHelper<IEnumerable<TaggedScriptConfig>> _filteredActionList;
@@ -496,7 +516,6 @@ public class MainWindowViewModel : ReactiveObject
             {
                 var categories = new List<CategoryFilterOption>
                 {
-                    new(FavoritesCategoryFilter, string.Empty, true),
                     new(AllCategoryFilter, AllCategoryFilter, false)
                 };
                 var allCategories = actions
@@ -521,18 +540,31 @@ public class MainWindowViewModel : ReactiveObject
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.AvailableCategories, out _availableCategories);
         
-        this.WhenAnyValue(x => x.ActionFilter, x => x.SelectedCategoryFilter, x => x.Actions, x => x.FavoriteActionsRevision)
+        this.WhenAnyValue(x => x.ActionFilter, x => x.SelectedCategoryFilter, x => x.Actions, x => x.FavoriteActionsRevision, x => x.RecentActionsRevision)
             .Throttle(TimeSpan.FromMilliseconds(200))
             .DistinctUntilChanged()
             .Select((tuple, cancellationToken) =>
             {
-                var (textFilter, categoryFilter, actions, _) = tuple;
+                var (textFilter, categoryFilter, actions, _, _) = tuple;
+                Dictionary<(string SourceName, string ActionName, string ParameterSet), DateTime>? recentActions = null;
                 
                 // Apply category filter first
                 IEnumerable<ScriptConfig> configs = actions;
                 if (categoryFilter == FavoritesCategoryFilter)
                 {
                     configs = configs.Where(action => _favoriteActionKeys.Contains(action.FullName));
+                }
+                else if (categoryFilter == RecentCategoryFilter)
+                {
+                    recentActions = (AppSettingsService.Load().Recent?.Values ?? Enumerable.Empty<RecentAction>())
+                        .GroupBy(recent => (
+                            recent.ActionId.SourceName,
+                            recent.ActionId.ActionName,
+                            recent.ActionId.ParameterSet))
+                        .ToDictionary(group => group.Key, group => group.Max(recent => recent.Timestamp));
+
+                    configs = configs.Where(action => recentActions.Keys.Any(recent =>
+                        recent.SourceName == (action.SourceName ?? string.Empty) && recent.ActionName == action.Name));
                 }
                 else if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != AllCategoryFilter)
                 {
@@ -552,7 +584,10 @@ public class MainWindowViewModel : ReactiveObject
                 {
                     // Determine the tag for this action
                     string tag;
-                    if (!string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != AllCategoryFilter && categoryFilter != FavoritesCategoryFilter)
+                    if (!string.IsNullOrWhiteSpace(categoryFilter) &&
+                        categoryFilter != AllCategoryFilter &&
+                        categoryFilter != FavoritesCategoryFilter &&
+                        categoryFilter != RecentCategoryFilter)
                     {
                         tag = categoryFilter;
                     }
@@ -580,9 +615,25 @@ public class MainWindowViewModel : ReactiveObject
                 {
                     expandedEntries = expandedEntries.Where(x => x.Name.Contains(textFilter, StringComparison.InvariantCultureIgnoreCase));
                 }
+
+                if (recentActions != null)
+                {
+                    expandedEntries = expandedEntries
+                        .Where(entry => recentActions.ContainsKey((
+                            entry.Config.SourceName ?? string.Empty,
+                            entry.Config.Name,
+                            entry.ArgumentSet?.Description ?? "<default>")))
+                        .OrderByDescending(entry => recentActions[(
+                            entry.Config.SourceName ?? string.Empty,
+                            entry.Config.Name,
+                            entry.ArgumentSet?.Description ?? "<default>")]);
+                }
+                else
+                {
+                    expandedEntries = expandedEntries.OrderBy(x => x.Name);
+                }
                 
-                // Return flat list sorted by name
-                return expandedEntries.OrderBy(x => x.Name);
+                return expandedEntries;
             })
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.FilteredActionList, out _filteredActionList);
@@ -1798,6 +1849,7 @@ public class MainWindowViewModel : ReactiveObject
             var actionId = new ActionId(selectedAction.SourceName ?? string.Empty, selectedAction.Name, SelectedArgumentSet?.Description ?? "<default>");
             recent[$"{actionId.SourceName}__{actionId.ActionName}__{actionId.ParameterSet}"] = new RecentAction(actionId, DateTime.UtcNow);
         });
+        RecentActionsRevision++;
     }
 
     /// <summary>
@@ -1972,5 +2024,6 @@ public record TaggedScriptConfig(
 {
     public string IconName => ArgumentSet?.Description == "<default>" ?"fa-scroll":"fa-list-ul";
     public string IconColor => ArgumentSet?.Description == "<default>" ? "#3baced" : "#ff8c00";
+    public bool HasCategories => Config.Categories is { Count: > 0 };
 }
 

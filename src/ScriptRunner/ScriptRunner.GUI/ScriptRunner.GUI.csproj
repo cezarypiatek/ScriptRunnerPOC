@@ -7,7 +7,7 @@
     <TrimMode>copyused</TrimMode>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <WarningsAsErrors>NU1701</WarningsAsErrors>
-    <ApplicationIcon>Assets/avalonia-logo.ico</ApplicationIcon>
+    <ApplicationIcon>ScriptRunner-Rocket.ico</ApplicationIcon>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>ScriptRunnerGUI</PackageId>
     <PackAsTool>true</PackAsTool>
@@ -16,6 +16,7 @@
   </PropertyGroup>
   <ItemGroup>
 	<AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="ScriptRunner-Rocket.ico" />
     <None Remove=".gitignore" />
     <None Remove="Themes\DarkTheme.xaml" />
   </ItemGroup>

@@ -8,7 +8,7 @@
                            xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
                            mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="900"
                            x:Class="ScriptRunner.GUI.Views.MainWindow"
-                           Icon="/Assets/avalonia-logo.ico"
+                           Icon="/ScriptRunner-Rocket.ico"
                            Title="ScriptRunner.GUI"
                            Background="Transparent"
                            Name="MW"

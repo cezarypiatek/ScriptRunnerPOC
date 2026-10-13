@@ -101,6 +101,30 @@ public partial class ActionsList : UserControl
 					viewModel.SelectedCategoryFilter = MainWindowViewModel.AllCategoryFilter;
 				}
 			}
+
+            this.FindControl<Button>("FiltersButton")?.Flyout?.Hide();
         }
+    }
+
+    private void FavoritesFilter_Click(object? sender, RoutedEventArgs e)
+    {
+        ToggleQuickFilter(MainWindowViewModel.FavoritesCategoryFilter);
+    }
+
+    private void RecentFilter_Click(object? sender, RoutedEventArgs e)
+    {
+        ToggleQuickFilter(MainWindowViewModel.RecentCategoryFilter);
+    }
+
+    private void ToggleQuickFilter(string filter)
+    {
+        if (DataContext is not MainWindowViewModel viewModel)
+        {
+            return;
+        }
+
+        viewModel.SelectedCategoryFilter = viewModel.SelectedCategoryFilter == filter
+            ? MainWindowViewModel.AllCategoryFilter
+            : filter;
     }
 }
