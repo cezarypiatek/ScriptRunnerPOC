@@ -11,10 +11,75 @@
              x:Class="ScriptRunner.GUI.Views.RunningJobsSection"
              x:DataType="viewModels:MainWindowViewModel"
              >
-    <TabControl x:Name="RunningJobsPanel" ItemsSource="{Binding RunningJobs}" SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}" >
+    <TabControl x:Name="RunningJobsPanel"
+                ItemsSource="{Binding RunningJobs}"
+                SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
+      <TabControl.Styles>
+        <Style Selector="TabItem">
+          <Setter Property="MinHeight" Value="28" />
+          <Setter Property="Margin" Value="0,0,2,0" />
+          <Setter Property="Padding" Value="12,4,8,6" />
+          <Setter Property="Foreground" Value="#A7A7AD" />
+          <Setter Property="Background" Value="#252526" />
+          <Setter Property="BorderBrush" Value="#3A3A3D" />
+          <Setter Property="BorderThickness" Value="1,1,1,0" />
+          <Setter Property="CornerRadius" Value="3,3,0,0" />
+          <Setter Property="Template">
+            <ControlTemplate>
+              <Grid RowDefinitions="*,2">
+                <Border x:Name="TabHeaderBackground"
+                        Grid.RowSpan="2"
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                  <ContentPresenter Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    VerticalAlignment="Center" />
+                </Border>
+                <Border x:Name="ActiveTabIndicator"
+                        Grid.Row="1"
+                        Height="2"
+                        Margin="1,0"
+                        Background="#4A9EFF"
+                        IsVisible="False" />
+              </Grid>
+            </ControlTemplate>
+          </Setter>
+        </Style>
+        <Style Selector="TabItem:pointerover /template/ Border#TabHeaderBackground">
+          <Setter Property="Background" Value="#303033" />
+          <Setter Property="BorderBrush" Value="#505055" />
+        </Style>
+        <Style Selector="TabItem:selected">
+          <Setter Property="Foreground" Value="#F2F2F2" />
+          <Setter Property="Background" Value="#1E1E1E" />
+          <Setter Property="BorderBrush" Value="#55555B" />
+        </Style>
+        <Style Selector="TabItem:selected /template/ Border#ActiveTabIndicator">
+          <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="Button.runningJobTabClose">
+          <Setter Property="Width" Value="18" />
+          <Setter Property="Height" Value="18" />
+          <Setter Property="Margin" Value="4,0,0,0" />
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="Background" Value="Transparent" />
+          <Setter Property="Foreground" Value="#929298" />
+          <Setter Property="FontSize" Value="8" />
+          <Setter Property="HorizontalContentAlignment" Value="Center" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.runningJobTabClose:pointerover">
+          <Setter Property="Background" Value="#45454A" />
+          <Setter Property="Foreground" Value="White" />
+        </Style>
+      </TabControl.Styles>
       <TabControl.ItemTemplate>
         <DataTemplate x:DataType="viewModels:RunningJobViewModel">
-          <StackPanel Orientation="Horizontal">
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
               <StackPanel.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="Close All Finished" Command="{Binding $parent[TabControl].DataContext.CloseAllFinished}" />
@@ -22,13 +87,16 @@
                   <MenuItem Header="Close All Cancelled" Command="{Binding $parent[TabControl].DataContext.CloseAllCancelled}" />
                 </ContextMenu>
               </StackPanel.ContextMenu>
-              <StackPanel >
-                  <StackPanel Orientation="Horizontal">
-                      <TextBlock FontSize="16" Text="{Binding Tile}" />
-                  </StackPanel>
-                  <TextBlock FontSize="12" Text="{Binding Status, StringFormat='({0})'}" Foreground="{Binding Status, Converter={x:Static gui:JobStatusToColorConverter.Instance}}"></TextBlock>
-              </StackPanel>
-              <Button avalonia:Attached.Icon="fas fa-times"  Height="20" Width="30" Background="Transparent" VerticalContentAlignment="Top" VerticalAlignment="Top" FontSize="8"  ToolTip.Tip="Close tab" CommandParameter="{Binding}" Command="{Binding $parent[TabControl].DataContext.CloseJob}" />
+              <TextBlock FontSize="13"
+                         VerticalAlignment="Center"
+                         Text="{Binding Tile}"
+                         Foreground="{Binding Status, Converter={x:Static gui:JobStatusToColorConverter.Instance}}"
+                         ToolTip.Tip="{Binding Status, StringFormat='({0})'}" />
+              <Button Classes="runningJobTabClose"
+                      avalonia:Attached.Icon="fas fa-times"
+                      ToolTip.Tip="Close tab"
+                      CommandParameter="{Binding}"
+                      Command="{Binding $parent[TabControl].DataContext.CloseJob}" />
           </StackPanel>
         </DataTemplate>
       </TabControl.ItemTemplate>
