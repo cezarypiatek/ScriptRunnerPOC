@@ -71,6 +71,18 @@ public class VaultProvider
         var vaultPath = AppSettingsService.GetSettingsPathFor(VaultFileName);
         var bytes = JsonSerializer.SerializeToUtf8Bytes(entries);
         var protectedBytes = _dataProtector.Protect(bytes);
-        File.WriteAllBytes(vaultPath, protectedBytes);
+        var temporaryPath = $"{vaultPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            File.WriteAllBytes(temporaryPath, protectedBytes);
+            File.Move(temporaryPath, vaultPath, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
     }
 }

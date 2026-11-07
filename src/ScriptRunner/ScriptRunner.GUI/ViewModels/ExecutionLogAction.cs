@@ -5,10 +5,11 @@ using System.Text.Json.Serialization;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
 using DynamicData;
+using ScriptRunner.GUI.Infrastructure;
 
 namespace ScriptRunner.GUI.ViewModels;
 
-public record ExecutionLogAction(DateTime Timestamp, string Source, string Name, Dictionary<string, string> Parameters)
+public record ExecutionLogAction(DateTime Timestamp, string? Source, string Name, Dictionary<string, string> Parameters)
 {
     [JsonIgnore]
     public InlineCollection ParametersDescription => new InlineCollection()
@@ -17,7 +18,7 @@ public record ExecutionLogAction(DateTime Timestamp, string Source, string Name,
         
         Parameters.SelectMany((x,i) =>
         {
-            var value = x.Value?.StartsWith("!!vault:") == true ? "*****" : x.Value;
+            var value = VaultReference.TryParse(x.Value, out _) ? "*****" : x.Value;
             return new[]
             {
                 new Run($"{x.Key} = "),
@@ -37,7 +38,7 @@ public record ExecutionLogAction(DateTime Timestamp, string Source, string Name,
         .Select(x => new ParameterTag(
             x.Key, 
             x.Value ?? string.Empty, 
-            isMasked: x.Value?.StartsWith("!!vault:") == true));
+            isMasked: VaultReference.TryParse(x.Value, out _)));
     
     public string ParametersDescriptionString() => string.Join(", ", Parameters.OrderBy(x=>x.Key).Select(x => $"{x.Key} = {x.Value}"));
 };

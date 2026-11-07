@@ -1038,9 +1038,10 @@ public class MainWindowViewModel : ReactiveObject
             this.RaiseAndSetIfChanged(ref _selectedArgumentSet, value);
             if (SelectedAction is { } selectedAction && _selectedArgumentSet is { Arguments: {}  arguments, Description: var setName})
             {
+                Dictionary<string, PasswordBoxState>? preservedPasswordStates = null;
                 if (setName == DefaultParameterSetName)
                 {
-                    if (AppSettingsService.TryGetDefaultOverrides(selectedAction.Name) is { } overrides)
+                    if (AppSettingsService.TryGetDefaultOverrides(selectedAction.Name, selectedAction.SourceName) is { } overrides)
                     {
                         arguments = new Dictionary<string, string>(arguments);
                         foreach (var (argName, argValue) in overrides)
@@ -1053,11 +1054,16 @@ public class MainWindowViewModel : ReactiveObject
                 // Handle fallbackToExisting: preserve current values when new set has empty values
                 if (_selectedArgumentSet.FallbackToExisting && _controlRecords != null)
                 {
+                    var currentPasswordStates = CapturePasswordStates();
                     // Harvest current parameter values from UI controls
                     var currentValues = new Dictionary<string, string>();
                     foreach (var controlRecord in _controlRecords)
                     {
-                        var controlValue = controlRecord.GetFormattedValue()?.Trim();
+                        var controlValue = controlRecord is PasswordControl { Control: PasswordBox passwordBox }
+                            ? string.IsNullOrWhiteSpace(passwordBox.VaultKey)
+                                ? passwordBox.Password
+                                : VaultReference.Format(passwordBox.VaultKey)
+                            : controlRecord.GetFormattedValue()?.Trim();
                         if (!string.IsNullOrEmpty(controlValue))
                         {
                             currentValues[controlRecord.Name] = controlValue;
@@ -1074,11 +1080,22 @@ public class MainWindowViewModel : ReactiveObject
                         {
                             // Preserve the current value
                             arguments[param.Name] = currentValues[param.Name];
+                            if (param.Prompt == PromptType.Password &&
+                                currentPasswordStates.TryGetValue(param.Name, out var passwordState))
+                            {
+                                preservedPasswordStates ??= new Dictionary<string, PasswordBoxState>(
+                                    StringComparer.OrdinalIgnoreCase);
+                                preservedPasswordStates[param.Name] = passwordState;
+                            }
                         }
                     }
                 }
 
                 RenderParameterForm(selectedAction, arguments, setName);
+                if (preservedPasswordStates is not null)
+                {
+                    RestorePasswordStates(preservedPasswordStates);
+                }
             }
         }
     }
@@ -1098,13 +1115,17 @@ public class MainWindowViewModel : ReactiveObject
         {
             if (SelectedAction != null)
             {
-                var taskCompletionSource = new TaskCompletionSource<string>();
+                var taskCompletionSource = new TaskCompletionSource<string?>();
                 try
                 {
-                    ExecuteCommand(command, this.SelectedAction, useSystemShell:false, title, s =>
+                    var started = ExecuteCommand(command, this.SelectedAction, useSystemShell:false, title, s =>
                     {
                         taskCompletionSource.SetResult(s);
                     });
+                    if (!started)
+                    {
+                        taskCompletionSource.TrySetResult(null);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -1143,11 +1164,20 @@ public class MainWindowViewModel : ReactiveObject
     {
         if (SelectedAction is not null)
         {
-            AppSettingsService.UpdateDefaultOverrides(new ActionDefaultOverrides
+            try
             {
-                ActionName = SelectedAction.Name,
-                Defaults = new Dictionary<string, string>()
-            });
+                AppSettingsService.UpdateDefaultOverrides(new ActionDefaultOverrides
+                {
+                    ActionName = SelectedAction.Name,
+                    SourceName = SelectedAction.SourceName,
+                    Defaults = new Dictionary<string, string>()
+                });
+            }
+            catch (Exception exception)
+            {
+                ShowParameterPersistenceError("Defaults were not reset", exception);
+                return;
+            }
             BuildUi();
         }
     }
@@ -1161,22 +1191,13 @@ public class MainWindowViewModel : ReactiveObject
                 return;
             }
 
-            var (commandPath, args) = SplitCommandAndArgs(installCommand);
-            var job = new RunningJobViewModel
-            {
-                Tile = $"#{jobCounter++} Install {selectedAction.Name}",
-                ExecutedCommand = installCommand,
-                EnvironmentVariables = new Dictionary<string, string?>()
-            };
-            job.ExecutedCommandFormatted.AddRange(CreateSimpleFormattedCommand(installCommand));
-            job.ExecutionCompleted += (sender, eventArgs) =>
-            {
-                SelectedActionInstalled = true;
-                AppSettingsService.MarkActionAsInstalled(selectedAction.Name);
-            };
-            this.RunningJobs.Add(job);
-            SelectedRunningJob = job;
-            job.RunJob(commandPath, args, selectedAction.InstallCommandWorkingDirectory, Array.Empty<InteractiveInputDescription>(), selectedAction.InstallTroubleshooting);
+            ExecuteCommand(
+                installCommand,
+                selectedAction,
+                useSystemShell: false,
+                title: $"Install {selectedAction.Name}",
+                isInstallCommand: true,
+                validateRequiredParameters: true);
         }
     }
 
@@ -1241,18 +1262,30 @@ public class MainWindowViewModel : ReactiveObject
     /// Apply parameter values coming from an MCP tool call into the currently rendered form controls.
     /// Must be called on the UI thread after RenderParameterForm has run.
     /// </summary>
-    public void ApplyMcpParameterValues(IReadOnlyDictionary<string, string> args, IReadOnlySet<string>? explicitKeys = null)
+    public void ApplyMcpParameterValues(
+        IReadOnlyDictionary<string, string> args,
+        IReadOnlySet<string> explicitKeys,
+        bool highlightExplicitValues)
     {
         foreach (var controlRecord in _controlRecords)
         {
             if (args.TryGetValue(controlRecord.Name, out var value))
             {
+                // The form already contains configured and preset defaults. Reapplying an
+                // implicit password default can detach a remembered vault binding, so passwords
+                // are changed only when the MCP caller explicitly supplied them.
+                if (controlRecord is PasswordControl && !explicitKeys.Contains(controlRecord.Name))
+                {
+                    continue;
+                }
+
                 controlRecord.SetValueFromString(value);
             }
         }
-        // Only highlight when approval is required (explicitKeys is non-null); highlight only explicitly-provided params
-        if (explicitKeys != null)
+        if (highlightExplicitValues)
+        {
             HighlightMcpRows(explicitKeys);
+        }
     }
 
     // ── MCP approval state ───────────────────────────────────────────────────
@@ -1423,7 +1456,7 @@ public class MainWindowViewModel : ReactiveObject
         return (parts.Length > 0 ? parts[0] : "", parts.Length > 1 ? parts[1] : "");
     }
 
-    public const string VaultReferencePrefix = "!!vault:";
+    public const string VaultReferencePrefix = VaultReference.Prefix;
     public const string DefaultParameterSetName = "<default>";
 
     public void SaveAsDefault()
@@ -1433,32 +1466,58 @@ public class MainWindowViewModel : ReactiveObject
             return;
         }
 
-        var defaultOverrides = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{SelectedAction.Name}_{DefaultParameterSetName}");
-        AppSettingsService.UpdateDefaultOverrides(new ActionDefaultOverrides
+        Dictionary<string, string> defaultOverrides;
+        try
         {
-            ActionName = SelectedAction.Name,
-            Defaults = defaultOverrides
-        });
+            defaultOverrides = HarvestCurrentParameters(
+                passwordPersistenceScope: "default");
+        }
+        catch (Exception exception)
+        {
+            ShowParameterPersistenceError("Defaults were not saved", exception);
+            return;
+        }
+        try
+        {
+            AppSettingsService.UpdateDefaultOverrides(new ActionDefaultOverrides
+            {
+                ActionName = SelectedAction.Name,
+                SourceName = SelectedAction.SourceName,
+                Defaults = defaultOverrides
+            });
+        }
+        catch (Exception exception)
+        {
+            ShowParameterPersistenceError("Defaults were not saved", exception);
+            return;
+        }
         BuildUi();
     }
 
     public async void CopyParametersSetup()
     {
-        var setup = HarvestCurrentParameters(string.Empty, includePasswords: false);
+        var clipboard = GetClipboard();
+        if (clipboard is null)
+        {
+            return;
+        }
+
+        var setup = HarvestCurrentParameters(passwordPersistenceScope: null, includePasswords: false);
         var serialized = JsonSerializer.Serialize(setup, new JsonSerializerOptions()
         {
             WriteIndented = true
         });
 
-        GetClipboard()!.SetTextAsync(serialized);
+        await clipboard.SetTextAsync(serialized);
 
     }
 
     private IClipboard? GetClipboard()
     {
-        if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+            { MainWindow: { } mainWindow })
         {
-            return desktop.MainWindow.Clipboard;
+            return mainWindow.Clipboard;
         }
 
         return null;
@@ -1466,26 +1525,46 @@ public class MainWindowViewModel : ReactiveObject
     
     public async void PasteParametersSetup()
     {
-        var payload = await GetClipboard()!.GetTextAsync();
-        if (payload.IndexOf('{') is { } first && payload.LastIndexOf('}') is { } last && first > -1 && last > -1 && last > first)
+        var clipboard = GetClipboard();
+        if (clipboard is null || SelectedAction is not { } selectedAction)
+        {
+            return;
+        }
+
+        var payload = await clipboard.TryGetTextAsync();
+        if (payload is not null &&
+            payload.IndexOf('{') is { } first &&
+            payload.LastIndexOf('}') is { } last &&
+            first > -1 && last > first)
         {
             try
             {
                 var actualPayload = payload.Substring(first, (last+1) - first);
                 //INFO: When you send JSON via MSTeams, you will get extra non-breaking spaces on the other side. Those extra white-spaces breaks deserializer
                 actualPayload = actualPayload.Replace(" "+ (char)160, " ");
-                var data =  JsonSerializer.Deserialize<Dictionary<string, string>>(actualPayload);
-                var currentSetup = HarvestCurrentParameters(string.Empty, includePasswords: true);
+                var data = JsonSerializer.Deserialize<Dictionary<string, string>>(actualPayload)
+                           ?? throw new JsonException("The parameter setup is empty.");
+                var passwordStates = CapturePasswordStates();
 
-                foreach (var param in SelectedAction.Params)
+                foreach (var param in selectedAction.Params)
                 {
-                    if (param.Prompt == PromptType.Password && currentSetup.TryGetValue(param.Name, out var password))
+                    if (param.Prompt == PromptType.Password && passwordStates.TryGetValue(param.Name, out var state))
                     {
-                        data[param.Name] = password;
+                        // Clipboard setup intentionally excludes passwords. Keep enough serialized
+                        // state for rendering, then restore the exact control state below so an
+                        // opaque manual value that resembles a Vault reference stays manual.
+                        data[param.Name] = string.IsNullOrWhiteSpace(state.VaultKey)
+                            ? string.Empty
+                            : VaultReference.Format(state.VaultKey);
                     }
                 }
 
-                RenderParameterForm(SelectedAction, data);
+                RenderParameterForm(selectedAction, data);
+                RestorePasswordStates(passwordStates);
+            }
+            catch (InvalidOperationException exception)
+            {
+                ShowParameterPersistenceError("Parameters were not pasted", exception);
             }
             catch
             {
@@ -1500,9 +1579,31 @@ public class MainWindowViewModel : ReactiveObject
         }
     }
 
-    private Dictionary<string, string> HarvestCurrentParameters(string vaultPrefixForNewEntries, bool includePasswords = true)
+    private Dictionary<string, PasswordBoxState> CapturePasswordStates() => _controlRecords
+        .OfType<PasswordControl>()
+        .ToDictionary(
+            control => control.Name,
+            control => ((PasswordBox)control.Control).CaptureState(),
+            StringComparer.OrdinalIgnoreCase);
+
+    private void RestorePasswordStates(IReadOnlyDictionary<string, PasswordBoxState> states)
+    {
+        foreach (var control in _controlRecords.OfType<PasswordControl>())
+        {
+            if (states.TryGetValue(control.Name, out var state))
+            {
+                ((PasswordBox)control.Control).RestoreState(state);
+            }
+        }
+    }
+
+    private Dictionary<string, string> HarvestCurrentParameters(
+        string? passwordPersistenceScope,
+        bool includePasswords = true)
     {
         var defaultOverrides = new Dictionary<string, string>();
+        List<VaultEntry>? vaultEntries = null;
+        var vaultChanged = false;
         foreach (var controlRecord in _controlRecords)
         {
             if (controlRecord is PasswordControl {Control: PasswordBox passwordBox})
@@ -1512,34 +1613,52 @@ public class MainWindowViewModel : ReactiveObject
                     continue;
                 }
 
+                if (passwordBox.HasInvalidVaultReference)
+                {
+                    throw new InvalidOperationException(
+                        $"Password parameter '{controlRecord.Name}' contains an invalid Vault reference.");
+                }
+
                 if (string.IsNullOrWhiteSpace(passwordBox.VaultKey) == false)
                 {
-                    defaultOverrides[controlRecord.Name] = $"{VaultReferencePrefix}{passwordBox.VaultKey}";
+                    defaultOverrides[controlRecord.Name] = VaultReference.Format(passwordBox.VaultKey);
                 }
-                else if (string.IsNullOrWhiteSpace(passwordBox.Password) == false)
+                else
                 {
-                    var vaultEntries = _vaultProvider.ReadFromVault().ToList();
-                    var vaultKeyName = $"!{vaultPrefixForNewEntries}_{controlRecord.Name}";
-                    var existingEntry = vaultEntries.FirstOrDefault(x => x.Name == vaultKeyName);
-                    if (existingEntry != null)
+                    if (passwordPersistenceScope is null)
                     {
-                        vaultEntries.Remove(existingEntry);
+                        defaultOverrides[controlRecord.Name] = passwordBox.Password ?? string.Empty;
+                        continue;
                     }
+
+                    vaultEntries ??= _vaultProvider.ReadFromVault().ToList();
+                    var vaultKeyName = HiddenVaultKey.Create(
+                        SelectedAction?.SourceName,
+                        SelectedAction?.Name ?? throw new InvalidOperationException("No action is selected."),
+                        passwordPersistenceScope,
+                        controlRecord.Name);
+                    vaultEntries.RemoveAll(entry =>
+                        string.Equals(entry.Name, vaultKeyName, StringComparison.Ordinal));
 
                     vaultEntries.Add(new VaultEntry
                     {
                         Name = vaultKeyName,
                         Secret = passwordBox.Password
                     });
-                    _vaultProvider.UpdateVault(vaultEntries);
-                    defaultOverrides[controlRecord.Name] = $"{VaultReferencePrefix}{vaultKeyName}";
+                    vaultChanged = true;
+                    defaultOverrides[controlRecord.Name] = VaultReference.Format(vaultKeyName);
                 }
             }
             else
             {
                 var controlValue = controlRecord.GetFormattedValue()?.Trim();
-                defaultOverrides[controlRecord.Name] = controlValue;
+                defaultOverrides[controlRecord.Name] = controlValue ?? string.Empty;
             }
+        }
+
+        if (vaultChanged)
+        {
+            _vaultProvider.UpdateVault(vaultEntries!);
         }
 
         return defaultOverrides;
@@ -1552,13 +1671,32 @@ public class MainWindowViewModel : ReactiveObject
             return;
         }
 
-        var defaultOverrides = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{SelectedAction.Name}_{setName}");
-        AppSettingsService.UpdateExtraParameterSet(new ActionExtraPredefinedParameterSet
+        Dictionary<string, string> defaultOverrides;
+        try
         {
-            ActionName = SelectedAction.Name,
-            Description = setName,
-            Arguments = defaultOverrides
-        });
+            defaultOverrides = HarvestCurrentParameters(
+                passwordPersistenceScope: $"preset:{setName}");
+        }
+        catch (Exception exception)
+        {
+            ShowParameterPersistenceError("Preset was not saved", exception);
+            return;
+        }
+        try
+        {
+            AppSettingsService.UpdateExtraParameterSet(new ActionExtraPredefinedParameterSet
+            {
+                ActionName = SelectedAction.Name,
+                SourceName = SelectedAction.SourceName,
+                Description = setName,
+                Arguments = defaultOverrides
+            });
+        }
+        catch (Exception exception)
+        {
+            ShowParameterPersistenceError("Preset was not saved", exception);
+            return;
+        }
 
         var newSet = new ArgumentSet()
         {
@@ -1580,6 +1718,16 @@ public class MainWindowViewModel : ReactiveObject
         }
         BuildUi();
 
+    }
+
+    private static void ShowParameterPersistenceError(string title, Exception exception)
+    {
+        var messageBox = MessageBoxManager.GetMessageBoxStandard(
+            title,
+            exception.Message,
+            icon: MsBox.Avalonia.Enums.Icon.Warning,
+            windowStartupLocation: WindowStartupLocation.CenterOwner);
+        messageBox.ShowAsync();
     }
 
     public void OpenDirInVsCode()
@@ -1604,29 +1752,23 @@ public class MainWindowViewModel : ReactiveObject
     {
         if (SelectedAction is { } selectedAction)
         {
-            var missingParameters = _controlRecords
-                .Where(record => record.Required && !record.IsNotEmpty())
-                .ToList();
+            var parameterCapture = CaptureExecutionParameters();
+            var parameterResolution = parameterCapture.Resolution;
+            if (parameterCapture.ErrorMessage is not null ||
+                parameterResolution is null ||
+                parameterResolution.VaultIssues.Count > 0)
+            {
+                HighlightValidationFailures(parameterCapture.Resolution?.VaultIssues
+                    .Select(issue => issue.ParameterName) ?? Enumerable.Empty<string>());
+                await ShowVaultResolutionErrorAsync(selectedAction, parameterCapture);
+                return;
+            }
+
+            var missingParameters = FindMissingRequiredParameters(parameterResolution.Values);
             HighlightValidationFailures(missingParameters.Select(record => record.Name));
             if (missingParameters.Count > 0)
             {
-                var labels = missingParameters.Select(record =>
-                {
-                    var parameter = selectedAction.Params.FirstOrDefault(param =>
-                        string.Equals(param.Name, record.Name, StringComparison.OrdinalIgnoreCase));
-                    return parameter?.DisplayLabel ?? record.Name;
-                });
-                var message = "Provide values for the following required parameters:\n\n" +
-                              string.Join("\n", labels.Select(label => $"• {label}"));
-                var messageBox = MessageBoxManager.GetMessageBoxStandard(
-                    "Missing required parameters",
-                    message,
-                    icon: MsBox.Avalonia.Enums.Icon.Warning,
-                    windowStartupLocation: WindowStartupLocation.CenterOwner);
-                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    await messageBox.ShowWindowDialogAsync(desktop.MainWindow);
-                }
+                await ShowMissingRequiredParametersAsync(selectedAction, missingParameters);
                 return;
             }
 
@@ -1641,16 +1783,202 @@ public class MainWindowViewModel : ReactiveObject
 
             var selectedActionCommand = selectedAction.Command;
             
-            ExecuteCommand(selectedActionCommand, selectedAction, selectedAction.UseSystemShell);
+            ExecuteCommand(
+                selectedActionCommand,
+                selectedAction,
+                selectedAction.UseSystemShell,
+                parameterValues: parameterResolution.Values);
 
-            // Some audit staff
-            var usedParams = HarvestCurrentParameters(vaultPrefixForNewEntries: $"{selectedAction.Name}_{Guid.NewGuid():N}");
-            var executionLogAction = new ExecutionLogAction(DateTime.Now,  selectedAction.SourceName, selectedAction.Name, usedParams);
-            ExecutionLog.Insert(0, executionLogAction);
-            //SelectedRecentExecution = executionLogAction;
-            AppSettingsService.UpdateExecutionLog(ExecutionLog.ToList());
+            try
+            {
+                var usedParams = HarvestCurrentParameters(
+                    passwordPersistenceScope: "execution");
+                var executionLogAction = new ExecutionLogAction(
+                    DateTime.Now,
+                    selectedAction.SourceName,
+                    selectedAction.Name,
+                    usedParams);
+                ExecutionLog.Insert(0, executionLogAction);
+                AppSettingsService.UpdateExecutionLog(ExecutionLog.ToList());
+            }
+            catch (Exception exception)
+            {
+                var messageBox = MessageBoxManager.GetMessageBoxStandard(
+                    "Execution history was not saved",
+                    $"The script was started, but its execution history could not be saved. {exception.Message}",
+                    icon: MsBox.Avalonia.Enums.Icon.Warning,
+                    windowStartupLocation: WindowStartupLocation.CenterOwner);
+                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+                    { MainWindow: { } mainWindow })
+                {
+                    await messageBox.ShowWindowDialogAsync(mainWindow);
+                }
+            }
         }
         
+    }
+
+    private ExecutionParameterCapture CaptureExecutionParameters(
+        IReadOnlySet<string>? passwordParametersToResolve = null)
+    {
+        var inputs = _controlRecords
+            .Select(record =>
+            {
+                if (record is PasswordControl { Control: PasswordBox passwordBox })
+                {
+                    var shouldResolve = passwordParametersToResolve is null ||
+                                        passwordParametersToResolve.Contains(record.Name);
+                    return new ExecutionParameterInput(
+                        record.Name,
+                        shouldResolve ? passwordBox.Password : null,
+                        IsPassword: true,
+                        shouldResolve ? passwordBox.VaultKey : null,
+                        shouldResolve && passwordBox.HasInvalidVaultReference);
+                }
+
+                return new ExecutionParameterInput(
+                    record.Name,
+                    record.GetFormattedValue(),
+                    IsPassword: false,
+                    VaultKey: null);
+            })
+            .ToList();
+
+        IReadOnlyList<VaultEntry> vaultEntries = Array.Empty<VaultEntry>();
+        if (inputs.Any(input => !string.IsNullOrWhiteSpace(input.VaultKey)))
+        {
+            try
+            {
+                vaultEntries = _vaultProvider.ReadFromVault();
+            }
+            catch (Exception exception)
+            {
+                foreach (var control in _controlRecords.OfType<PasswordControl>())
+                {
+                    var passwordBox = (PasswordBox)control.Control;
+                    if (!string.IsNullOrWhiteSpace(passwordBox.VaultKey))
+                    {
+                        passwordBox.SetVaultValue(passwordBox.VaultKey, null, null);
+                    }
+                }
+
+                return new ExecutionParameterCapture(
+                    null,
+                    $"The vault could not be read. {exception.Message}");
+            }
+        }
+
+        var resolution = ExecutionParameterResolver.Resolve(inputs, vaultEntries);
+        foreach (var resolvedParameter in resolution.ResolvedVaultParameters)
+        {
+            if (_controlRecords.FirstOrDefault(record =>
+                    string.Equals(record.Name, resolvedParameter.ParameterName, StringComparison.OrdinalIgnoreCase))
+                is PasswordControl { Control: PasswordBox passwordBox })
+            {
+                passwordBox.SetVaultValue(
+                    resolvedParameter.VaultKey,
+                    resolvedParameter.Entry.Secret,
+                    resolvedParameter.Entry.ExpiresAt);
+            }
+        }
+
+        // Never leave an old cached secret in a control whose binding is now invalid.
+        foreach (var issue in resolution.VaultIssues)
+        {
+            if (_controlRecords.FirstOrDefault(record =>
+                    string.Equals(record.Name, issue.ParameterName, StringComparison.OrdinalIgnoreCase))
+                is PasswordControl { Control: PasswordBox passwordBox })
+            {
+                if (issue.Status == VaultEntryResolutionStatus.InvalidReference)
+                {
+                    passwordBox.SetInvalidVaultReference(passwordBox.Password);
+                }
+                else
+                {
+                    passwordBox.SetVaultValue(issue.VaultKey, null, null);
+                }
+            }
+        }
+
+        return new ExecutionParameterCapture(resolution, null);
+    }
+
+    private async Task ShowVaultResolutionErrorAsync(
+        ScriptConfig selectedAction,
+        ExecutionParameterCapture parameterCapture)
+    {
+        var message = parameterCapture.ErrorMessage;
+        if (message is null && parameterCapture.Resolution is { } resolution)
+        {
+            var issues = resolution.VaultIssues.Select(issue =>
+            {
+                var parameter = selectedAction.Params.FirstOrDefault(param =>
+                    string.Equals(param.Name, issue.ParameterName, StringComparison.OrdinalIgnoreCase));
+                var reason = issue.Status switch
+                {
+                    VaultEntryResolutionStatus.Duplicate => "duplicate vault key",
+                    VaultEntryResolutionStatus.InvalidReference => "invalid vault reference",
+                    _ => "entry not found"
+                };
+                return $"• {parameter?.DisplayLabel ?? issue.ParameterName} (Vault: {issue.VaultKey}; {reason})";
+            });
+            message = "The following Vault bindings could not be resolved:\n\n" +
+                      string.Join("\n", issues);
+        }
+
+        var messageBox = MessageBoxManager.GetMessageBoxStandard(
+            "Vault secret unavailable",
+            message ?? "The vault binding could not be resolved.",
+            icon: MsBox.Avalonia.Enums.Icon.Warning,
+            windowStartupLocation: WindowStartupLocation.CenterOwner);
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+            { MainWindow: { } mainWindow })
+        {
+            await messageBox.ShowWindowDialogAsync(mainWindow);
+        }
+    }
+
+    private sealed record ExecutionParameterCapture(
+        ExecutionParameterResolution? Resolution,
+        string? ErrorMessage);
+
+    private List<IControlRecord> FindMissingRequiredParameters(
+        IReadOnlyDictionary<string, string?> parameterValues,
+        IReadOnlySet<string>? parameterNames = null)
+    {
+        return _controlRecords
+            .Where(record =>
+                record.Required &&
+                (parameterNames is null || parameterNames.Contains(record.Name)) &&
+                             (!parameterValues.TryGetValue(record.Name, out var value) ||
+                              (record is PasswordControl
+                                  ? string.IsNullOrEmpty(value)
+                                  : string.IsNullOrWhiteSpace(value))))
+            .ToList();
+    }
+
+    private static async Task ShowMissingRequiredParametersAsync(
+        ScriptConfig selectedAction,
+        IReadOnlyCollection<IControlRecord> missingParameters)
+    {
+        var labels = missingParameters.Select(record =>
+        {
+            var parameter = selectedAction.Params.FirstOrDefault(param =>
+                string.Equals(param.Name, record.Name, StringComparison.OrdinalIgnoreCase));
+            return parameter?.DisplayLabel ?? record.Name;
+        });
+        var message = "Provide values for the following required parameters:\n\n" +
+                      string.Join("\n", labels.Select(label => $"• {label}"));
+        var messageBox = MessageBoxManager.GetMessageBoxStandard(
+            "Missing required parameters",
+            message,
+            icon: MsBox.Avalonia.Enums.Icon.Warning,
+            windowStartupLocation: WindowStartupLocation.CenterOwner);
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+            { MainWindow: { } mainWindow })
+        {
+            await messageBox.ShowWindowDialogAsync(mainWindow);
+        }
     }
 
     private void HighlightValidationFailures(IEnumerable<string> paramNames)
@@ -1682,36 +2010,87 @@ public class MainWindowViewModel : ReactiveObject
         }
     }
 
-    private void ExecuteCommand(string command, ScriptConfig selectedAction, bool useSystemShell, string? title = null, Action<string>? onComplete = null)
+    private bool ExecuteCommand(
+        string command,
+        ScriptConfig selectedAction,
+        bool useSystemShell,
+        string? title = null,
+        Action<string>? onComplete = null,
+        IReadOnlyDictionary<string, string?>? parameterValues = null,
+        bool isInstallCommand = false,
+        bool validateRequiredParameters = false)
     {
-        var (commandPath, args) = SplitCommandAndArgs(command);
-        var envVariables = new Dictionary<string, string?>(selectedAction.EnvironmentVariables);
-        var maskedArgs = args;
+        var referencedParameterNames = CommandTemplateExpander.GetReferencedParameterNames(
+            new[] { command }.Concat(
+                isInstallCommand
+                    ? Enumerable.Empty<string?>()
+                    : selectedAction.EnvironmentVariables.Values));
+
+        if (parameterValues is null)
+        {
+            var parameterCapture = CaptureExecutionParameters(referencedParameterNames);
+            var parameterResolution = parameterCapture.Resolution;
+            if (parameterCapture.ErrorMessage is not null ||
+                parameterResolution is null ||
+                parameterResolution.VaultIssues.Count > 0)
+            {
+                _ = ShowVaultResolutionErrorAsync(selectedAction, parameterCapture);
+                return false;
+            }
+
+            parameterValues = parameterResolution.Values;
+        }
+
+        if (validateRequiredParameters)
+        {
+            var missingParameters = FindMissingRequiredParameters(
+                parameterValues,
+                referencedParameterNames);
+            HighlightValidationFailures(missingParameters.Select(record => record.Name));
+            if (missingParameters.Count > 0)
+            {
+                _ = ShowMissingRequiredParametersAsync(selectedAction, missingParameters);
+                return false;
+            }
+        }
+
+        var (commandPathTemplate, argsTemplate) = SplitCommandAndArgs(command);
+        var envVariables = isInstallCommand
+            ? new Dictionary<string, string?>()
+            : new Dictionary<string, string?>(selectedAction.EnvironmentVariables);
         
         // Track parameter replacements for formatting with descriptions
         var parameterReplacements = new List<(string paramName, string value, bool masked, string description)>();
         
+        var maskedValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         foreach (var controlRecord in _controlRecords)
         {
-            var controlValue = controlRecord.GetFormattedValue()?.Trim();
-            args = args.Replace($"{{{controlRecord.Name}}}", controlValue);
-            commandPath = commandPath.Replace($"{{{controlRecord.Name}}}", controlValue);
-            var displayValue = controlRecord.MaskingRequired ? "*****" : controlValue;
-            maskedArgs = maskedArgs.Replace($"{{{controlRecord.Name}}}", displayValue);
+            parameterValues.TryGetValue(controlRecord.Name, out var controlValue);
+            var replacementValue = controlValue ?? string.Empty;
+            var displayValue = controlRecord.MaskingRequired ? "*****" : replacementValue;
+            maskedValues[controlRecord.Name] = displayValue;
             
             // Find the parameter description from the action's Params
             var paramDescription = selectedAction.Params.FirstOrDefault(p => p.Name == controlRecord.Name)?.Description ?? string.Empty;
             
             parameterReplacements.Add((controlRecord.Name, displayValue, controlRecord.MaskingRequired, paramDescription));
 
-            foreach (var (key, val) in envVariables)
+        }
+
+        var commandPath = CommandTemplateExpander.Expand(commandPathTemplate, parameterValues);
+        var args = CommandTemplateExpander.Expand(argsTemplate, parameterValues);
+        var maskedCommandPath = CommandTemplateExpander.Expand(commandPathTemplate, maskedValues);
+        var maskedArgs = CommandTemplateExpander.Expand(argsTemplate, maskedValues);
+
+        foreach (var (key, value) in envVariables.ToList())
+        {
+            if (!string.IsNullOrWhiteSpace(value))
             {
-                if(string.IsNullOrWhiteSpace(val) == false)
-                    envVariables[key] = val.Replace($"{{{controlRecord.Name}}}", controlValue);
+                envVariables[key] = CommandTemplateExpander.Expand(value, parameterValues);
             }
         }
 
-        var executedCommand = $"{commandPath} {maskedArgs}";
+        var executedCommand = $"{maskedCommandPath} {maskedArgs}";
         
         var executedCommandFormatted = FormatParameterValues(
             executedCommand,
@@ -1748,8 +2127,27 @@ public class MainWindowViewModel : ReactiveObject
         {
             job.ExecutionCompleted += (sender, args) => onComplete(job.RawOutput);
         }
+
+        if (isInstallCommand)
+        {
+            job.ExecutionCompleted += (sender, args) =>
+            {
+                if (job.Status == RunningJobStatus.Finished && (job.ExitCode ?? 0) == 0)
+                {
+                    SelectedActionInstalled = true;
+                    AppSettingsService.MarkActionAsInstalled(selectedAction.Name);
+                }
+            };
+        }
         
-        job.RunJob(commandPath, args, selectedAction.WorkingDirectory, selectedAction.InteractiveInputs, selectedAction.Troubleshooting, useSystemShell);
+        job.RunJob(
+            commandPath,
+            args,
+            isInstallCommand ? selectedAction.InstallCommandWorkingDirectory : selectedAction.WorkingDirectory,
+            isInstallCommand ? Array.Empty<InteractiveInputDescription>() : selectedAction.InteractiveInputs,
+            isInstallCommand ? selectedAction.InstallTroubleshooting : selectedAction.Troubleshooting,
+            useSystemShell);
+        return true;
     }
 
     public ObservableCollection<ExecutionLogAction> ExecutionLog { get; set; } = new ();

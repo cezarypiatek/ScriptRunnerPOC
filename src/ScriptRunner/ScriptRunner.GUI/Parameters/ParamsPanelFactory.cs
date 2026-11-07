@@ -19,6 +19,7 @@ using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.TextMate;
+using MsBox.Avalonia;
 using Projektanker.Icons.Avalonia;
 using ScriptRunner.GUI.Infrastructure;
 using ScriptRunner.GUI.ScriptConfigs;
@@ -166,14 +167,28 @@ public class ParamsPanelFactory
                     var result = await commandExecutor($"Generate parameter for '{param.Name}'", param.ValueGeneratorCommand);
                     Dispatcher.UIThread.Post(() =>
                     {
+                        if (result is null)
+                        {
+                            generateButton.Classes.Remove("spinning");
+                            generateButton.IsEnabled = true;
+                            return;
+                        }
+
                         //TODO: Handle other controls
                         if (controlRecord is { Control: TextBox tb })
                         {
-                            tb.Text = result?.Trim() ?? string.Empty;
+                            tb.Text = result.Trim();
                         }
                         else if (controlRecord is { Control: TextEditor te })
                         {
-                            te.Text = result?.Trim() ?? string.Empty;
+                            te.Text = result.Trim();
+                        }
+                        else if (controlRecord is PasswordControl passwordControl)
+                        {
+                            // Command output normally contains a trailing newline. Treat the
+                            // generated result as an explicit manual value, which also detaches
+                            // any previous vault binding.
+                            passwordControl.SetManualValueFromString(result.TrimEnd('\r', '\n'));
                         }
                         generateButton.Classes.Remove("spinning");
                         generateButton.IsEnabled = true;
@@ -346,50 +361,80 @@ public class ParamsPanelFactory
                     Width = 500
                 };
 
-                var vaultKey = value?.StartsWith(MainWindowViewModel.VaultReferencePrefix) == true
-                        ? value.Substring(MainWindowViewModel.VaultReferencePrefix.Length)
-                        : secretBindings.FirstOrDefault(x =>
-                              x.ActionName == scriptConfig.Name &&
-                              x.ParameterName == p.Name &&
-                              x.ParameterSetName == parameterSetName)?.VaultKey
-                          ?? secretBindings.FirstOrDefault(x =>
-                              x.ActionName == scriptConfig.Name &&
-                              x.ParameterName == p.Name &&
-                              x.ParameterSetName == null)?.VaultKey;
+                VaultBinding? FindBinding(string? setName) => SettingsScopeResolver.FindBest(
+                    secretBindings.Where(binding =>
+                        binding.ActionName == scriptConfig.Name &&
+                        binding.ParameterName == p.Name &&
+                        binding.ParameterSetName == setName),
+                    scriptConfig.SourceName,
+                    binding => binding.SourceName);
+
+                var reference = VaultReference.Parse(value);
+                var vaultKey = reference is { Status: VaultReferenceStatus.Valid, VaultKey: { } referencedVaultKey }
+                    ? referencedVaultKey
+                    : reference.Status == VaultReferenceStatus.NotReference
+                        ? FindBinding(parameterSetName)?.VaultKey ?? FindBinding(null)?.VaultKey
+                        : null;
                 
                 if (string.IsNullOrWhiteSpace(vaultKey) == false )
                 {
-                    var vaultEntries = _vaultProvider.ReadFromVault();
-                    if (vaultEntries.FirstOrDefault(x => x.Name == vaultKey) is { } vaultEntry)
+                    try
                     {
-                        passwordBox.SetVaultValue(vaultEntry.Name!, vaultEntry.Secret, vaultEntry.ExpiresAt);
+                        var resolution = VaultBindingResolver.Resolve(vaultKey, _vaultProvider.ReadFromVault());
+                        passwordBox.SetVaultValue(
+                            vaultKey,
+                            resolution.Entry?.Secret,
+                            resolution.Entry?.ExpiresAt);
                     }
+                    catch
+                    {
+                        // Retain the binding if the vault is temporarily unavailable. Execution
+                        // retries the read and reports a user-facing error instead of using a cache.
+                        passwordBox.SetVaultValue(vaultKey, null, null);
+                    }
+                }
+                else if (reference.Status == VaultReferenceStatus.Invalid)
+                {
+                    passwordBox.SetInvalidVaultReference(value);
                 }
                 else
                 {
-                    passwordBox.Password = value;
+                    passwordBox.SetManualValue(value);
                 }
                 
                 passwordBox.VaultBindingChanged += (sender, args) =>
                 {
-                    if (args.VaultEntryChoice.RememberBindingForSet)
+                    try
                     {
-                        AppSettingsService.UpdateVaultBindingsForParameterSet(new VaultBinding
+                        if (args.VaultEntryChoice.RememberBindingForSet)
                         {
-                            ActionName = scriptConfig.Name,
-                            ParameterName = p.Name,
-                            VaultKey = args.VaultEntryChoice.SelectedEntry.Name,
-                            ParameterSetName = parameterSetName
-                        });
+                            AppSettingsService.UpdateVaultBindingsForParameterSet(new VaultBinding
+                            {
+                                ActionName = scriptConfig.Name,
+                                SourceName = scriptConfig.SourceName,
+                                ParameterName = p.Name,
+                                VaultKey = args.VaultEntryChoice.SelectedEntry.Name!,
+                                ParameterSetName = parameterSetName
+                            });
+                        }
+                        else if (args.VaultEntryChoice.RememberBinding)
+                        {
+                            AppSettingsService.UpdateVaultBindings(new VaultBinding
+                            {
+                                ActionName = scriptConfig.Name,
+                                SourceName = scriptConfig.SourceName,
+                                ParameterName = p.Name,
+                                VaultKey = args.VaultEntryChoice.SelectedEntry.Name!
+                            });
+                        }
                     }
-                    else if (args.VaultEntryChoice.RememberBinding)
+                    catch (Exception exception)
                     {
-                        AppSettingsService.UpdateVaultBindings(new VaultBinding
-                        {
-                            ActionName = scriptConfig.Name,
-                            ParameterName = p.Name,
-                            VaultKey = args.VaultEntryChoice.SelectedEntry.Name
-                        });
+                        var messageBox = MessageBoxManager.GetMessageBoxStandard(
+                            "Vault binding was not remembered",
+                            exception.Message,
+                            icon: MsBox.Avalonia.Enums.Icon.Warning);
+                        _ = messageBox.ShowAsync();
                     }
                 };
                 return new PasswordControl

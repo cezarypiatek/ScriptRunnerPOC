@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using MsBox.Avalonia;
 using ReactiveUI;
 using ScriptRunner.GUI.Infrastructure;
 using ScriptRunner.GUI.ViewModels;
@@ -18,10 +19,22 @@ namespace ScriptRunner.GUI.Views
 
         public VaultPickerViewModel(VaultProvider vaultProvider)
         {
-            Entries = vaultProvider.ReadFromVault().Where(x=>x.Name.StartsWith("!") == false).ToList();
+            try
+            {
+                Entries = vaultProvider.ReadFromVault()
+                    .Where(entry => VaultKeyPolicy.IsUserSelectable(entry.Name))
+                    .ToList();
+            }
+            catch (System.Exception exception)
+            {
+                Entries = new List<VaultEntry>();
+                LoadError = $"The Vault could not be read. {exception.Message}";
+            }
         }
+
+        public string? LoadError { get; }
         
-        public IReadOnlyList<VaultEntry> Entries { get; set; }
+        public IReadOnlyList<VaultEntry> Entries { get; set; } = System.Array.Empty<VaultEntry>();
 
         public VaultEntry? SelectedEntry
         {
@@ -39,6 +52,7 @@ namespace ScriptRunner.GUI.Views
             DataContext = this.ViewModel = Locator.Current.GetService<VaultPickerViewModel>()!;
 
             InitializeComponent();
+            Opened += ShowLoadError;
 #if DEBUG
             this.AttachDevTools();
 #endif
@@ -63,6 +77,21 @@ namespace ScriptRunner.GUI.Views
 
         private void Cancel(object? sender, RoutedEventArgs e) => Close();
 
+        private async void ShowLoadError(object? sender, System.EventArgs e)
+        {
+            if (ViewModel.LoadError is null)
+            {
+                return;
+            }
+
+            var errorMessage = MessageBoxManager.GetMessageBoxStandard(
+                "Cannot open Vault",
+                ViewModel.LoadError,
+                icon: MsBox.Avalonia.Enums.Icon.Error);
+            await errorMessage.ShowWindowDialogAsync(this);
+            Close();
+        }
+
         private void Remember_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
         {
             if (Remember.IsChecked == true)
@@ -80,6 +109,6 @@ namespace ScriptRunner.GUI.Views
     {
         public bool RememberBinding { get; set; }
         public bool RememberBindingForSet { get; set; }
-        public VaultEntry SelectedEntry { get; set; }
+        public required VaultEntry SelectedEntry { get; set; }
     }
 }

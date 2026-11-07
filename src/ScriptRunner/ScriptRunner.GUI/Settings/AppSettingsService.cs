@@ -30,119 +30,155 @@ public class AppSettingsService
     {
         try
         {
-            var settingsPath = GetSettingsPath(fileName);
-            if (File.Exists(settingsPath))
-            {
-                var payload = File.ReadAllText(settingsPath, Encoding.UTF8);
-                if (string.IsNullOrWhiteSpace(payload) == false && JsonSerializer.Deserialize<T>(payload) is { } settings)
-                {
-                    return settings;
-                }
-            }
+            return LoadForUpdate<T>(fileName);
         }
         catch
         {
-            
+            return new T();
         }
-        return new T();
     }
 
-    private static void Save<T>(T settings, string? fileName = null)
+    private static T LoadForUpdate<T>(string? fileName = null) where T : new()
+    {
+        var settingsPath = GetSettingsPath(fileName);
+        if (!File.Exists(settingsPath))
+        {
+            return new T();
+        }
+
+        var payload = File.ReadAllText(settingsPath, Encoding.UTF8);
+        if (string.IsNullOrWhiteSpace(payload))
+        {
+            throw new InvalidDataException($"Settings file '{settingsPath}' is empty.");
+        }
+
+        return JsonSerializer.Deserialize<T>(payload)
+               ?? throw new InvalidDataException($"Settings file '{settingsPath}' is invalid.");
+    }
+
+    private static void UpdateSettingsBestEffort(Action<ScriptRunnerAppSettings> update)
     {
         try
         {
-            var payload = JsonSerializer.Serialize(settings);
-            var settingsPath = GetSettingsPath(fileName);
-            File.WriteAllText(settingsPath, payload, Encoding.UTF8);
+            var settings = LoadForUpdate<ScriptRunnerAppSettings>();
+            update(settings);
+            SaveForUpdate(settings);
         }
         catch
         {
+            // Noncritical UI preferences remain best-effort, but never replace a corrupt file
+            // with the empty fallback returned by the public tolerant loader.
+        }
+    }
+
+    private static void SaveForUpdate<T>(T settings, string? fileName = null)
+    {
+        var payload = JsonSerializer.Serialize(settings);
+        var settingsPath = GetSettingsPath(fileName);
+        var temporaryPath = $"{settingsPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            File.WriteAllText(temporaryPath, payload, Encoding.UTF8);
+            File.Move(temporaryPath, settingsPath, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
         }
     }
 
     public static void MarkActionAsInstalled(string actionName)
     {
-        var allSettings = AppSettingsService.Load();
-        allSettings.InstalledActions ??= new Dictionary<string, CommandInstallationStatus>();
-        allSettings.InstalledActions[actionName] = new CommandInstallationStatus()
+        UpdateSettingsBestEffort(allSettings =>
         {
-            IsInstalled = true
-        };
-        Save(allSettings);
+            allSettings.InstalledActions ??= new Dictionary<string, CommandInstallationStatus>();
+            allSettings.InstalledActions[actionName] = new CommandInstallationStatus
+            {
+                IsInstalled = true
+            };
+        });
     }
 
     public static void SetActionFavorite(string actionKey, bool isFavorite)
     {
-        var allSettings = Load();
-        allSettings.FavoriteActions ??= new List<string>();
-
-        allSettings.FavoriteActions.RemoveAll(key =>
-            string.Equals(key, actionKey, StringComparison.Ordinal));
-
-        if (isFavorite)
+        UpdateSettingsBestEffort(allSettings =>
         {
-            allSettings.FavoriteActions.Add(actionKey);
-        }
-
-        Save(allSettings);
+            allSettings.FavoriteActions ??= new List<string>();
+            allSettings.FavoriteActions.RemoveAll(key =>
+                string.Equals(key, actionKey, StringComparison.Ordinal));
+            if (isFavorite)
+            {
+                allSettings.FavoriteActions.Add(actionKey);
+            }
+        });
     }
 
   
 
     public static void UpdateLayoutSettings(Action<LayoutSettings> updateSettings)
     {
-        var allSettings = AppSettingsService.Load();
-        allSettings.Layout ??= new LayoutSettings();
-        updateSettings(allSettings.Layout);
-        Save(allSettings);
-        Debug.WriteLine($"Width: {allSettings.Layout.Width}, Height: {allSettings.Layout.Height}, L: {allSettings.Layout.ActionsPanelWidth}, M: {allSettings.Layout.RunningJobsPanelHeight}");
+        UpdateSettingsBestEffort(allSettings =>
+        {
+            allSettings.Layout ??= new LayoutSettings();
+            updateSettings(allSettings.Layout);
+            Debug.WriteLine($"Width: {allSettings.Layout.Width}, Height: {allSettings.Layout.Height}, L: {allSettings.Layout.ActionsPanelWidth}, M: {allSettings.Layout.RunningJobsPanelHeight}");
+        });
     }
     
     public static void UpdateExecutionLog(List<ExecutionLogAction> executionLog)
     {
-        Save(executionLog, ExecutionLogFileName);
+        // Validate an existing file before replacing it so a recoverable corrupt log is not
+        // silently destroyed by the tolerant startup loader.
+        _ = LoadForUpdate<List<ExecutionLogAction>>(ExecutionLogFileName);
+        SaveForUpdate(executionLog, ExecutionLogFileName);
     }
     
     public static void UpdateRecent(Action<Dictionary<string, RecentAction>> updateSettings)
     {
-        var allSettings = AppSettingsService.Load();
-        allSettings.Recent ??= new();
-        updateSettings(allSettings.Recent);
-        Save(allSettings);
+        UpdateSettingsBestEffort(allSettings =>
+        {
+            allSettings.Recent ??= new();
+            updateSettings(allSettings.Recent);
+        });
     }
     
     public static void UpdateDefaultOverrides(ActionDefaultOverrides overrides)
     {
-        var allSettings = AppSettingsService.Load();
+        var allSettings = LoadForUpdate<ScriptRunnerAppSettings>();
         allSettings.DefaultOverrides ??= new ();
 
-        var existingOverride = allSettings.DefaultOverrides.FirstOrDefault(x => x.ActionName == overrides.ActionName);
-        if (existingOverride != null)
-        {
-            allSettings.DefaultOverrides.Remove(existingOverride);
-        }
+        allSettings.DefaultOverrides.RemoveAll(x =>
+            x.ActionName == overrides.ActionName &&
+            x.SourceName == overrides.SourceName);
         allSettings.DefaultOverrides.Add(overrides);
-        Save(allSettings);
+        SaveForUpdate(allSettings);
     }
     
     public static void UpdateExtraParameterSet(ActionExtraPredefinedParameterSet parameterSet)
     {
-        var allSettings = AppSettingsService.Load();
+        var allSettings = LoadForUpdate<ScriptRunnerAppSettings>();
         allSettings.ExtraParameterSets ??= new ();
 
-        var existingOne = allSettings.ExtraParameterSets.FirstOrDefault(x => x.ActionName == parameterSet.ActionName && x.Description == parameterSet.Description);
-        if (existingOne != null)
-        {
-            allSettings.ExtraParameterSets.Remove(existingOne);
-        }
+        allSettings.ExtraParameterSets.RemoveAll(x =>
+            x.ActionName == parameterSet.ActionName &&
+            x.SourceName == parameterSet.SourceName &&
+            x.Description == parameterSet.Description);
         allSettings.ExtraParameterSets.Add(parameterSet);
-        Save(allSettings);
+        SaveForUpdate(allSettings);
     }
 
-    public static Dictionary<string, string>? TryGetDefaultOverrides(string actionName)
+    public static Dictionary<string, string>? TryGetDefaultOverrides(string actionName, string? sourceName)
     {
         var allSettings = AppSettingsService.Load();
-        if (allSettings.DefaultOverrides?.FirstOrDefault(x => x.ActionName == actionName) is { Defaults: var overrides } )
+        var matchingOverrides = SettingsScopeResolver.FindBest(
+            allSettings.DefaultOverrides?.Where(x => x.ActionName == actionName)
+            ?? Enumerable.Empty<ActionDefaultOverrides>(),
+            sourceName,
+            x => x.SourceName);
+        if (matchingOverrides is { Defaults: var overrides })
         {
             return overrides;
         }
@@ -151,61 +187,47 @@ public class AppSettingsService
 
     public static void RemoveScriptConfig(ConfigScriptEntry entry)
     {
-        var allSettings = Load();
-        allSettings.ConfigScripts?.Remove(entry);
-        Save(allSettings);
+        UpdateSettingsBestEffort(allSettings => allSettings.ConfigScripts?.Remove(entry));
     }
 
 
     public static void UpdateMcpServerSettings(McpServerSettings mcpSettings)
     {
-        var allSettings = Load();
-        allSettings.McpServer = mcpSettings;
-        Save(allSettings);
+        UpdateSettingsBestEffort(allSettings => allSettings.McpServer = mcpSettings);
     }
 
     public static void UpdateScriptConfigs(IEnumerable<ConfigScriptEntry> configScripts)
     {
-        var allSettings = Load();
-        allSettings.ConfigScripts = configScripts.ToList();
-        Save(allSettings);
+        var entries = configScripts.ToList();
+        UpdateSettingsBestEffort(allSettings => allSettings.ConfigScripts = entries);
     }
 
     public static void UpdateVaultBindings(VaultBinding binding)
     {
-        var allSettings = Load();
+        var allSettings = LoadForUpdate<ScriptRunnerAppSettings>();
         allSettings.VaultBindings ??= new List<VaultBinding>();
-        var existingBinding = allSettings.VaultBindings.FirstOrDefault(x => x.ActionName == binding.ActionName && x.ParameterName == binding.ParameterName && x.ParameterSetName == null);
-        if (existingBinding != null)
-        {
-            existingBinding.VaultKey = binding.VaultKey;
-        }
-        else
-        {
-            allSettings.VaultBindings.Add(binding);
-        }
+        allSettings.VaultBindings.RemoveAll(x =>
+            x.ActionName == binding.ActionName &&
+            x.SourceName == binding.SourceName &&
+            x.ParameterName == binding.ParameterName &&
+            x.ParameterSetName == null);
+        allSettings.VaultBindings.Add(binding);
 
-        Save(allSettings);
+        SaveForUpdate(allSettings);
     }
 
     public static void UpdateVaultBindingsForParameterSet(VaultBinding binding)
     {
-        var allSettings = Load();
+        var allSettings = LoadForUpdate<ScriptRunnerAppSettings>();
         allSettings.VaultBindings ??= new List<VaultBinding>();
-        var existingBinding = allSettings.VaultBindings.FirstOrDefault(x =>
+        allSettings.VaultBindings.RemoveAll(x =>
             x.ActionName == binding.ActionName &&
+            x.SourceName == binding.SourceName &&
             x.ParameterName == binding.ParameterName &&
             x.ParameterSetName == binding.ParameterSetName);
-        if (existingBinding != null)
-        {
-            existingBinding.VaultKey = binding.VaultKey;
-        }
-        else
-        {
-            allSettings.VaultBindings.Add(binding);
-        }
+        allSettings.VaultBindings.Add(binding);
 
-        Save(allSettings);
+        SaveForUpdate(allSettings);
     }
 
     private static string GetSettingsPath(string? fileName = null)

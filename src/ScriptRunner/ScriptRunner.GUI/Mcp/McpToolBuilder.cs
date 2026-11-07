@@ -114,7 +114,9 @@ public static class McpToolBuilder
                 ? setVal
                 : p.Default;
 
-            if (!string.IsNullOrWhiteSpace(effectiveDefault))
+            // Password defaults belong to the local password/vault control. Publishing them in
+            // an MCP schema can expose plaintext and replaying them can detach vault bindings.
+            if (p.Prompt != PromptType.Password && !string.IsNullOrWhiteSpace(effectiveDefault))
             {
                 propSchema["default"] = effectiveDefault;
             }
@@ -297,6 +299,7 @@ public static class McpToolBuilder
                 foreach (var param in action.Params)
                 {
                     if (stringArgs.ContainsKey(param.Name)) continue;
+                    if (param.Prompt == PromptType.Password) continue;
 
                     var setDefault = argumentSet != null
                         && argumentSet.Arguments.TryGetValue(param.Name, out var sv)

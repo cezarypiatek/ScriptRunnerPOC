@@ -15,6 +15,7 @@ namespace ScriptRunner.GUI.ViewModels
     public class VaultViewModel : ViewModelBase
     {
         private readonly VaultProvider _vaultProvider;
+        public string? LoadError { get; }
 
         public ObservableCollection<VaultEntry> Entries
         {
@@ -41,10 +42,20 @@ namespace ScriptRunner.GUI.ViewModels
             RemoveVaultEntryCommand = ReactiveCommand.Create<VaultEntry>(RemoveVaultEntry);
             ClearExpiryCommand = ReactiveCommand.Create<VaultEntry>(entry => entry.ClearExpiry());
             _vaultProvider = vaultProvider;
-            Entries = new ObservableCollection<VaultEntry>(_vaultProvider.ReadFromVault());
+            try
+            {
+                Entries = new ObservableCollection<VaultEntry>(
+                    _vaultProvider.ReadFromVault()
+                        .Where(entry => !VaultKeyPolicy.IsInternal(entry.Name)));
+            }
+            catch (Exception exception)
+            {
+                Entries = new ObservableCollection<VaultEntry>();
+                LoadError = $"The Vault could not be read. The original file will not be modified. {exception.Message}";
+            }
             Entries.ToObservableChangeSet()
                 .ToCollection()
-                .Select(entries => entries?.Where(x => (x.Name ?? "").StartsWith("!") == false) ?? Enumerable.Empty<VaultEntry>())
+                .Select(entries => entries ?? Array.Empty<VaultEntry>())
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, x => x.FilteredEntries, out _filteredEntries);
         }
@@ -57,10 +68,58 @@ namespace ScriptRunner.GUI.ViewModels
             Entries.Add(new VaultEntry());
         }
 
-        public void SaveVault()
+        public bool TrySaveVault(out string? validationError)
         {
-            var entries = Entries.Where(x => string.IsNullOrWhiteSpace(x.Name) == false).ToList();
+            if (LoadError is not null)
+            {
+                validationError = LoadError;
+                return false;
+            }
+
+            var reservedKeys = Entries
+                .Where(entry => VaultKeyPolicy.IsInternal(entry.Name))
+                .Select(entry => entry.Name!)
+                .ToList();
+            if (reservedKeys.Count > 0)
+            {
+                validationError = "Vault keys beginning with '!' are reserved for ScriptRunner. " +
+                                  "Rename or remove the following entries:\n\n" +
+                                  string.Join("\n", reservedKeys.Select(key => $"• {key}"));
+                return false;
+            }
+
+            var publicEntries = Entries
+                .Where(entry =>
+                    !string.IsNullOrWhiteSpace(entry.Name) &&
+                    !VaultKeyPolicy.IsInternal(entry.Name))
+                .ToList();
+            var duplicateKeys = publicEntries
+                .GroupBy(entry => entry.Name!, StringComparer.Ordinal)
+                .Where(group => group.Count() > 1)
+                .Select(group => group.Key)
+                .OrderBy(key => key, StringComparer.Ordinal)
+                .ToList();
+            if (duplicateKeys.Count > 0)
+            {
+                validationError = "Vault keys must be unique. Rename or remove the duplicate entries:\n\n" +
+                                  string.Join("\n", duplicateKeys.Select(key => $"• {key}"));
+                return false;
+            }
+
+            // The editor intentionally hides managed entries. Re-read and merge them at save time
+            // so an MCP execution or another in-process workflow cannot be overwritten by the
+            // editor's older hidden-entry snapshot. Managed duplicates from an interrupted legacy
+            // update are repaired deterministically by keeping the newest serialized entry.
+            var internalEntries = _vaultProvider.ReadFromVault()
+                .Where(entry => VaultKeyPolicy.IsInternal(entry.Name))
+                .GroupBy(entry => entry.Name!, StringComparer.Ordinal)
+                .Select(group => group.Last())
+                .ToList();
+            var entries = publicEntries.Concat(internalEntries).ToList();
+
             _vaultProvider.UpdateVault(entries);
+            validationError = null;
+            return true;
         }
     }
 

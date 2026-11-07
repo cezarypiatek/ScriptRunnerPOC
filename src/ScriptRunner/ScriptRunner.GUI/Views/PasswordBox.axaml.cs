@@ -6,7 +6,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace ScriptRunner.GUI.Views
@@ -17,13 +16,29 @@ namespace ScriptRunner.GUI.Views
 
         private string? _vaultPassword;
         private DateTimeOffset? _vaultExpiresAt;
+        private bool _isApplyingValue;
+
+        public bool HasInvalidVaultReference { get; private set; }
 
         public PasswordBox()
         {
             InitializeComponent();
-            this.FindControl<TextBox>("PasswordTextBox").TextChanged += (_, _) =>
+            this.FindControl<TextBox>("PasswordTextBox")!.TextChanged += (_, _) =>
             {
-                if (VaultKey != null && Password != _vaultPassword)
+                if (_isApplyingValue)
+                {
+                    return;
+                }
+
+                // Avalonia may deliver the notification after a programmatic SetVaultValue has
+                // completed. Do not mistake that delayed notification for a manual edit.
+                if (VaultKey is not null && Password == _vaultPassword)
+                {
+                    return;
+                }
+
+                HasInvalidVaultReference = false;
+                if (VaultKey != null)
                 {
                     _vaultPassword = null;
                     _vaultExpiresAt = null;
@@ -47,8 +62,8 @@ namespace ScriptRunner.GUI.Views
                 _vaultKey = value;
                 var isBoundToVault = !string.IsNullOrWhiteSpace(value);
                 var bindingInfo = this.FindControl<Border>("VaultBindingInfo");
-                bindingInfo.IsVisible = isBoundToVault;
-                this.FindControl<TextBlock>("VaultKeyText").Text = value;
+                bindingInfo!.IsVisible = isBoundToVault;
+                this.FindControl<TextBlock>("VaultKeyText")!.Text = value;
 
                 var daysUntilExpiry = _vaultExpiresAt is { } expiry
                     ? (int)(expiry.Date - DateTimeOffset.Now.Date).TotalDays
@@ -59,7 +74,7 @@ namespace ScriptRunner.GUI.Views
                 bindingInfo.Classes.Set("expired", isExpired);
                 bindingInfo.Classes.Set("expiringSoon", isExpiringSoon);
                 var expiryText = this.FindControl<TextBlock>("VaultExpiryText");
-                expiryText.IsVisible = isExpired || isExpiringSoon;
+                expiryText!.IsVisible = isExpired || isExpiringSoon;
                 expiryText.Text = isExpired
                     ? $"Expired on {_vaultExpiresAt:yyyy-MM-dd}"
                     : daysUntilExpiry switch
@@ -74,10 +89,68 @@ namespace ScriptRunner.GUI.Views
 
         public void SetVaultValue(string vaultKey, string? password, DateTimeOffset? expiresAt)
         {
-            _vaultPassword = password;
-            _vaultExpiresAt = expiresAt;
-            Password = password;
-            VaultKey = vaultKey;
+            _isApplyingValue = true;
+            try
+            {
+                HasInvalidVaultReference = false;
+                _vaultPassword = password;
+                _vaultExpiresAt = expiresAt;
+                VaultKey = vaultKey;
+                Password = password;
+            }
+            finally
+            {
+                _isApplyingValue = false;
+            }
+        }
+
+        public void SetManualValue(string? password)
+        {
+            ApplyUnboundValue(password, hasInvalidVaultReference: false);
+        }
+
+        public void SetInvalidVaultReference(string? value)
+        {
+            ApplyUnboundValue(value, hasInvalidVaultReference: true);
+        }
+
+        public PasswordBoxState CaptureState() => new(
+            Password,
+            VaultKey,
+            _vaultExpiresAt,
+            HasInvalidVaultReference);
+
+        public void RestoreState(PasswordBoxState state)
+        {
+            if (!string.IsNullOrWhiteSpace(state.VaultKey))
+            {
+                SetVaultValue(state.VaultKey, state.Password, state.ExpiresAt);
+            }
+            else if (state.HasInvalidVaultReference)
+            {
+                SetInvalidVaultReference(state.Password);
+            }
+            else
+            {
+                SetManualValue(state.Password);
+            }
+        }
+
+        private void ApplyUnboundValue(string? value, bool hasInvalidVaultReference)
+        {
+            _isApplyingValue = true;
+            try
+            {
+                _vaultPassword = null;
+                _vaultExpiresAt = null;
+                VaultKey = null;
+                HasInvalidVaultReference = hasInvalidVaultReference;
+                Password = value;
+            }
+            finally
+            {
+                _isApplyingValue = false;
+            }
         }
 
         private async void PickFromVault(object? sender, RoutedEventArgs e)
@@ -90,18 +163,21 @@ namespace ScriptRunner.GUI.Views
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var sourceWindow = (sender as Control)?.GetVisualRoot() as Window ?? desktop.MainWindow;
-                if (await pickerDialog.ShowDialog<VaultEntryChoice>(sourceWindow) is { } choice)
+                if (sourceWindow is not null &&
+                    await pickerDialog.ShowDialog<VaultEntryChoice>(sourceWindow) is { } choice)
                 {
+                    SetVaultValue(choice.SelectedEntry.Name!, choice.SelectedEntry.Secret, choice.SelectedEntry.ExpiresAt);
                     OnVaultBindingChanged(new VaultBindingChangedEventArgs(choice));
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        SetVaultValue(choice.SelectedEntry.Name!, choice.SelectedEntry.Secret, choice.SelectedEntry.ExpiresAt);
-                    });
                 }
             }
         }
 
-        public event EventHandler<VaultBindingChangedEventArgs> VaultBindingChanged;
+        private void DetachFromVault(object? sender, RoutedEventArgs e)
+        {
+            SetManualValue(Password);
+        }
+
+        public event EventHandler<VaultBindingChangedEventArgs>? VaultBindingChanged;
 
         public class VaultBindingChangedEventArgs : EventArgs
         {
@@ -119,8 +195,8 @@ namespace ScriptRunner.GUI.Views
         public static readonly DirectProperty<PasswordBox, string?> PasswordProperty = AvaloniaProperty.RegisterDirect<PasswordBox, string?>
         (
             name: nameof(Password),
-            getter: picker => picker.FindControl<TextBox>("PasswordTextBox").Text,
-            setter: (picker, s) => picker.FindControl<TextBox>("PasswordTextBox").Text = s
+            getter: picker => picker.FindControl<TextBox>("PasswordTextBox")!.Text,
+            setter: (picker, s) => picker.FindControl<TextBox>("PasswordTextBox")!.Text = s
         );
 
 
@@ -130,4 +206,10 @@ namespace ScriptRunner.GUI.Views
             set => SetValue(PasswordProperty, value);
         }
     }
+
+    public sealed record PasswordBoxState(
+        string? Password,
+        string? VaultKey,
+        DateTimeOffset? ExpiresAt,
+        bool HasInvalidVaultReference);
 }

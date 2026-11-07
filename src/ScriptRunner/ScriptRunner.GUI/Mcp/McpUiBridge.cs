@@ -131,20 +131,23 @@ public class McpUiBridge
 
                 _vm.SelectedAction = match;
 
-                // 2. If a specific predefined argument set was requested, select it now.
-                //    The SelectedAction setter already assigns the first set (<default>), so we
-                //    re-assign here to override that with the requested set. This re-runs
-                //    RenderParameterForm with the set's pre-filled values.
-                if (argumentSet != null)
+                // 2. Always select a set, even when this action was already selected. Assigning
+                //    the set re-renders a clean form so state from a previous MCP/UI run cannot
+                //    leak into this invocation.
+                var targetSet = argumentSet != null
+                    ? match.PredefinedArgumentSets
+                        .FirstOrDefault(s => s.Description == argumentSet.Description)
+                    : match.PredefinedArgumentSets.FirstOrDefault();
+                if (targetSet != null)
                 {
-                    var matchedSet = match.PredefinedArgumentSets
-                        .FirstOrDefault(s => s.Description == argumentSet.Description);
-                    if (matchedSet != null)
-                        _vm.SelectedArgumentSet = matchedSet;
+                    _vm.SelectedArgumentSet = targetSet;
                 }
 
                 // 3. Push MCP-supplied values into the freshly rendered form controls
-                _vm.ApplyMcpParameterValues(args, braveMode ? null : explicitKeys);
+                _vm.ApplyMcpParameterValues(
+                    args,
+                    explicitKeys ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                    highlightExplicitValues: !braveMode);
 
                 // 4. Subscribe to the next job's completion event *before* invoking RunScript
                 void OnCompleted(object? sender, EventArgs _)

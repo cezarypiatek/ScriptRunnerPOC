@@ -7,6 +7,11 @@ Every action parameter in `ScriptRunnerSchema.json` declares a `prompt` that dri
 > * All parameters support `default`, `valueGeneratorCommand`, `valueGeneratorLabel`, `autoParameterBuilderPattern`, and `skipFromAutoParameterBuilder` in addition to the prompt-specific settings below.
 > * Relative paths (commands, `valueGeneratorCommand`, `filePicker`, `directoryPicker`, `fileContent`, `docs`, etc.) are resolved against the JSON file’s folder before execution.
 > * Password parameters can reference secrets stored in the Vault by saving defaults as `!!vault:MySecret`.
+>   The reference is resolved from a fresh Vault snapshot whenever a command is executed, including
+>   parameter and option-generator commands. Missing or duplicate keys block execution rather than
+>   falling back to a previously displayed value. Typing a password manually detaches the current
+>   control from its Vault reference. The **Unlink** action does the same while preserving the
+>   currently displayed text, including when that text has not changed.
 
 ---
 

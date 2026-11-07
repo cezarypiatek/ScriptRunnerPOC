@@ -192,7 +192,13 @@ public static class ScriptConfigReader
                     }
                 }
 
-                if (appSettings.ExtraParameterSets?.Where(x => x.ActionName == action.Name).ToList() is { } extraSets)
+                if (SettingsScopeResolver.OrderForOverlay(
+                        appSettings.ExtraParameterSets?
+                            .Where(x => x.ActionName == action.Name)
+                        ?? Enumerable.Empty<ActionExtraPredefinedParameterSet>(),
+                        action.SourceName,
+                        x => x.SourceName)
+                        .ToList() is { } extraSets)
                 {
                     foreach (var extraSet in extraSets.Select(x => new ArgumentSet
                              {
@@ -365,7 +371,13 @@ public static class ScriptConfigReader
                     }
                 }
 
-                if (appSettings.ExtraParameterSets?.Where(x => x.ActionName == action.Name).ToList() is { } extraSets)
+                if (SettingsScopeResolver.OrderForOverlay(
+                        appSettings.ExtraParameterSets?
+                            .Where(x => x.ActionName == action.Name)
+                        ?? Enumerable.Empty<ActionExtraPredefinedParameterSet>(),
+                        action.SourceName,
+                        x => x.SourceName)
+                        .ToList() is { } extraSets)
                 {
                     foreach (var extraSet in extraSets.Select(x => new ArgumentSet
                              {

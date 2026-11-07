@@ -33,6 +33,7 @@ public class CommandInstallationStatus
 public class VaultBinding
 {
     public string ActionName { get; set; }
+    public string? SourceName { get; set; }
     public string ParameterName { get; set; }
     public string VaultKey { get; set; }
     public string? ParameterSetName { get; set; }
@@ -41,11 +42,13 @@ public class VaultBinding
 public class ActionDefaultOverrides
 {
     public string ActionName { get; set; }
+    public string? SourceName { get; set; }
     public Dictionary<string,string> Defaults { get; set; }
 }
 public class ActionExtraPredefinedParameterSet
 {
     public string ActionName { get; set; }
+    public string? SourceName { get; set; }
     public string Description { get; set; }
     public Dictionary<string,string> Arguments { get; set; }
 }
