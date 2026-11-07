@@ -7,10 +7,14 @@
              xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
              xmlns:scriptConfigs="clr-namespace:ScriptRunner.GUI.ScriptConfigs"
              xmlns:controls="clr-namespace:ScriptRunner.GUI.Controls"
+             xmlns:converters="clr-namespace:ScriptRunner.GUI.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ScriptRunner.GUI.Views.RunningJobsSection"
              x:DataType="viewModels:MainWindowViewModel"
              >
+    <UserControl.Resources>
+      <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
+    </UserControl.Resources>
     <TabControl x:Name="RunningJobsPanel"
                 ItemsSource="{Binding RunningJobs}"
                 SelectedItem="{Binding SelectedRunningJob, Mode=TwoWay}">
@@ -113,15 +117,132 @@
               <Border BorderBrush="#3E3E36" BorderThickness="1">
                   <SelectableTextBlock Margin="0" TextWrapping="Wrap" Classes="consoleOutput" Inlines="{Binding ExecutedCommandFormatted}" FontFamily="Cascadia Code, Consolas, Monospace" FontSize="13"/>    
               </Border>
-              <Panel Grid.Row="1" IsVisible="{Binding CurrentTroubleshootingMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{Binding CurrentTroubleShootingSeverity, Converter={x:Static viewModels:TroubleShootingSeverityToBrushConverter.Instance}}" Opacity="0.5" ZIndex="10"></Panel>
-              <ScrollViewer Grid.Row="1" IsVisible="{Binding CurrentTroubleshootingMessage, Converter={x:Static ObjectConverters.IsNotNull}}" ZIndex="11">
-                  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                      <TextBlock Margin="0,0,0,10" HorizontalAlignment="Center" TextAlignment="Center" Foreground="White" FontSize="26" >¯\_(ツ)_/¯</TextBlock>
-                      <SelectableTextBlock HorizontalAlignment="Center" TextAlignment="Center"  Text="{Binding CurrentTroubleshootingMessage}" Foreground="White" FontSize="26"></SelectableTextBlock>
-                      <Button Margin="20" Padding="10" HorizontalAlignment="Center" FontSize="26" Command="{Binding DismissTroubleshootingMessage}">Dismiss</Button>
-                  </StackPanel>
-              </ScrollViewer>
-              <controls:FormattedTextEditor ScrollChanged="ScrollChangedHandler" Grid.Row="1"  Margin="0,0,0,10" Classes="consoleOutput" ViewModel="{Binding}" ></controls:FormattedTextEditor>
+              <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" MinWidth="200" />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="{Binding NotificationRailWidth, Mode=TwoWay}" MaxWidth="600" />
+                </Grid.ColumnDefinitions>
+                <controls:FormattedTextEditor ScrollChanged="ScrollChangedHandler"
+                                              Grid.Column="0"
+                                              Margin="0,0,0,10"
+                                              Classes="consoleOutput"
+                                              ViewModel="{Binding}" />
+
+                <GridSplitter Grid.Column="1"
+                              Width="5"
+                              Margin="5,0,0,10"
+                              Background="#3C3C42"
+                              ResizeDirection="Columns"
+                              ResizeBehavior="PreviousAndNext"
+                              Cursor="SizeWestEast"
+                              IsVisible="{Binding Alerts.Count, Converter={StaticResource CountToVisibilityConverter}}" />
+
+                <Border Grid.Column="2"
+                        MinWidth="240"
+                        MaxWidth="600"
+                        Margin="5,0,0,10"
+                        Background="#1C1C20"
+                        BorderBrush="#3C3C42"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        ClipToBounds="True"
+                        IsVisible="{Binding Alerts.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                  <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0"
+                            Padding="14,11"
+                            Background="#25252A"
+                            BorderBrush="#3C3C42"
+                            BorderThickness="0,0,0,1">
+                      <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                          <TextBlock Text="Detected notifications"
+                                     FontSize="13"
+                                     FontWeight="SemiBold"
+                                     Foreground="#F0F0F2"
+                                     VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Border Grid.Column="1"
+                                MinWidth="24"
+                                Height="22"
+                                Padding="7,0"
+                                Background="#303036"
+                                CornerRadius="11">
+                          <TextBlock Text="{Binding Alerts.Count}"
+                                     FontSize="11"
+                                     FontWeight="SemiBold"
+                                     Foreground="#C8C8CD"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center" />
+                        </Border>
+                      </Grid>
+                    </Border>
+
+                    <ScrollViewer Grid.Row="1"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                      <ItemsControl ItemsSource="{Binding Alerts}" Margin="10">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="viewModels:TroubleshootingAlertViewModel">
+                            <Border Margin="0,0,0,8"
+                                    Padding="0"
+                                    Background="#242429"
+                                    BorderBrush="#3D3D44"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    ClipToBounds="True">
+                              <Grid ColumnDefinitions="4,*">
+                                <Border Grid.Column="0"
+                                        Background="{Binding Severity, Converter={x:Static viewModels:TroubleShootingSeverityToBrushConverter.Instance}}" />
+                                <Grid Grid.Column="1"
+                                      RowDefinitions="Auto,Auto"
+                                      ColumnDefinitions="*,Auto"
+                                      Margin="11,9,7,11">
+                                  <TextBlock Grid.Row="0"
+                                             Grid.Column="0"
+                                             Text="{Binding Severity}"
+                                             FontSize="11"
+                                             FontWeight="SemiBold"
+                                             Foreground="#BEBEC4"
+                                             VerticalAlignment="Center" />
+                                  <Button Grid.Row="0"
+                                          Grid.Column="1"
+                                          Width="24"
+                                          Height="24"
+                                          Margin="4,-4,-2,0"
+                                          Padding="0"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          Foreground="#96969D"
+                                          Cursor="Hand"
+                                          ToolTip.Tip="Dismiss notification"
+                                          Command="{Binding DismissCommand}">
+                                    <avalonia:Icon Value="fas fa-times" Width="9" Height="9" />
+                                  </Button>
+                                  <StackPanel Grid.Row="1"
+                                              Grid.Column="0"
+                                              Grid.ColumnSpan="2"
+                                              Margin="0,7,4,0"
+                                              Spacing="7">
+                                    <SelectableTextBlock Text="{Binding AlertMessage}"
+                                                         TextWrapping="Wrap"
+                                                         FontSize="13"
+                                                         LineHeight="18"
+                                                         Foreground="#E5E5E8" />
+                                    <TextBlock Text="{Binding TimestampText}"
+                                               FontSize="11"
+                                               Foreground="#85858D" />
+                                  </StackPanel>
+                                </Grid>
+                              </Grid>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </ScrollViewer>
+                  </Grid>
+                </Border>
+              </Grid>
               <StackPanel Grid.Row="2" IsVisible="{Binding ExecutionPending, Mode=OneWay}" Margin="0, 0, 0,10">
                   <Panel IsVisible="{Binding CurrentInteractiveInputs.Count}" Margin="0,0,0,10">
                       <ItemsRepeater ItemsSource="{Binding CurrentInteractiveInputs}">

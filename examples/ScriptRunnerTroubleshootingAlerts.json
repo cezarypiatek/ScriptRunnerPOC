@@ -1,0 +1,77 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cezarypiatek/ScriptRunnerPOC/main/schema/v1/ScriptRunnerSchema.json",
+  "actions": [
+    {
+      "name": "PowerShell Troubleshooting Alert Showcase",
+      "description": "Demonstrates burst and sequenced alerts, every severity, repeated matches, named capture substitutions, ANSI-sanitized matching, and non-matching output.",
+      "command": "pwsh -NoProfile -Command ./powershell/TroubleshootingAlerts.ps1",
+      "workingDirectory": ".",
+      "autoParameterBuilderStyle": "powershell",
+      "categories": ["powershell", "troubleshooting", "notifications"],
+      "params": [
+        {
+          "name": "Scenario",
+          "label": "Demo scenario",
+          "description": "Choose All for a full tour or select one behavior to test it in isolation.",
+          "default": "All",
+          "prompt": "dropdown",
+          "promptSettings": {
+            "options": [
+              "All",
+              "Burst",
+              "Sequence",
+              "Severities",
+              "CapturedValues",
+              "RepeatedMatches",
+              "AnsiOutput",
+              "NoAlerts"
+            ]
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "whenMatched": "^DEMO_ERROR \\[(?<code>[^\\]]+)\\] (?<message>.+)$",
+          "alertMessage": "${code}: ${message}",
+          "severity": "error"
+        },
+        {
+          "whenMatched": "^DEMO_WARNING \\[(?<code>[^\\]]+)\\] (?<message>.+)$",
+          "alertMessage": "${code}: ${message}",
+          "severity": "warning"
+        },
+        {
+          "whenMatched": "^DEMO_INFO \\[(?<code>[^\\]]+)\\] (?<message>.+)$",
+          "alertMessage": "${code}: ${message}",
+          "severity": "info"
+        },
+        {
+          "whenMatched": "^DEMO_SUCCESS \\[(?<code>[^\\]]+)\\] (?<message>.+)$",
+          "alertMessage": "${code}: ${message}",
+          "severity": "success"
+        },
+        {
+          "whenMatched": "^MISSING_SECRET name=(?<name>[^ ]+) environment=(?<environment>[^ ]+)$",
+          "alertMessage": "Secret ${name} is missing from ${environment}. Add it to the vault before retrying.",
+          "severity": "warning"
+        },
+        {
+          "whenMatched": "^RATE_LIMIT service=(?<service>[^ ]+) retryAfter=(?<seconds>\\d+)$",
+          "alertMessage": "${service} is rate limited. Retry in ${seconds} seconds.",
+          "severity": "error"
+        },
+        {
+          "whenMatched": "^RETRY_ATTEMPT operation=(?<operation>[^ ]+) attempt=(?<attempt>\\d+) max=(?<max>\\d+)$",
+          "alertMessage": "${operation}: retry ${attempt} of ${max}.",
+          "severity": "warning"
+        },
+        {
+          "whenMatched": "^ANSI_ALERT component=(?<component>[^ ]+) message=(?<message>.+)$",
+          "alertMessage": "${component}: ${message}.",
+          "severity": "info"
+        }
+      ]
+    }
+  ]
+}
+

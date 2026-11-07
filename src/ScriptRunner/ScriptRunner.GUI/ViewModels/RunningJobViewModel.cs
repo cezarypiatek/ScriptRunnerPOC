@@ -5,8 +5,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -68,10 +68,9 @@ public class RunningJobViewModel : ViewModelBase
         KillCancellation.Cancel();
     }
 
-    public void DismissTroubleshootingMessage()
+    public void DismissTroubleshootingAlert(TroubleshootingAlertViewModel alert)
     {
-        CurrentTroubleshootingMessage = null;
-        TryPopNextAlert();
+        Alerts.Remove(alert);
     }
 
     class LogForwarder:IObservable<string>, IDisposable
@@ -317,22 +316,22 @@ public class RunningJobViewModel : ViewModelBase
     }
 
 
-    public ObservableCollection<TroubleshootingItem> Alerts { get; } = new ObservableCollection<TroubleshootingItem>();
-    
-    private string? _currentTroubleshootingMessage;
+    public ObservableCollection<TroubleshootingAlertViewModel> Alerts { get; } = new();
 
-    public string? CurrentTroubleshootingMessage
-    {
-        get => _currentTroubleshootingMessage;
-        set => this.RaiseAndSetIfChanged(ref _currentTroubleshootingMessage, value);
-    }
-    
-    private TroubleShootingSeverity? _currentTroubleShootingSeverity;
+    private GridLength _notificationRailWidth = new(0);
+    private GridLength _lastVisibleNotificationRailWidth = new(320);
 
-    public TroubleShootingSeverity? CurrentTroubleShootingSeverity
+    public GridLength NotificationRailWidth
     {
-        get => _currentTroubleShootingSeverity;
-        set => this.RaiseAndSetIfChanged(ref _currentTroubleShootingSeverity, value);
+        get => _notificationRailWidth;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _notificationRailWidth, value);
+            if (value.Value >= 240)
+            {
+                _lastVisibleNotificationRailWidth = value;
+            }
+        }
     }
 
     private void ChangeStatus(RunningJobStatus status)
@@ -347,37 +346,23 @@ public class RunningJobViewModel : ViewModelBase
     {
         _logForwarder = new LogForwarder();
 
+       Alerts.CollectionChanged += (_, _) =>
+       {
+           if (Alerts.Count == 0)
+           {
+               NotificationRailWidth = new GridLength(0);
+           }
+           else if (NotificationRailWidth.Value == 0)
+           {
+               NotificationRailWidth = _lastVisibleNotificationRailWidth;
+           }
+       };
+
        this.outputSub =  _logForwarder
             .Buffer(TimeSpan.FromMilliseconds(200))
             .Where(x=>x.Count > 0)
             .ObserveOn(RxApp.TaskpoolScheduler)
             .Subscribe(AppendToUiOutput);
-       
-       Observable.FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
-               handler => Alerts.CollectionChanged += handler,
-               handler => Alerts.CollectionChanged -= handler)
-           .Where(x => x.EventArgs.Action == NotifyCollectionChangedAction.Add)
-           .ObserveOn(RxApp.MainThreadScheduler)
-           .Subscribe(x =>
-           {
-               TryPopNextAlert();
-           });
-    }
-
-    private void TryPopNextAlert()
-    {
-        if (string.IsNullOrWhiteSpace(CurrentTroubleshootingMessage))
-        {
-            if (Alerts.Count > 0)
-            {
-                var troubleshootingItem = Alerts.First();
-                CurrentTroubleshootingMessage = troubleshootingItem.AlertMessage;
-                CurrentTroubleShootingSeverity = troubleshootingItem.Severity;
-                Alerts.RemoveAt(0);    
-            }
-            
-            
-        }
     }
 
 
@@ -458,11 +443,11 @@ public class RunningJobViewModel : ViewModelBase
 
                         Dispatcher.UIThread.Post(() =>
                         {
-                            Alerts.Add(new TroubleshootingItem()
-                            {
-                                Severity = input.Severity,
-                                AlertMessage = res
-                            });
+                            Alerts.Add(new TroubleshootingAlertViewModel(
+                                res,
+                                input.Severity,
+                                DateTimeOffset.Now,
+                                DismissTroubleshootingAlert));
                         });
                         break;
                     }
@@ -1307,6 +1292,47 @@ public enum TroubleShootingSeverity
     Warning,
     Info,
     Success
+}
+
+public sealed class TroubleshootingAlertViewModel
+{
+    public TroubleshootingAlertViewModel(
+        string alertMessage,
+        TroubleShootingSeverity severity,
+        DateTimeOffset detectedAt,
+        Action<TroubleshootingAlertViewModel> dismiss)
+    {
+        AlertMessage = alertMessage;
+        Severity = severity;
+        DetectedAt = detectedAt;
+        DismissCommand = ReactiveCommand.Create(() => dismiss(this));
+    }
+
+    public string AlertMessage { get; }
+    public TroubleShootingSeverity Severity { get; }
+    public DateTimeOffset DetectedAt { get; }
+    public ReactiveCommand<Unit, Unit> DismissCommand { get; }
+
+    public string TimestampText
+    {
+        get
+        {
+            var localDetectedAt = DetectedAt.ToLocalTime();
+            var today = DateTimeOffset.Now.Date;
+
+            if (localDetectedAt.Date == today)
+            {
+                return $"Today at {localDetectedAt:HH:mm:ss}";
+            }
+
+            if (localDetectedAt.Date == today.AddDays(-1))
+            {
+                return $"Yesterday at {localDetectedAt:HH:mm:ss}";
+            }
+
+            return localDetectedAt.ToString("MMM d, yyyy 'at' HH:mm:ss", CultureInfo.CurrentCulture);
+        }
+    }
 }
 
 class TroubleShootingElement
