@@ -52,8 +52,19 @@ public class RunningJobViewModel : ViewModelBase
     public RunningJobStatus Status
     {
         get => _status;
-        set => this.RaiseAndSetIfChanged(ref _status, value);
+        set
+        {
+            if (_status == value)
+            {
+                return;
+            }
+
+            this.RaiseAndSetIfChanged(ref _status, value);
+            this.RaisePropertyChanged(nameof(IsRunning));
+        }
     }
+
+    public bool IsRunning => Status == RunningJobStatus.Running;
 
     public string ExecutedCommand { get; set; }
     public InlineCollection ExecutedCommandFormatted { get; set; } = new();
@@ -110,6 +121,7 @@ public class RunningJobViewModel : ViewModelBase
 
         _inputs = interactiveInputs;
         _troubleshooting = troubleshooting;
+        CurrentInteractiveInputs.Clear();
         CurrentRunOutput = "";
         ExecutionPending = true;
         
@@ -219,6 +231,7 @@ public class RunningJobViewModel : ViewModelBase
                 Dispatcher.UIThread.Post(() =>
                 {
                     ExecutionPending = false;
+                    CurrentInteractiveInputs.Clear();
                     RawOutput = rawOutput.ToString();
                     RawErrorOutput = rawErrorOutput.ToString();
                     RaiseExecutionCompleted();
@@ -358,6 +371,9 @@ public class RunningJobViewModel : ViewModelBase
            }
        };
 
+       CurrentInteractiveInputs.CollectionChanged += (_, _) =>
+           this.RaisePropertyChanged(nameof(HasPendingInteractiveInput));
+
        this.outputSub =  _logForwarder
             .Buffer(TimeSpan.FromMilliseconds(200))
             .Where(x=>x.Count > 0)
@@ -381,7 +397,9 @@ public class RunningJobViewModel : ViewModelBase
     private bool inverse = false;
     private bool concealed = false;
 
-    public ObservableCollection<InteractiveInputItem> CurrentInteractiveInputs { get; set; } = new();
+    public ObservableCollection<InteractiveInputItem> CurrentInteractiveInputs { get; } = new();
+
+    public bool HasPendingInteractiveInput => CurrentInteractiveInputs.Count > 0;
 
     public void ExecuteInteractiveInput(object data)
     {
@@ -1173,7 +1191,7 @@ public class RunningJobViewModel : ViewModelBase
             var inputCommand = InputCommand;
             ExecuteInput(inputCommand);
             Dispatcher.UIThread.Post(() => {
-              
+                CurrentInteractiveInputs.Clear();
                 InputCommand = string.Empty;
             });
         }

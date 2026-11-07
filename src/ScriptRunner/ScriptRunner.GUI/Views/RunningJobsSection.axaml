@@ -80,6 +80,38 @@
           <Setter Property="Background" Value="#45454A" />
           <Setter Property="Foreground" Value="White" />
         </Style>
+        <Style Selector="Border.runningJobPulse">
+          <Setter Property="Width" Value="7" />
+          <Setter Property="Height" Value="7" />
+          <Setter Property="Background" Value="#6EDB8F" />
+          <Setter Property="CornerRadius" Value="4" />
+          <Setter Property="Opacity" Value="0.9" />
+          <Style.Animations>
+            <Animation Duration="0:0:1.8"
+                       IterationCount="INFINITE"
+                       Easing="SineEaseInOut">
+              <KeyFrame Cue="0%">
+                <Setter Property="Opacity" Value="0.45" />
+              </KeyFrame>
+              <KeyFrame Cue="50%">
+                <Setter Property="Opacity" Value="1" />
+              </KeyFrame>
+              <KeyFrame Cue="100%">
+                <Setter Property="Opacity" Value="0.45" />
+              </KeyFrame>
+            </Animation>
+          </Style.Animations>
+        </Style>
+        <Style Selector="Border.interactiveInputBadge">
+          <Setter Property="Height" Value="18" />
+          <Setter Property="MinWidth" Value="18" />
+          <Setter Property="Margin" Value="7,0,1,0" />
+          <Setter Property="Padding" Value="5,0" />
+          <Setter Property="Background" Value="#3D321E" />
+          <Setter Property="BorderBrush" Value="#B88A36" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="CornerRadius" Value="9" />
+        </Style>
       </TabControl.Styles>
       <TabControl.ItemTemplate>
         <DataTemplate x:DataType="viewModels:RunningJobViewModel">
@@ -91,11 +123,33 @@
                   <MenuItem Header="Close All Cancelled" Command="{Binding $parent[TabControl].DataContext.CloseAllCancelled}" />
                 </ContextMenu>
               </StackPanel.ContextMenu>
+              <Border Classes="runningJobPulse"
+                      Margin="0,0,7,0"
+                      VerticalAlignment="Center"
+                      IsVisible="{Binding IsRunning}"
+                      ToolTip.Tip="Job is running" />
               <TextBlock FontSize="13"
                          VerticalAlignment="Center"
                          Text="{Binding Tile}"
                          Foreground="{Binding Status, Converter={x:Static gui:JobStatusToColorConverter.Instance}}"
                          ToolTip.Tip="{Binding Status, StringFormat='({0})'}" />
+              <Border Classes="interactiveInputBadge"
+                      VerticalAlignment="Center"
+                      IsVisible="{Binding HasPendingInteractiveInput}"
+                      ToolTip.Tip="User input required">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <avalonia:Icon Value="fas fa-exclamation"
+                                 Width="7"
+                                 Height="7"
+                                 Foreground="#F2BE5C"
+                                 VerticalAlignment="Center" />
+                  <TextBlock Text="Input"
+                             FontSize="10"
+                             FontWeight="SemiBold"
+                             Foreground="#F2C66D"
+                             VerticalAlignment="Center" />
+                </StackPanel>
+              </Border>
               <Button Classes="runningJobTabClose"
                       avalonia:Attached.Icon="fas fa-times"
                       ToolTip.Tip="Close tab"
