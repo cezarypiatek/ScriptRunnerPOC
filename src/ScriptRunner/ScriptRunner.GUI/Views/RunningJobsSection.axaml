@@ -315,11 +315,27 @@
                   <TextBox  Text="{Binding InputCommand, Mode=TwoWay}" KeyUp="AcceptCommand"  Margin="0,0,10,0" FontFamily="Consolas"></TextBox>
               </StackPanel>
             
-            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10" IsVisible="{Binding ExecutionPending}">
-              <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
-              <Button  Width="60" HorizontalContentAlignment="Center" Margin="10,0" Command="{Binding CancelExecution}" IsEnabled="{Binding !KillAvailable}" >Cancel</Button>
-              <Button  Width="60" HorizontalContentAlignment="Center" Command="{Binding Kill}" IsVisible="{Binding KillAvailable}" Background="Firebrick">Kill</Button>
-            </StackPanel>
+            <Grid Grid.Row="3" ColumnDefinitions="Auto,*" Margin="0,0,0,10">
+              <Button Grid.Column="0"
+                      Margin="0,0,10,0"
+                      Padding="12,5"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Center"
+                      IsVisible="{Binding CanOpenActionAgain}"
+                      CommandParameter="{Binding}"
+                      Command="{Binding $parent[TabControl].DataContext.OpenRunningJobAction}"
+                      ToolTip.Tip="Open this action with the inputs used for this run">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <avalonia:Icon Value="fas fa-redo" Width="11" Height="11" />
+                  <TextBlock Text="Open action again" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" IsVisible="{Binding ExecutionPending}">
+                <ProgressBar Classes="executionProgressBar" IsIndeterminate="{Binding ExecutionPending}" />
+                <Button Width="60" HorizontalContentAlignment="Center" Margin="10,0" Command="{Binding CancelExecution}" IsEnabled="{Binding !KillAvailable}">Cancel</Button>
+                <Button Width="60" HorizontalContentAlignment="Center" Command="{Binding Kill}" IsVisible="{Binding KillAvailable}" Background="Firebrick">Kill</Button>
+              </StackPanel>
+            </Grid>
           </Grid>
 
         </DataTemplate>

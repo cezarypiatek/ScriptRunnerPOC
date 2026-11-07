@@ -1782,12 +1782,14 @@ public class MainWindowViewModel : ReactiveObject
             AddExecutionAudit(selectedAction);
 
             var selectedActionCommand = selectedAction.Command;
+            var actionContext = CaptureRunningJobActionContext(selectedAction);
             
             ExecuteCommand(
                 selectedActionCommand,
                 selectedAction,
                 selectedAction.UseSystemShell,
-                parameterValues: parameterResolution.Values);
+                parameterValues: parameterResolution.Values,
+                actionContext: actionContext);
 
             try
             {
@@ -1942,6 +1944,37 @@ public class MainWindowViewModel : ReactiveObject
         ExecutionParameterResolution? Resolution,
         string? ErrorMessage);
 
+    private RunningJobActionContext CaptureRunningJobActionContext(ScriptConfig action)
+    {
+        var inputValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var passwordInputs = new Dictionary<string, RunningJobPasswordInput>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var record in _controlRecords)
+        {
+            if (record is PasswordControl { Control: PasswordBox passwordBox })
+            {
+                var vaultKey = passwordBox.VaultKey;
+                inputValues[record.Name] = string.IsNullOrWhiteSpace(vaultKey)
+                    ? passwordBox.Password ?? string.Empty
+                    : VaultReference.Format(vaultKey);
+                passwordInputs[record.Name] = new RunningJobPasswordInput(
+                    string.IsNullOrWhiteSpace(vaultKey) ? passwordBox.Password : null,
+                    vaultKey,
+                    passwordBox.HasInvalidVaultReference);
+            }
+            else
+            {
+                inputValues[record.Name] = record.GetValueForInput() ?? string.Empty;
+            }
+        }
+
+        return new RunningJobActionContext(
+            action.SourceName,
+            action.Name,
+            inputValues,
+            passwordInputs);
+    }
+
     private List<IControlRecord> FindMissingRequiredParameters(
         IReadOnlyDictionary<string, string?> parameterValues,
         IReadOnlySet<string>? parameterNames = null)
@@ -2018,7 +2051,8 @@ public class MainWindowViewModel : ReactiveObject
         Action<string>? onComplete = null,
         IReadOnlyDictionary<string, string?>? parameterValues = null,
         bool isInstallCommand = false,
-        bool validateRequiredParameters = false)
+        bool validateRequiredParameters = false,
+        RunningJobActionContext? actionContext = null)
     {
         var referencedParameterNames = CommandTemplateExpander.GetReferencedParameterNames(
             new[] { command }.Concat(
@@ -2100,7 +2134,8 @@ public class MainWindowViewModel : ReactiveObject
         {
             Tile = $"#{jobCounter++} {title ?? selectedAction.Name}",
             ExecutedCommand = executedCommand,
-            EnvironmentVariables = envVariables
+            EnvironmentVariables = envVariables,
+            ActionContext = actionContext
         };
         job.ExecutedCommandFormatted.AddRange(executedCommandFormatted);
         
@@ -2199,6 +2234,79 @@ public class MainWindowViewModel : ReactiveObject
             SelectedAction = selected;
             RenderParameterForm(selected, execution.Parameters);
         }
+    }
+
+    public void OpenRunningJobAction(object arg)
+    {
+        if (arg is not RunningJobViewModel { ActionContext: { } context })
+        {
+            return;
+        }
+
+        var selected = Actions.FirstOrDefault(action =>
+            string.Equals(action.Name, context.ActionName, StringComparison.Ordinal) &&
+            string.Equals(action.SourceName, context.SourceName, StringComparison.Ordinal));
+        if (selected is null)
+        {
+            return;
+        }
+
+        SelectedAction = selected;
+        var initialValues = new Dictionary<string, string>(
+            context.InputValues,
+            StringComparer.OrdinalIgnoreCase);
+        foreach (var parameter in selected.Params.Where(parameter => parameter.Prompt == PromptType.FileContent))
+        {
+            // File-content controls interpret their initial value as a possible path. Their raw
+            // editor content is applied through SetValueFromString after construction instead.
+            initialValues[parameter.Name] = string.Empty;
+        }
+        foreach (var (name, passwordInput) in context.PasswordInputs)
+        {
+            if (string.IsNullOrWhiteSpace(passwordInput.VaultKey))
+            {
+                // Preserve the explicit manual/bound distinction even when a manual password
+                // happens to begin with the Vault reference prefix.
+                initialValues[name] = string.Empty;
+            }
+        }
+
+        RenderParameterForm(
+            selected,
+            initialValues);
+
+        foreach (var control in _controlRecords)
+        {
+            if (!context.InputValues.TryGetValue(control.Name, out var value))
+            {
+                continue;
+            }
+
+            if (control is PasswordControl { Control: PasswordBox passwordBox } &&
+                context.PasswordInputs.TryGetValue(control.Name, out var passwordInput))
+            {
+                if (string.IsNullOrWhiteSpace(passwordInput.VaultKey))
+                {
+                    if (passwordInput.HasInvalidVaultReference)
+                    {
+                        passwordBox.SetInvalidVaultReference(passwordInput.ManualValue);
+                    }
+                    else
+                    {
+                        passwordBox.SetManualValue(passwordInput.ManualValue);
+                    }
+                }
+
+                // A Vault-bound password was restored from its reference while rendering. Do not
+                // replace it with a secret cached by the old run.
+                continue;
+            }
+
+            control.SetValueFromString(value);
+        }
+
+        IsStatisticsVisible = false;
+        IsScriptListVisible = true;
     }
     
     public ExecutionLogItemBase? SelectedExecutionLogItem

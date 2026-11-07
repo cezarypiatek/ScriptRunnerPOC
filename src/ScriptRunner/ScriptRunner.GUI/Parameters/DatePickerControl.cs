@@ -32,7 +32,7 @@ public class DatePickerControl : IControlRecord
 
     public void SetValueFromString(string value)
     {
-        if (DateTime.TryParse(value, out var dt))
+        if (TryParseValue(value, Format, Culture, out var dt))
         {
             switch (Control)
             {
@@ -44,6 +44,13 @@ public class DatePickerControl : IControlRecord
                     break;
             }
         }
+    }
+
+    internal static bool TryParseValue(string value, string? format, CultureInfo culture, out DateTime dateTime)
+    {
+        return string.IsNullOrWhiteSpace(format)
+            ? DateTime.TryParse(value, culture, DateTimeStyles.None, out dateTime)
+            : DateTime.TryParseExact(value, format, culture, DateTimeStyles.None, out dateTime);
     }
 
     public string Name { get; set; }

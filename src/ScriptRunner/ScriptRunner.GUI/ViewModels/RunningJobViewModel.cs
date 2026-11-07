@@ -66,6 +66,9 @@ public class RunningJobViewModel : ViewModelBase
 
     public bool IsRunning => Status == RunningJobStatus.Running;
 
+    public RunningJobActionContext? ActionContext { get; init; }
+    public bool CanOpenActionAgain => ActionContext is not null;
+
     public string ExecutedCommand { get; set; }
     public InlineCollection ExecutedCommandFormatted { get; set; } = new();
     public void CancelExecution()

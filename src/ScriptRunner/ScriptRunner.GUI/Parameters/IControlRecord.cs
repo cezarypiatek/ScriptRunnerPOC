@@ -8,6 +8,13 @@ public interface IControlRecord
 
     string GetFormattedValue();
 
+    /// <summary>
+    /// Gets a value that can be fed back into <see cref="SetValueFromString"/> to restore the
+    /// input. This normally matches the execution value, but content/path controls can retain
+    /// their original UI representation here.
+    /// </summary>
+    string GetValueForInput() => GetFormattedValue();
+
     bool IsNotEmpty();
 
     void SetValueFromString(string value);

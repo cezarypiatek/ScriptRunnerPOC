@@ -19,6 +19,8 @@ public class FilePickerControl : IControlRecord
         return _useWslPathFormat ? WslPathConverter.ConvertToWslPath(path) : path;
     }
 
+    public string GetValueForInput() => ((FilePicker)Control).FilePath;
+
     public bool IsNotEmpty() => !string.IsNullOrWhiteSpace(((FilePicker)Control).FilePath);
 
     public void SetValueFromString(string value)

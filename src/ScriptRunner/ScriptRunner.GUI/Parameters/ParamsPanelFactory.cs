@@ -585,6 +585,12 @@ public class ParamsPanelFactory
                 
                 // Parse selected values
                 var selectedValues = (value ?? string.Empty).Split(new[] { delimiter }, StringSplitOptions.RemoveEmptyEntries).Select(v => v.Trim()).ToList();
+                foreach (var selectedValue in selectedValues.Where(selectedValue =>
+                             multiSelectOptions.All(option => option.Value != selectedValue)))
+                {
+                    // Preserve values used by an earlier run even if the available options changed.
+                    multiSelectOptions.Add(new DropdownOption(selectedValue, selectedValue));
+                }
                 var selectedDropdownOptions = multiSelectOptions.Where(opt => selectedValues.Contains(opt.Value)).ToList();
                 
                 return new MultiSelectControl
@@ -614,9 +620,13 @@ public class ParamsPanelFactory
                         selectedDate = DateTimeOffset.Now.Date;
                     }
                 }
-                else if (DateTimeOffset.TryParse(value, culture, DateTimeStyles.None, out var parsedDate))
+                else if (DatePickerControl.TryParseValue(
+                             value,
+                             p.GetPromptSettings("format", out var dateFormat) ? dateFormat : null,
+                             culture,
+                             out var parsedDate))
                 {
-                    selectedDate = parsedDate;
+                    selectedDate = new DateTimeOffset(parsedDate);
                 }
                 return new DatePickerControl
                 {

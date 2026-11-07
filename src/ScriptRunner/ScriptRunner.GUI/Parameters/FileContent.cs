@@ -24,17 +24,19 @@ public class FileContent : IControlRecord
 
     public string GetFormattedValue()
     {
-        var fileContent =  Control switch
-        {
-            TextBox textBox => textBox.Text,
-            TextEditor textEditor => textEditor.Text,
-            _ => ((TextBox)Control).Text
-        };
+        var fileContent = GetValueForInput();
         var hash = string.IsNullOrWhiteSpace(fileContent)? "EMPTY" : ComputeSHA256(fileContent).Substring(0,10);
         FileName = GetFileContentStoragePath(hash + "." + _extension);
         File.WriteAllText(FileName, fileContent, Encoding.UTF8);
         return _useWslPath ? WslPathConverter.ConvertToWslPath(FileName) : FileName;
     }
+
+    public string GetValueForInput() => Control switch
+    {
+        TextBox textBox => textBox.Text ?? string.Empty,
+        TextEditor textEditor => textEditor.Text,
+        _ => string.Empty
+    };
 
     public bool IsNotEmpty()
     {
