@@ -7,9 +7,6 @@ on:
     paths:
       - 'src/**'
       - '!src/.editorconfig'
-permissions:
-  id-token: write
-  contents: read
 jobs:
   build-extension:
     runs-on: windows-latest
@@ -24,6 +21,9 @@ jobs:
         Deterministic: true
         PackageReleaseNotes: 'https://github.com/${{ github.repository }}/releases'
         ContinuousIntegrationBuild: true
+    permissions:
+      id-token: write  # enable GitHub OIDC token issuance for this job
+      contents: write    
     steps:
     - uses: actions/checkout@v4
     - name: Set version
