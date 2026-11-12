@@ -72,6 +72,11 @@ jobs:
         asset_path: ScriptRunner.win-x64.${{ env.Version }}.zip
         asset_name: ScriptRunner.win-x64.${{ env.Version }}.zip
         asset_content_type: binary/octet-stream
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ secrets.NUGET_USER }}
     - name: Publish extension to Nuget
       run: |
-        dotnet nuget push dist\ScriptRunnerGUI.${{ env.Version }}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        dotnet nuget push dist\ScriptRunnerGUI.${{ env.Version }}.nupkg -k ${{steps.login.outputs.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
